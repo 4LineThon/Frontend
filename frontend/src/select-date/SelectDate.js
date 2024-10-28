@@ -5,7 +5,7 @@ import styled from "styled-components";
 const SelectDate = () => {
   return (
     <Wrapper>
-      <EventName />
+      <EventName maxLength={10} />
       <Calendar />
     </Wrapper>
   );
@@ -32,5 +32,6 @@ const EventName = styled.input`
   outline: 0;
   font-family: "Ibarra Real Nova", serif;
   color: #423e59;
+  text-align: center;
   font-size: 30px;
 `;
