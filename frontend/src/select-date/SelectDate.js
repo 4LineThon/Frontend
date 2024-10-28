@@ -43,6 +43,7 @@ const CreateBtn = styled.div`
   width: 197px;
   height: 38px;
   margin-top: 101px;
+  margin-bottom: 49px;
   display: flex;
   justify-content: center;
   align-items: center;
