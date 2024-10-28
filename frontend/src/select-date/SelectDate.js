@@ -1,12 +1,15 @@
 import React from "react";
-import Calendar from "./component/calendar";
 import styled from "styled-components";
+import SelectTimes from "./component/selectTimes";
+import SelectDates from "./component/selectDates";
 
 const SelectDate = () => {
   return (
     <Wrapper>
-      <EventName maxLength={10} />
-      <Calendar />
+      <EventName maxLength={10} placeholder="new event name" />
+      <SelectDates />
+      <SelectTimes />
+      <CreateBtn>Create Event</CreateBtn>
     </Wrapper>
   );
 };
@@ -33,5 +36,18 @@ const EventName = styled.input`
   font-family: "Ibarra Real Nova", serif;
   color: #423e59;
   text-align: center;
-  font-size: 30px;
+  font-size: 27px;
+`;
+
+const CreateBtn = styled.div`
+  width: 197px;
+  height: 38px;
+  margin-top: 101px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #423e59;
+  color: #d9d9d9;
+  font-size: 25px;
+  cursor: pointer;
 `;

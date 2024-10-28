@@ -5,7 +5,7 @@ import { Title } from "./title";
 const dayArr = ["S", "M", "T", "W", "T", "F", "S"];
 const dateArr = Array.from({ length: 28 }, (_, i) => i + 1);
 
-const Calendar = () => {
+const SelectDates = () => {
   const basicColor = "#D9D9D9";
   const specialColor = "#423e59";
   const initialBtn = Array(28).fill(false);
@@ -42,16 +42,18 @@ const Calendar = () => {
   );
 };
 
-export default Calendar;
+export default SelectDates;
 
 const CalendarContainer = styled.div`
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 2px;
   row-gap: 2px;
+  margin-bottom: 41px;
 `;
 
 const MonthBox = styled.div`
+  margin-top: 14px;
   margin-bottom: 12px;
   text-align: center;
   font-size: 20px;
@@ -67,6 +69,7 @@ const DateBox = styled.button`
   background-color: ${(props) => props.$bgcolor};
   color: ${(props) => props.color};
   font-size: 24px;
+  cursor: pointer;
 `;
 
 const DayBox = styled.div`
