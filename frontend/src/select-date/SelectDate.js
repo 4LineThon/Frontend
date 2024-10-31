@@ -2,10 +2,12 @@ import React from "react";
 import styled from "styled-components";
 import SelectTimes from "./component/selectTimes";
 import SelectDates from "./component/selectDates";
+import Logo from "./component/logo";
 
 const SelectDate = () => {
   return (
     <Wrapper>
+      <Logo />
       <EventName maxLength={10} placeholder="new event name" />
       <SelectDates />
       <SelectTimes />
@@ -17,6 +19,7 @@ const SelectDate = () => {
 export default SelectDate;
 
 const Wrapper = styled.div`
+  width: 315px;
   min-height: 812px;
   display: flex;
   flex-direction: column;
@@ -27,6 +30,7 @@ const Wrapper = styled.div`
 const EventName = styled.input`
   width: 206px;
   background-color: transparent;
+  margin-top: 31px;
   margin-bottom: 39px;
   border-bottom: 4px solid #423e59;
   border-top: 0;
