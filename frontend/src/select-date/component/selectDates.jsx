@@ -57,6 +57,7 @@ const MonthBox = styled.div`
   margin-bottom: 12px;
   text-align: center;
   font-size: 20px;
+  color: #423e59;
 `;
 
 const DateBox = styled.button`

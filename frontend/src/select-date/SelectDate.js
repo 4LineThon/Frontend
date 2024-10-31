@@ -41,6 +41,9 @@ const EventName = styled.input`
   color: #423e59;
   text-align: center;
   font-size: 27px;
+  &::placeholder {
+    color: #423e59;
+  }
 `;
 
 const CreateBtn = styled.div`
