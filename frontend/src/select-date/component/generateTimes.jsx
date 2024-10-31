@@ -50,8 +50,10 @@ const SelectTime = styled.select`
   text-align: center;
   outline: 0;
   cursor: pointer;
+  font-family: "Ibarra Real Nova", serif;
 `;
 
 const OptionTime = styled.option`
   font-size: 15px;
+  font-family: "Ibarra Real Nova", serif;
 `;

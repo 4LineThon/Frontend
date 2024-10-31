@@ -71,6 +71,7 @@ const DateBox = styled.button`
   color: ${(props) => props.color};
   font-size: 24px;
   cursor: pointer;
+  font-family: "Ibarra Real Nova", serif;
 `;
 
 const DayBox = styled.div`
