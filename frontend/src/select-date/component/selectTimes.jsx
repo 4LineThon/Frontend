@@ -6,7 +6,6 @@ import GenerateTimes from "./generateTimes";
 const SelectTimes = () => {
   return (
     <>
-      <Title>Select Times</Title>
       <TimeContainer>
         <GenerateTimes text="From" />
         <GenerateTimes text="To" />
@@ -21,5 +20,5 @@ const TimeContainer = styled.div`
   display: flex;
   justify-content: center;
   gap: 15px;
-  margin-top: 30px;
+  margin-top: 43px;
 `;

@@ -3,9 +3,8 @@ import styled from "styled-components";
 import { Title } from "./title";
 
 const dayArr = ["S", "M", "T", "W", "T", "F", "S"];
-const dateArr = Array.from({ length: 35 }, (_, i) => i + 1);
 
-const SelectDates = () => {
+const SelectDays = () => {
   const basicColor = "#D9D9D9";
   const specialColor = "#423e59";
   const initialBtn = Array(28).fill(false);
@@ -18,12 +17,9 @@ const SelectDates = () => {
 
   return (
     <Container>
-      <MonthBox>2024 Oct/Nov</MonthBox>
+      <MonthBox>Every Week</MonthBox>
       <CalendarContainer>
         {dayArr.map((day, idx) => {
-          return <DayBox key={idx}>{day}</DayBox>;
-        })}
-        {dateArr.map((date, idx) => {
           return (
             <DateBox
               key={idx}
@@ -32,7 +28,7 @@ const SelectDates = () => {
               color={btn[idx] ? basicColor : specialColor}
               $bgcolor={btn[idx] ? specialColor : basicColor}
             >
-              {date}
+              {day}
             </DateBox>
           );
         })}
@@ -41,7 +37,7 @@ const SelectDates = () => {
   );
 };
 
-export default SelectDates;
+export default SelectDays;
 
 const Container = styled.div`
   margin-top: 29px;
@@ -64,7 +60,8 @@ const MonthBox = styled.div`
 
 const DateBox = styled.button`
   width: 38px;
-  height: 38px;
+  height: 197px;
+  margin-top: 40px;
   display: flex;
   border: 3px solid #423e59;
   align-items: center;
