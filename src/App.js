@@ -1,7 +1,7 @@
 import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Minju from "./minju/Minju";
-import Yunji from "./yunji/Yunji";
+import NumberInput from "./number-input/NumberInput";
 import Youbin from "./select-date/SelectDate";
 import Home from "./Home";
 import "./App.css";
@@ -16,8 +16,8 @@ const router = createBrowserRouter([
     element: <Minju />,
   },
   {
-    path: "yunji",
-    element: <Yunji />,
+    path: "/NumberInput",
+    element: <NumberInput />,
   },
   {
     path: "youbin",
