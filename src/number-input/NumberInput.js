@@ -109,10 +109,10 @@ function NumberInput() {
         <span>My Availability</span>
       </div>
 
-      <div className="small-container">
+      <div>
         {/* 요일 선택 드롭다운 */}
-        <div id="insert">
-          <span className="insert">Choose Date</span>
+        <div id="date-dropdown">
+          <span className="date-dropdown">Choose Date</span>
           <select value={selectedDay} onChange={handleDayChange} className="list">
             <option value="">Select Date</option>
             {daysOfWeek.map((day) => (
