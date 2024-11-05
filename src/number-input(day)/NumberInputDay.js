@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import './NumberInput.css';
+import './NumberInputDay.css';
 
-function NumberInput() {
-  const daysOfWeek = ["Oct 15 Tue", "Oct 16 Wed", "Oct 17 Thu", "Oct 18 Fri", "Oct 19 Sat", "Oct 20 Sun", "Oct 21 Mon"];
+function NumberInputDay() {
+  const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
   const [selectedDay, setSelectedDay] = useState(""); // 선택된 요일
   const [availability, setAvailability] = useState({}); // 각 요일별 시간 목록
 
@@ -112,9 +112,9 @@ function NumberInput() {
       <div className="small-container">
         {/* 요일 선택 드롭다운 */}
         <div id="insert">
-          <span className="insert">Choose Date</span>
+          <span className="insert">Choose Day</span>
           <select value={selectedDay} onChange={handleDayChange} className="list">
-            <option value="">Select Date</option>
+            <option value="">Select Day</option>
             {daysOfWeek.map((day) => (
               <option key={day} value={day}>{day}</option>
             ))}
@@ -172,4 +172,4 @@ function NumberInput() {
   );
 }
 
-export default NumberInput;
+export default NumberInputDay;
