@@ -9,6 +9,7 @@ function NumberInputDay() {
     const [availability, setAvailability] = useState({}); // 각 요일별 시간 목록
     const [activeButton, setActiveButton] = useState('number'); // 초기 활성화 상태는 'number'
     const navigate = useNavigate(); // 네비게이션 함수를 사용할 수 있도록 추가
+    
       
     const handleButtonClick = (buttonType) => {
       setActiveButton(buttonType); // 버튼 클릭 시 상태 업데이트
