@@ -117,24 +117,26 @@ function NumberInput() {
       </div>
 
       <div>
-        {/* 요일 선택 드롭다운 */}
+        {/* 날짜 선택 드롭다운 */}
         <div id="date-dropdown">
           <span className="date-dropdown">Choose Date</span>
-          <select value={selectedDay} onChange={handleDayChange} className="list">
+          <div className = "select-list-container">
+          <select value={selectedDay} onChange={handleDayChange} className="select-list">
             <option value="">Select Date</option>
             {daysOfWeek.map((day) => (
               <option key={day} value={day}>{day}</option>
             ))}
           </select>
-          <button className="btn2" onClick={addTimeRange}>+</button>
+          </div>
+          <button className="btnPlus" onClick={addTimeRange}>+</button>
         </div>
 
-        {/* 선택된 요일별로 시간 목록 표시 */}
+        {/* 선택된 날짜별로 시간 목록 표시 */}
         {Object.keys(availability)
           .sort((a, b) => daysOfWeek.indexOf(a) - daysOfWeek.indexOf(b)) // 요일 오름차순 정렬
           .map((day) => (
             <div key={day} className="time-range">
-              <h3>{day}</h3>
+              <h3 className = "specific-date">{day}</h3>
               {availability[day].map((range, index) => (
                 <div key={index} className="date-row">
                   <div className="list-container">
