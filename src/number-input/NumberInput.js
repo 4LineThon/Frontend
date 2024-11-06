@@ -45,6 +45,7 @@ function NumberInput() {
     });
   };
 
+
   // 특정 요일의 시간 범위를 삭제하는 함수
   const deleteTimeRange = (day, index) => {
     setAvailability((prev) => {
@@ -97,6 +98,12 @@ function NumberInput() {
     newAvailability[day] = [...newAvailability[day]].sort((a, b) => a.start.localeCompare(b.start));
     setAvailability(newAvailability);
   };
+
+    // 'Save' 버튼 클릭 시 동작하는 함수
+    const saveAvailability = () => {
+      console.log('Saving availability:', availability);
+      // 서버로 데이터를 전송하는 코드를 여기에 추가
+    };
 
   return (
     <div className="big-container">
@@ -168,6 +175,10 @@ function NumberInput() {
             </div>
           ))}
       </div>
+      {/* 'Save' 버튼 */}
+      {Object.keys(availability).length > 0 && (
+      <button className="btn-save" onClick={saveAvailability}>Save</button>
+    )}
     </div>
   );
 }
