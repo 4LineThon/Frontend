@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
+import { Bullet, Commemt, Content, Wrapper, Writer } from "./component/comment";
 
 const Comment = () => {
   const [comments, setComments] = useState([]);
@@ -22,48 +23,58 @@ const Comment = () => {
     <>
       {comments.map((elt, idx) => {
         return (
-          <Wrapper>
-            <Bullet src="/comment-circle.svg" />
+          <CommentWrapper key={idx}>
+            <Bullet />
             <Commemt>
               <Writer>Comment by {elt.name}</Writer>
               <Content>{elt.content}</Content>
             </Commemt>
-          </Wrapper>
+          </CommentWrapper>
         );
       })}
+      <InputWrapper>
+        <Bullet />
+        <TextArea />
+        <SendButton />
+      </InputWrapper>
     </>
   );
 };
 
 export default Comment;
 
-const Wrapper = styled.div`
-  width: 229px;
-  display: flex;
-  align-items: baseline;
-  margin: 0px 73px 11px 73px;
-  padding: 9px;
-  border: 2px solid #9ea663;
-  font-family: "Ibarra Real Nova", serif;
-  color: #423e59;
+const CommentWrapper = styled(Wrapper)`
+  border-color: #9ea663;
 `;
 
-const Bullet = styled.img`
-  width: 8px;
-  height: 8px;
-  margin: 6px 11px 0px 4px;
+const InputWrapper = styled(Wrapper)`
+  border-color: #423e59;
 `;
 
-const Commemt = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-`;
-
-const Writer = styled.div`
-  font-size: 15px;
-`;
-
-const Content = styled.div`
+const TextArea = styled.textarea.attrs({
+  placeholder: "Write yout comment",
+  maxLength: 25,
+})`
+  width: 158px;
+  height: 25px;
+  border: 0;
+  outline: 0;
+  padding: 0;
+  background-color: transparent;
   font-size: 10px;
+  color: #423e59;
+  font-family: "Ibarra Real Nova", serif;
+  resize: none;
+  &::placeholder {
+    color: #423e59;
+    font-family: "Ibarra Real Nova", serif;
+  }
+`;
+
+const SendButton = styled.img.attrs({
+  src: "/send-comment.svg",
+})`
+  width: 20px;
+  height: 20px;
+  margin: auto 0 auto 8px;
 `;
