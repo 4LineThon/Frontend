@@ -5,6 +5,11 @@ function NumberInput() {
   const daysOfWeek = ["Oct 15 Tue", "Oct 16 Wed", "Oct 17 Thu", "Oct 18 Fri", "Oct 19 Sat", "Oct 20 Sun", "Oct 21 Mon"];
   const [selectedDay, setSelectedDay] = useState(""); // 선택된 요일
   const [availability, setAvailability] = useState({}); // 각 요일별 시간 목록
+  const [activeButton, setActiveButton] = useState('number'); // 초기 활성화 상태는 'number'
+    
+  const handleButtonClick = (buttonType) => {
+    setActiveButton(buttonType); // 버튼 클릭 시 상태 업데이트
+  };
 
   const generateTimeOptions = () => {
     const options = [];
@@ -105,8 +110,11 @@ function NumberInput() {
       // 서버로 데이터를 전송하는 코드를 여기에 추가
     };
 
+
+
   return (
     <div className="big-container">
+
       <div className="header">
         <h1>Timi</h1>
         <h2>4LINETHON</h2>
@@ -114,6 +122,23 @@ function NumberInput() {
 
       <div className="availability">
         <span>My Availability</span>
+      </div>
+      <div id="insert-type">
+        <span className="type-label">Insert Type</span>
+        <div className="buttons-container">
+          <button 
+            className={`type-button fingerButton ${activeButton === 'finger' ? 'active' : 'inactive'}`}
+            onClick={() => handleButtonClick('finger')}
+          >
+            Finger
+          </button>
+          <button 
+            className={`type-button numberButton ${activeButton === 'number' ? 'active' : 'inactive'}`}
+            onClick={() => handleButtonClick('number')}
+          >
+            Number
+          </button>
+        </div>
       </div>
 
       <div>
