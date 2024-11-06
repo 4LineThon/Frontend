@@ -13,6 +13,10 @@ function NumberInput() {
     setActiveButton(buttonType); // 버튼 클릭 시 상태 업데이트
   };
 
+  const handleFinishClick = () => {
+    navigate('/minju'); // 왼쪽 버튼 클릭 시 /minju 경로로 이동
+  };
+
   const handleFingerClick = () => {
     setActiveButton('finger');
     navigate('/minju'); // Finger 버튼 클릭 시 /minju 경로로 이동
@@ -128,7 +132,9 @@ function NumberInput() {
       </div>
 
       <div className="availability">
+      <span onClick={handleFinishClick} className="left-arrow">◄</span>
         <span>My Availability</span>
+        
       </div>
       <div id="insert-type">
         <span className="type-label">Insert Type</span>

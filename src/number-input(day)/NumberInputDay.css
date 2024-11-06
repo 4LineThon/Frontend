@@ -5,6 +5,7 @@
   font-style: normal;
 }
 .big-container {
+  color: #4c3f5e;
   font-family: 'Georgia', serif;
   display: flex;
   background: #e6e6e6;
@@ -29,14 +30,15 @@
   box-sizing: border-box;
   position: relative;
 }
-
-.availability::before {
-  content: "◄"; /* 왼쪽 화살표 추가 */
+.left-arrow {
   position: absolute;
   left: 10px;
   font-size: 14px;
   color: white;
+  cursor: pointer; /* 클릭 가능한 요소임을 나타내는 커서 스타일 */
 }
+
+
 
 .header h1 {
   text-align:center;
@@ -54,6 +56,65 @@
   color: #4c3f5e;
   margin-bottom: 10px; /* 4LINETON과 My Availability 사이 간격 추가 */
 }
+
+/*insert type 부분*/
+
+#insert-type {
+  display: flex;
+  font-weight: 300px;
+  align-items: center;
+  justify-content: center; /* 중앙 정렬 */
+  padding-top: 10px;
+  padding-bottom: 8px;
+  background-color: transparent;
+  border-radius: 10px; /* Rounded corners like in the second image */
+}
+
+.type-label {
+  color: #423E59;
+  font-family: 'Ibarra Real Nova', serif; /* Ensure font fallbacks */
+  font-size: 13px; /* Removed quotes around numerical values */
+  font-weight: 400; /* Lighter font weight */
+  margin-right: 7px; /* Increased space between label and buttons */
+}
+
+.buttons-container {
+  display: flex;
+}
+
+.fingerButton, .numberButton {
+  width: 70px; /* Wider buttons */
+  height: 20px; /* Taller buttons */
+  background-color: transparent;
+  color: #423E59;
+  font-family: 'Ibarra Real Nova', serif;
+  font-size: 13px; /* Removed quotes around numerical values */
+  font-weight: 400;
+  border: 2px solid #423E59;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+
+.type-button.inactive:hover {
+  background-color: #50495a; /* 호버 시 배경색 */
+  color: #FFFFFF; /* 호버 시 텍스트 색상 */
+}
+
+.type-button.active {
+  background-color: #6c5a79; /* 활성화된 버튼의 배경색 */
+  color: white; /* 활성화된 버튼의 텍스트 색상 */
+}
+
+.type-button.inactive {
+  color: #423E59; /* 비활성화된 버튼의 텍스트 색상 */
+  background-color: transparent;
+}
+
+
 
 .specific-date {
   color: #4c3f5e;
