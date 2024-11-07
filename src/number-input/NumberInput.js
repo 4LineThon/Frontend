@@ -1,10 +1,26 @@
 import React, { useState } from 'react';
 import './NumberInput.css';
+import { useNavigate } from 'react-router-dom';
 
 function NumberInput() {
   const daysOfWeek = ["Oct 15 Tue", "Oct 16 Wed", "Oct 17 Thu", "Oct 18 Fri", "Oct 19 Sat", "Oct 20 Sun", "Oct 21 Mon"];
   const [selectedDay, setSelectedDay] = useState(""); // 선택된 요일
   const [availability, setAvailability] = useState({}); // 각 요일별 시간 목록
+  const [activeButton, setActiveButton] = useState('number'); // 초기 활성화 상태는 'number'
+  const navigate = useNavigate(); // 네비게이션 함수를 사용할 수 있도록 추가
+    
+  const handleButtonClick = (buttonType) => {
+    setActiveButton(buttonType); // 버튼 클릭 시 상태 업데이트
+  };
+
+  const handleFinishClick = () => {
+    navigate('/minju'); // 왼쪽 버튼 클릭 시 /minju 경로로 이동
+  };
+
+  const handleFingerClick = () => {
+    setActiveButton('finger');
+    navigate('/minju'); // Finger 버튼 클릭 시 /minju 경로로 이동
+  };
 
   const generateTimeOptions = () => {
     const options = [];
@@ -44,6 +60,7 @@ function NumberInput() {
       };
     });
   };
+
 
   // 특정 요일의 시간 범위를 삭제하는 함수
   const deleteTimeRange = (day, index) => {
@@ -98,36 +115,66 @@ function NumberInput() {
     setAvailability(newAvailability);
   };
 
+    // 'Save' 버튼 클릭 시 동작하는 함수
+    const saveAvailability = () => {
+      console.log('Saving availability:', availability);
+      // 서버로 데이터를 전송하는 코드를 여기에 추가
+    };
+
+
+
   return (
     <div className="big-container">
+
       <div className="header">
         <h1>Timi</h1>
         <h2>4LINETHON</h2>
       </div>
 
       <div className="availability">
+      <span onClick={handleFinishClick} className="left-arrow">◄</span>
         <span>My Availability</span>
+        
+      </div>
+      <div id="insert-type">
+        <span className="type-label">Insert Type</span>
+        <div className="buttons-container">
+          <button 
+            className={`type-button fingerButton ${activeButton === 'finger' ? 'active' : 'inactive'}`}
+            onClick={handleFingerClick} // Finger 버튼 클릭 이벤트 핸들러
+          >
+            Finger
+          </button>
+          <button 
+            className={`type-button numberButton ${activeButton === 'number' ? 'active' : 'inactive'}`}
+            onClick={() => handleButtonClick('number')}
+          >
+            Number
+          </button>
+        </div>
       </div>
 
-      <div className="small-container">
-        {/* 요일 선택 드롭다운 */}
-        <div id="insert">
-          <span className="insert">Choose Date</span>
-          <select value={selectedDay} onChange={handleDayChange} className="list">
+      <div>
+        {/* 날짜 선택 드롭다운 */}
+        <div id="date-dropdown">
+          <span className="date-dropdown">Choose Date</span>
+          <div className = "select-list-container">
+          <select value={selectedDay} onChange={handleDayChange} className="select-list">
             <option value="">Select Date</option>
             {daysOfWeek.map((day) => (
               <option key={day} value={day}>{day}</option>
             ))}
           </select>
-          <button className="btn2" onClick={addTimeRange}>+</button>
+          </div>
+          <button className="btnPlus" onClick={addTimeRange}>+</button>
         </div>
 
-        {/* 선택된 요일별로 시간 목록 표시 */}
+        {/* 선택된 날짜별로 시간 목록 표시 */}
         {Object.keys(availability)
           .sort((a, b) => daysOfWeek.indexOf(a) - daysOfWeek.indexOf(b)) // 요일 오름차순 정렬
           .map((day) => (
             <div key={day} className="time-range">
-              <h3>{day}</h3>
+              <h3 className = "specific-date">{day}</h3>
               {availability[day].map((range, index) => (
                 <div key={index} className="date-row">
                   <div className="list-container">
@@ -168,6 +215,10 @@ function NumberInput() {
             </div>
           ))}
       </div>
+      {/* 'Save' 버튼 */}
+      {Object.keys(availability).length > 0 && (
+      <button className="btn-save" onClick={saveAvailability}>Save</button>
+    )}
     </div>
   );
 }
