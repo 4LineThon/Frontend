@@ -3,7 +3,8 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Minju from "./minju/Minju";
 import NumberInput from "./number-input/NumberInput";
 import Youbin from "./select-date/SelectDate";
-import NumberInputDay from "./number-input(day)/NumberInputDay"
+import NumberInputDay from "./number-input(day)/NumberInputDay";
+import LogIn from "./login/login";
 import Home from "./Home";
 import "./App.css";
 
@@ -27,6 +28,10 @@ const router = createBrowserRouter([
   {
     path: "/NumberInputDay",
     element: <NumberInputDay />,
+  },
+  {
+    path: "/LogIn",
+    element: <LogIn />,
   }
 ]);
 
