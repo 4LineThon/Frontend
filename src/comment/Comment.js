@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import CommentBox from "./component/commentBox";
 import CommentInput from "./component/commentInput";
-import { Wrapper } from "./component/commentCSS";
 import styled from "styled-components";
 
 const Comment = () => {
