@@ -42,7 +42,7 @@ const SelectDates = () => {
         const firstMonth = monthNames[data[0].month];
         const lastMonth = monthNames[data[data.length - 1].month];
         setMonth(
-          firstMonth == lastMonth ? firstMonth : `${firstMonth}/${lastMonth}`
+          firstMonth === lastMonth ? firstMonth : `${firstMonth}/${lastMonth}`
         );
 
         // 요일 세팅

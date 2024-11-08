@@ -1,5 +1,4 @@
 import React from "react";
-import { Title } from "./title";
 import styled from "styled-components";
 import GenerateTimes from "./generateTimes";
 

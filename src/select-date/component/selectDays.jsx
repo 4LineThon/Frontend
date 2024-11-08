@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import { Title } from "./title";
 
 const dayArr = ["S", "M", "T", "W", "T", "F", "S"];
 
@@ -71,14 +70,4 @@ const DateBox = styled.button`
   font-size: 24px;
   cursor: pointer;
   font-family: "Ibarra Real Nova", serif;
-`;
-
-const DayBox = styled.div`
-  width: 38px;
-  height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #423e59;
-  font-size: 24px;
 `;
