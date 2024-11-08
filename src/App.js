@@ -2,7 +2,7 @@ import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Minju from "./minju/Minju";
 import NumberInput from "./number-input/NumberInput";
-import Youbin from "./select-date/SelectDate";
+import SelectDate from "./select-date/SelectDate";
 import NumberInputDay from "./number-input(day)/NumberInputDay";
 import LogIn from "./login/login";
 import Home from "./Home";
@@ -22,8 +22,8 @@ const router = createBrowserRouter([
     element: <NumberInput />,
   },
   {
-    path: "youbin",
-    element: <Youbin />,
+    path: "/SelectDate",
+    element: <SelectDate />,
   },
   {
     path: "/NumberInputDay",
