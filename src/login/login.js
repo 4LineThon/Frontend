@@ -1,26 +1,46 @@
 import React, { useState } from 'react';
 import './login.css';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function LogIn() {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
-  const [selectedDay, setSelectedDay] = useState(""); // 선택된 요일
-  const [availability, setAvailability] = useState({}); // 각 요일별 시간 목록
-  const [activeButton, setActiveButton] = useState('number'); // 초기 활성화 상태는 'number'
+  const [groupId, setGroupId] = useState(1);  
   const navigate = useNavigate();
 
-  const handleLogin = () => {
-    if (name && password) {
-      // 로그인 성공 시 '/minju' 페이지로 이동
-      navigate('/minju');
-    } else {
-      alert('Please enter both your name and password.');
+  const handleLogin = async () => {
+    if (!name) {
+      alert('Please enter your name.');
+      return;
     }
-  };
 
-  const handleFinishClick = () => {
-    navigate('/minju'); // 왼쪽 버튼 클릭 시 /minju 경로로 이동
+    try {
+      const response = await axios.post(`http://43.201.144.53/api/v1/group/${groupId}/login`, {
+        name: name,
+        password: password || ""  
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const { id, name: responseName } = response.data;
+
+      if (id) {
+        console.log(`Welcome, ${responseName}!`);
+        navigate('/minju'); 
+      } else {
+        alert('Login failed. Please check your credentials.');
+      }
+    } catch (error) {
+      console.error("Error logging in:", error);
+      if (error.response) {
+        alert(`An error occurred while logging in: ${error.response.data.message || 'Please check your credentials and try again.'}`);
+      } else {
+        alert('An error occurred while logging in. Please try again.');
+      }
+    }
   };
 
   return (
@@ -31,34 +51,33 @@ function LogIn() {
       </div>
 
       <div className="availability">
-        <span onClick={handleFinishClick} className="left-arrow">◄</span>
+        <span onClick={() => navigate('/minju')} className="left-arrow">◄</span>
         <span>My Availability</span>
       </div>
 
-      {/* 로그인 폼 */}
       <div className="login-form">
-        <div className = "name-container">
-        <label className="name">Your Name</label>
-        <input 
-          type="text" 
-          id="name" 
-          value={name} 
-          onChange={(e) => setName(e.target.value)} 
-          required 
-        />
+        <div className="name-container">
+          <label className="name">Your Name</label>
+          <input 
+            type="text" 
+            id="name" 
+            value={name} 
+            onChange={(e) => setName(e.target.value)} 
+            required 
+          />
         </div>
 
-        <div className = "password-container">
-        <label className="password">Password</label>
-        <input 
-          type="password" 
-          id="password" 
-          value={password} 
-          onChange={(e) => setPassword(e.target.value)} 
-          required 
-        />
+        <div className="password-container">
+          <label className="password">Password (optional)</label>
+          <input 
+            type="password" 
+            id="password" 
+            value={password} 
+            onChange={(e) => setPassword(e.target.value)} 
+          />
         </div>
-        <button type="button" onClick={handleLogin} className = "LoginButton">Sign In</button>
+        
+        <button type="button" onClick={handleLogin} className="LoginButton">Sign In</button>
       </div>
     </div>
   );
