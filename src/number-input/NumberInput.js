@@ -14,7 +14,7 @@ function NumberInput() {
   };
 
   const handleFinishClick = () => {
-    navigate('/minju'); // 왼쪽 버튼 클릭 시 /minju 경로로 이동
+    navigate('/youbin'); // 왼쪽 버튼 클릭 시 /minju 경로로 이동
   };
 
   const handleFingerClick = () => {
