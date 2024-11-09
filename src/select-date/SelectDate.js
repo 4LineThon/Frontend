@@ -5,6 +5,7 @@ import SelectDates from "./component/selectDates";
 import Logo from "./component/logo";
 import ChooseDatesOrDays from "./component/chooseDatesOrDays";
 import SelectDays from "./component/selectDays";
+import axios from "axios";
 
 const SelectDate = () => {
   const [selected, setSelected] = useState("Dates");
@@ -34,7 +35,23 @@ const SelectDate = () => {
     }
 
     setRequest((prev) => ({ ...prev, name }));
-    console.log(request);
+
+    // axios 연동
+    postGroup({ ...request, name });
+    console.log({ ...request, name });
+  };
+
+  const postGroup = async (data) => {
+    try {
+      const response = await axios.post(`/api/v1/group`, data, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      console.log(response);
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   return (
