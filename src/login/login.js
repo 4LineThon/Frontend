@@ -8,35 +8,37 @@ function LogIn() {
   const [password, setPassword] = useState("");
   const [groupId, setGroupId] = useState(1);  
   const navigate = useNavigate();
+  const api = axios.create({
+    baseURL: 'http://43.201.144.53/api/v1'
+  });
 
   const handleLogin = async () => {
     if (!name) {
       alert('Please enter your name.');
       return;
     }
-
+  
     try {
       // Use template literals to insert the groupId value directly into the URL
-      const response = await axios.post(`http://43.201.144.53/api/v1/group/${groupId}/login`, {
+      const response = await axios.post(`/api/v1/group/${groupId}/login`, {
         name: name,
-        password: password || ""  
-      }, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        password: password || ""
       });
+  
+      console.log("Response data:", response.data); 
       const { id, name: responseName } = response.data;
-
+  
       if (id) {
+        console.log("Navigating with ID:", id);
         alert(`Welcome, ${responseName}!`);
-        navigate('/minju'); 
+        navigate('/NumberInput', { state: { user: id, name: responseName  } });
       } else {
         alert('Login failed. Please check your credentials.');
       }
     } catch (error) {
       console.error("Error logging in:", error);
       if (error.response) {
-        alert(`An error occurred while logging in: ${error.response.data.message || 'Please check your credentials and try again.'}`);
+        alert(`An error occurred while logging in: ${error.message || 'Please try again.'}`);
       } else {
         alert('An error occurred while logging in. Please try again.');
       }
