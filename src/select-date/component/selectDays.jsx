@@ -20,7 +20,10 @@ const SelectDays = ({ setRequest }) => {
     btn.map((elt, idx) => {
       if (elt) tempArr.push({ day: dayArr[idx] });
     });
-    setRequest({ days: tempArr });
+    setRequest((prev) => ({
+      ...prev,
+      days: tempArr,
+    }));
   }, [btn]);
 
   return (

@@ -37,7 +37,10 @@ const SelectDates = ({ setRequest }) => {
   // handleClick 후 실행
   useEffect(() => {
     const request = response.filter((_, idx) => btn[idx]);
-    setRequest({ days: request });
+    setRequest((prev) => ({
+      ...prev,
+      days: request,
+    }));
   }, [btn, response]);
 
   // 데이터 불러오기
