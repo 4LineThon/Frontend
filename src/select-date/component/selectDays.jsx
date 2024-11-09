@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 
-const dayArr = ["Sun", "Mon", "Tue", "Wed", "Thr", "Fri", "Sat"];
+const dayArr = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-const SelectDays = ({ setRequest }) => {
+const SelectDays = ({ updateRequest }) => {
   const basicColor = "#D9D9D9";
   const specialColor = "#423e59";
   const initialBtn = Array(7).fill(false);
@@ -20,10 +20,7 @@ const SelectDays = ({ setRequest }) => {
     btn.map((elt, idx) => {
       if (elt) tempArr.push({ day: dayArr[idx] });
     });
-    setRequest((prev) => ({
-      ...prev,
-      days: tempArr,
-    }));
+    updateRequest("days", tempArr);
   }, [btn]);
 
   return (

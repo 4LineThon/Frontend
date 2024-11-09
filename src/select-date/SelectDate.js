@@ -13,7 +13,15 @@ const SelectDate = () => {
   const inputRef = useRef(null);
   const [request, setRequest] = useState({});
 
+  const updateRequest = (field, value) => {
+    setRequest((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
   const createEvent = () => {
+    // 유효성 검사
     if (!name) {
       alert("Please write the event name.");
       inputRef.current.focus();
@@ -34,21 +42,20 @@ const SelectDate = () => {
       return;
     }
 
-    setRequest((prev) => ({ ...prev, name }));
+    // name 업데이트
+    updateRequest("name", name);
 
     // axios 연동
     postGroup({ ...request, name });
-    console.log({ ...request, name });
   };
 
   const postGroup = async (data) => {
     try {
-      const response = await axios.post(`/api/v1/group`, data, {
+      await axios.post(`/api/v1/group`, data, {
         headers: {
           "Content-Type": "application/json",
         },
       });
-      console.log(response);
     } catch (e) {
       console.log(e);
     }
@@ -66,11 +73,11 @@ const SelectDate = () => {
       />
       <ChooseDatesOrDays selected={selected} setSelected={setSelected} />
       {selected === "Dates" ? (
-        <SelectDates setRequest={setRequest} />
+        <SelectDates updateRequest={updateRequest} />
       ) : (
-        <SelectDays setRequest={setRequest} />
+        <SelectDays updateRequest={updateRequest} />
       )}
-      <SelectTimes setRequest={setRequest} />
+      <SelectTimes updateRequest={updateRequest} />
       <CreateBtn onClick={createEvent}>Create Event</CreateBtn>
     </Wrapper>
   );

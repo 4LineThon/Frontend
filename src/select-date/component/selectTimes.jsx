@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import GenerateTimes from "./generateTimes";
 
-const SelectTimes = ({ setRequest }) => {
+const SelectTimes = ({ updateRequest }) => {
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
 
@@ -17,10 +17,7 @@ const SelectTimes = ({ setRequest }) => {
       setEndTime(value);
     }
 
-    setRequest((prev) => ({
-      ...prev,
-      [field]: e.target.value + ":00",
-    }));
+    updateRequest(field, e.target.value + ":00");
   };
 
   return (

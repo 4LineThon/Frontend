@@ -18,7 +18,7 @@ const monthNames = [
   "Dec",
 ];
 
-const SelectDates = ({ setRequest }) => {
+const SelectDates = ({ updateRequest }) => {
   const basicColor = "#D9D9D9";
   const specialColor = "#423e59";
   const initialBtn = Array(28).fill(false);
@@ -37,10 +37,7 @@ const SelectDates = ({ setRequest }) => {
   // handleClick 후 실행
   useEffect(() => {
     const request = response.filter((_, idx) => btn[idx]);
-    setRequest((prev) => ({
-      ...prev,
-      days: request,
-    }));
+    updateRequest("days", request);
   }, [btn, response]);
 
   // 데이터 불러오기
