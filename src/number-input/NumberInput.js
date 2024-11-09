@@ -1,14 +1,40 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import './NumberInput.css';
-import { useNavigate } from 'react-router-dom';
 
 function NumberInput() {
+  const location = useLocation();
+  const userId = location.state?.user;
+  const userName = location.state?.name;
+
   const daysOfWeek = ["Oct 15 Tue", "Oct 16 Wed", "Oct 17 Thu", "Oct 18 Fri", "Oct 19 Sat", "Oct 20 Sun", "Oct 21 Mon"];
   const [selectedDay, setSelectedDay] = useState(""); // 선택된 요일
   const [availability, setAvailability] = useState({}); // 각 요일별 시간 목록
   const [activeButton, setActiveButton] = useState('number'); // 초기 활성화 상태는 'number'
-  const navigate = useNavigate(); // 네비게이션 함수를 사용할 수 있도록 추가
-    
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    const fetchAvailability = async () => {
+      if (!userId) return;
+      try {
+        const response = await axios.get(`http://43.201.144.53/api/v1/availability/${userId}`);
+        const fetchedAvailability = response.data.reduce((acc, curr) => {
+          const day = daysOfWeek[curr.days - 1];
+          acc[day] = acc[day] || [];
+          acc[day].push({ start: curr.time_from, end: curr.time_to });
+          return acc;
+        }, {});
+        setAvailability(fetchedAvailability);
+      } catch (error) {
+        console.error('Failed to fetch availability', error);
+      }
+    };
+
+    fetchAvailability();
+  }, [userId]);
+
+  /*여기서부터는 원래 코드 */
   const handleButtonClick = (buttonType) => {
     setActiveButton(buttonType); // 버튼 클릭 시 상태 업데이트
   };
@@ -133,7 +159,7 @@ function NumberInput() {
 
       <div className="availability">
       <span onClick={handleFinishClick} className="left-arrow">◄</span>
-        <span>My Availability</span>
+        <span>Availability for {userName || "User"} (ID: {userId || "N/A"})</span>
         
       </div>
       <div id="insert-type">
