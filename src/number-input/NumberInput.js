@@ -5,9 +5,17 @@ import './NumberInput.css';
 
 function NumberInput() {
   const location = useLocation();
-  const userId = location.state?.user;
-  const userName = location.state?.name;
 
+  // 전달된 state 객체 확인
+  console.log("Location state:", location.state);
+
+  // userId와 userName을 가져오되, state가 undefined일 경우 기본값으로 null을 설정
+  const userId = location.state?.user ?? null;
+  const userName = location.state?.name ?? "Unknown User";
+
+  // userId와 userName 출력
+  console.log("Received userId:", userId);
+  console.log("Received userName:", userName);
   const daysOfWeek = ["Oct 15 Tue", "Oct 16 Wed", "Oct 17 Thu", "Oct 18 Fri", "Oct 19 Sat", "Oct 20 Sun", "Oct 21 Mon"];
   const [selectedDay, setSelectedDay] = useState(""); // 선택된 요일
   const [availability, setAvailability] = useState({}); // 각 요일별 시간 목록
@@ -16,9 +24,12 @@ function NumberInput() {
   
   useEffect(() => {
     const fetchAvailability = async () => {
-      if (!userId) return;
+      if (!userName) return; // userName이 없는 경우 요청을 보내지 않음
+    
+      console.log(`Fetching availability with URL: http://43.201.144.53/api/v1/availability/${userName}`);
+    
       try {
-        const response = await axios.get(`http://43.201.144.53/api/v1/availability/${userId}`);
+        const response = await axios.get(`http://43.201.144.53/api/v1/availability/${userName}`);
         const fetchedAvailability = response.data.reduce((acc, curr) => {
           const day = daysOfWeek[curr.days - 1];
           acc[day] = acc[day] || [];
@@ -27,13 +38,20 @@ function NumberInput() {
         }, {});
         setAvailability(fetchedAvailability);
       } catch (error) {
-        console.error('Failed to fetch availability', error);
+        if (error.response && error.response.status === 404) {
+          console.warn("No availability data found for this user.");
+          setAvailability({}); // 기본 빈 객체로 설정
+        } else {
+          console.error('Failed to fetch availability', error);
+        }
       }
     };
-
+    
+  
     fetchAvailability();
   }, [userId]);
-
+  
+  
   /*여기서부터는 원래 코드 */
   const handleButtonClick = (buttonType) => {
     setActiveButton(buttonType); // 버튼 클릭 시 상태 업데이트
@@ -159,7 +177,7 @@ function NumberInput() {
 
       <div className="availability">
       <span onClick={handleFinishClick} className="left-arrow">◄</span>
-        <span>Availability for {userName || "User"} (ID: {userId || "N/A"})</span>
+        <span>Availability for {userName || "User"}</span>
         
       </div>
       <div id="insert-type">
