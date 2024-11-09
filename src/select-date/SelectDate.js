@@ -13,12 +13,26 @@ const SelectDate = () => {
   const [request, setRequest] = useState({});
 
   const createEvent = () => {
-    console.log(name);
     if (!name) {
       alert("Please write the event name.");
       inputRef.current.focus();
       return;
     }
+    if (!request.days.length) {
+      alert("Choose the Dates/Days.");
+      return;
+    }
+    if (!request.start_time || !request.end_time) {
+      alert("Please write the time.");
+      return;
+    }
+    const startTime = parseInt(request.start_time.slice(0, 2));
+    const endTime = parseInt(request.end_time.slice(0, 2));
+    if (startTime >= endTime) {
+      alert("End time must be greater than start time.");
+      return;
+    }
+
     setRequest((prev) => ({ ...prev, name }));
     console.log(request);
   };
@@ -39,7 +53,7 @@ const SelectDate = () => {
       ) : (
         <SelectDays setRequest={setRequest} />
       )}
-      <SelectTimes />
+      <SelectTimes setRequest={setRequest} />
       <CreateBtn onClick={createEvent}>Create Event</CreateBtn>
     </Wrapper>
   );
