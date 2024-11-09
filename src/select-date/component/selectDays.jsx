@@ -1,18 +1,27 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 
-const dayArr = ["S", "M", "T", "W", "T", "F", "S"];
+const dayArr = ["Sun", "Mon", "Tue", "Wed", "Thr", "Fri", "Sat"];
 
-const SelectDays = () => {
+const SelectDays = ({ setRequest }) => {
   const basicColor = "#D9D9D9";
   const specialColor = "#423e59";
-  const initialBtn = Array(28).fill(false);
+  const initialBtn = Array(7).fill(false);
   const [btn, setBtn] = useState(initialBtn);
 
   const handleClick = (e) => {
     const idx = Number(e.target.id);
     setBtn((prev) => prev.map((state, i) => (i === idx ? !state : state)));
   };
+
+  // handleClick 후 실행
+  useEffect(() => {
+    const tempArr = [];
+    btn.map((elt, idx) => {
+      if (elt) tempArr.push({ day: dayArr[idx] });
+    });
+    setRequest({ days: tempArr });
+  }, [btn]);
 
   return (
     <Container>
@@ -27,7 +36,7 @@ const SelectDays = () => {
               color={btn[idx] ? basicColor : specialColor}
               $bgcolor={btn[idx] ? specialColor : basicColor}
             >
-              {day}
+              {day[0]}
             </DateBox>
           );
         })}

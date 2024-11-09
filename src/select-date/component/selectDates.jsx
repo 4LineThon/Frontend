@@ -18,27 +18,39 @@ const monthNames = [
   "Dec",
 ];
 
-const SelectDates = () => {
+const SelectDates = ({ setRequest }) => {
   const basicColor = "#D9D9D9";
   const specialColor = "#423e59";
   const initialBtn = Array(28).fill(false);
   const [btn, setBtn] = useState(initialBtn);
+  const [year, setYear] = useState(0);
   const [month, setMonth] = useState("");
   const [days, setDays] = useState([]);
   const [dates, setDates] = useState([]);
+  const [response, setResponse] = useState([]);
 
   const handleClick = (e) => {
     const idx = Number(e.target.id);
     setBtn((prev) => prev.map((state, i) => (i === idx ? !state : state)));
   };
 
+  // handleClick 후 실행
+  useEffect(() => {
+    const request = response.filter((_, idx) => btn[idx]);
+    setRequest({ days: request });
+  }, [btn, response]);
+
+  // 데이터 불러오기
   useEffect(() => {
     const setCalendar = async () => {
       try {
         const response = await axios.get(`/api/v1/group/today`);
         const data = response.data;
-        console.log(data);
-        // 월 설정
+
+        // 연도 세팅
+        setYear(data[0].year);
+
+        // 월 세팅
         const firstMonth = monthNames[data[0].month];
         const lastMonth = monthNames[data[data.length - 1].month];
         setMonth(
@@ -52,6 +64,19 @@ const SelectDates = () => {
         // 날짜 세팅
         const dateArr = data.map((item) => item.day);
         setDates(dateArr);
+
+        // 응답 보내기 좋게 미리 data 변경
+        const tempArr = [];
+        data.map((elt) => {
+          const date = `${String(elt.year)}-${String(elt.month).padStart(
+            2,
+            "0"
+          )}-${String(elt.day).padStart(2, "0")}`;
+          const day = elt.weekday;
+          const days = { date, day };
+          tempArr.push(days);
+        });
+        setResponse(tempArr);
       } catch (error) {
         console.log(error);
       }
@@ -61,7 +86,9 @@ const SelectDates = () => {
 
   return (
     <Container>
-      <MonthBox>2024 {month}</MonthBox>
+      <MonthBox>
+        {year} {month}
+      </MonthBox>
       <CalendarContainer>
         {days.map((day, idx) => {
           return <DayBox key={idx}>{day}</DayBox>;

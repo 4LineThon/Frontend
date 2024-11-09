@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import styled from "styled-components";
 import SelectTimes from "./component/selectTimes";
 import SelectDates from "./component/selectDates";
@@ -8,15 +8,39 @@ import SelectDays from "./component/selectDays";
 
 const SelectDate = () => {
   const [selected, setSelected] = useState("Dates");
+  const [name, setName] = useState("");
+  const inputRef = useRef(null);
+  const [request, setRequest] = useState({});
+
+  const createEvent = () => {
+    console.log(name);
+    if (!name) {
+      alert("Please write the event name.");
+      inputRef.current.focus();
+      return;
+    }
+    setRequest((prev) => ({ ...prev, name }));
+    console.log(request);
+  };
 
   return (
     <Wrapper>
       <Logo />
-      <EventName maxLength={10} placeholder="new event name" />
+      <EventName
+        maxLength={10}
+        placeholder="new event name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        ref={inputRef}
+      />
       <ChooseDatesOrDays selected={selected} setSelected={setSelected} />
-      {selected === "Dates" ? <SelectDates /> : <SelectDays />}
+      {selected === "Dates" ? (
+        <SelectDates setRequest={setRequest} />
+      ) : (
+        <SelectDays setRequest={setRequest} />
+      )}
       <SelectTimes />
-      <CreateBtn>Create Event</CreateBtn>
+      <CreateBtn onClick={createEvent}>Create Event</CreateBtn>
     </Wrapper>
   );
 };
