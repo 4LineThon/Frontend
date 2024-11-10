@@ -32,7 +32,7 @@ function NumberInput() {
       console.log(`Fetching availability with URL: http://43.201.144.53/api/v1/availability/${userName}`);
     
       try {
-        const response = await axios.get(`http://43.201.144.53/api/v1/availability/${userName}`);
+        const response = await axios.get(`http://43.201.144.53/api/v1/availability/${userId}`);
         const fetchedAvailability = response.data.reduce((acc, curr) => {
           const day = daysOfWeek[curr.days - 1];
           acc[day] = acc[day] || [];
