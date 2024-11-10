@@ -96,7 +96,16 @@ function NumberInput() {
   };
 
   const saveAvailability = () => {
-    console.log('Saving availability:', availability);
+    const savedTimes = [];
+  
+    // Collect all time ranges from availability
+    Object.keys(availability).forEach((day) => {
+      availability[day].forEach((range) => {
+        savedTimes.push({ day, start: range.start, end: range.end });
+      });
+    });
+  
+    console.log("Saved time:", savedTimes);
   };
 
   return (
