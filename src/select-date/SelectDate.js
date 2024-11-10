@@ -6,12 +6,16 @@ import Logo from "./component/logo";
 import ChooseDatesOrDays from "./component/chooseDatesOrDays";
 import SelectDays from "./component/selectDays";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import Explanation from "../explanation/explanation";
 
 const SelectDate = () => {
   const [selected, setSelected] = useState("Dates");
   const [name, setName] = useState("");
   const inputRef = useRef(null);
   const [request, setRequest] = useState({});
+  const navigate = useNavigate();
+  const explanation = ["Please select the date for scheduling."];
 
   const updateRequest = (field, value) => {
     setRequest((prev) => ({
@@ -47,6 +51,7 @@ const SelectDate = () => {
 
     // axios 연동
     postGroup({ ...request, name });
+    navigate("/Login");
   };
 
   const postGroup = async (data) => {
@@ -79,6 +84,7 @@ const SelectDate = () => {
       )}
       <SelectTimes updateRequest={updateRequest} />
       <CreateBtn onClick={createEvent}>Create Event</CreateBtn>
+      <Explanation textArr={explanation} />
     </Wrapper>
   );
 };
@@ -117,7 +123,6 @@ const CreateBtn = styled.div`
   width: 197px;
   height: 38px;
   margin-top: 51px;
-  margin-bottom: 49px;
   display: flex;
   justify-content: center;
   align-items: center;

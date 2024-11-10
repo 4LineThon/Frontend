@@ -1,18 +1,22 @@
 import React from "react";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  Navigate,
+  RouterProvider,
+} from "react-router-dom";
 import Minju from "./minju/Minju";
 import NumberInput from "./number-input/NumberInput";
 import SelectDate from "./select-date/SelectDate";
 import NumberInputDay from "./number-input(day)/NumberInputDay";
 import LogIn from "./login/login";
-import Home from "./Home";
 import "./App.css";
 import GroupAvailability from "./groupAvailability/GroupAvailability";
 import Result from "./result/Result";
+
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Home />,
+    element: <Navigate to="/SelectDate" />,
   },
   {
     path: "/minju",
@@ -41,7 +45,7 @@ const router = createBrowserRouter([
   {
     path: "/Result",
     element: <Result />,
-  }
+  },
 ]);
 
 function App() {
