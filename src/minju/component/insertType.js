@@ -1,8 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const InsertType = () => {
   const [selected, setSelected] = useState('Finger'); // 기본 선택을 'Finger'로 설정
-
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (selected === 'Number') {
+      navigate('/NumberInput');
+    }
+  }, [selected, navigate]);
   return (
     <div style={styles.container}>
       <span style={styles.label}>Insert Type</span>
@@ -28,26 +34,35 @@ const styles = {
   container: {
     display: 'flex',
     alignItems: 'center',
+    justifyContent: 'center', // Center alignment for the whole container
+    gap: '16px', // Space between label and buttons
   },
   label: {
     color: '#423E59',
     textAlign: 'center',
     fontFamily: '"Ibarra Real Nova"',
-    fontSize: '20px',
+    fontSize: '18px', // Slightly reduced font size
+    fontStyle: 'normal',
     fontWeight: 400,
     lineHeight: 'normal',
-    marginRight: '8px', // 버튼과 간격 조정
+    width: '90px', // Reduced width
+    height: '20px', // Reduced height
+    flexShrink: 0,
   },
   buttonsContainer: {
     display: 'flex',
+    gap: '6px', // Reduced gap between buttons
+    alignItems: 'center', // Center alignment within the button container
+    justifyContent: 'center',
   },
   button: {
-    width: '103px',
-    height: '32px',
+    width: '90px', // Reduced width to make it more compact
+    height: '28px', // Reduced height
     backgroundColor: 'transparent',
     color: '#423E59',
     fontFamily: '"Ibarra Real Nova"',
-    fontSize: '20px',
+    fontSize: '18px', // Slightly smaller font size
+    fontStyle: 'normal',
     fontWeight: 400,
     lineHeight: 'normal',
     border: '2px solid #423E59',
@@ -57,12 +72,13 @@ const styles = {
     cursor: 'pointer',
   },
   selectedButton: {
-    width: '103px',
-    height: '32px',
+    width: '90px',
+    height: '28px',
     backgroundColor: '#423E59',
     color: '#ffffff',
     fontFamily: '"Ibarra Real Nova"',
-    fontSize: '20px',
+    fontSize: '18px',
+    fontStyle: 'normal',
     fontWeight: 400,
     lineHeight: 'normal',
     border: '2px solid #423E59',
