@@ -1,14 +1,12 @@
 import React, { useState } from "react";
 import "./login.css";
 import { useNavigate, useLocation } from "react-router-dom";
-import axios from "axios";
 import Explanation from "../explanation/explanation";
 import LoginHeader from "./loginHeader";
 
 function LogIn() {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
-  const [groupId, setGroupId] = useState(1);
   const navigate = useNavigate();
   const location = useLocation();
   const explanation = [
@@ -20,58 +18,36 @@ function LogIn() {
     "please sign in using the same Name/Password.",
   ];
 
-  const api = axios.create({
-    baseURL: "http://43.201.144.53/api/v1",
-  });
-
-  // Retrieve `dates` and `days` from location state
+  // Retrieve `dates`, `days`, `start_time`, and `end_time` from location state
   const dates = location.state?.dates ?? null;
   const days = location.state?.days ?? null;
+  const startTime = location.state?.start_time ?? null;
+  const endTime = location.state?.end_time ?? null;
 
-  const handleLogin = async () => {
+  console.log("Received start time:", startTime);
+  console.log("Received end time:", endTime);
+
+  const handleLogin = () => {
     if (!name) {
       alert("Please enter your name.");
       return;
     }
 
-    try {
-      // Login request
-      const response = await axios.post(`/api/v1/group/${groupId}/login`, {
-        name: name,
-        password: password || "",
-      });
+    // Show welcome message
+    alert(`Welcome, ${name}!`);
 
-      const { id, name: responseName } = response.data;
+    // Determine whether `days` contains only `day` or both `date` and `day`
+    const containsDates = days?.every(item => item.date);
 
-      if (id) {
-        alert(`Welcome, ${responseName}!`);
-        
-        // Determine whether `days` contains only `day` or both `date` and `day`
-        const containsDates = days?.every(item => item.date);
-
-        // Navigate based on the presence of `date` fields
-        if (containsDates) {
-          // Navigate to `/NumberInput` if `dates` and `days` are both present
-          console.log("Navigating to /NumberInput with dates:", dates, "and days:", days);
-          navigate("/NumberInput", { state: { user: id, name: responseName, dates: days } });
-        } else {
-          // Navigate to `/NumberInputDay` if only `day` is present
-          navigate("/NumberInputDay", { state: { user: id, name: responseName, days } });
-        }
-      } else {
-        alert("Login failed. Please check your credentials.");
-      }
-    } catch (error) {
-      console.error("Error logging in:", error);
-      if (error.response) {
-        alert(
-          `An error occurred while logging in: ${
-            error.message || "Please try again."
-          }`
-        );
-      } else {
-        alert("An error occurred while logging in. Please try again.");
-      }
+    // Navigate based on the presence of `date` fields
+    if (containsDates) {
+      console.log("Navigating to /NumberInput with dates:", dates, "and days:", days);
+      console.log("Start Time:", startTime);
+      console.log("End Time:", endTime);
+      navigate("/NumberInput", { state: { user: name, name, dates: days, start_time: startTime, end_time: endTime } });
+    } else {
+      console.log("Navigating to /NumberInputDay with days only:", days);
+      navigate("/NumberInputDay", { state: { user: name, name, days, start_time: startTime, end_time: endTime } });
     }
   };
 

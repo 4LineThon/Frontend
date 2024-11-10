@@ -11,14 +11,10 @@ function NumberInput() {
   const location = useLocation();
   const userId = location.state?.user ?? null;
   const userName = location.state?.name ?? "Unknown User";
-
+  const startTime = location.state?.start_time ?? "09:00"; // Default start time if not provided
+  const endTime = location.state?.end_time ?? "18:00";     // Default end time if not provided
 
   const daysOfWeek = location.state?.dates ?? [];
-
-  // Extract only the day names if needed
-  const dayNames = daysOfWeek.map(dateObj => dateObj.day);
-  console.log(dayNames);
-
   const [availability, setAvailability] = useState({});
   const [selectedDay, setSelectedDay] = useState("");
 
@@ -34,12 +30,9 @@ function NumberInput() {
           acc[day].push({ start: curr.time_from, end: curr.time_to });
           return acc;
         }, {});
-        console.log("User ID:", userId); 
-        console.log("Fetched availability data:", response.data);
         setAvailability(fetchedAvailability);
       } catch (error) {
         if (error.response && error.response.status === 404) {
-          console.warn("No availability data found for this user.");
           setAvailability({});
         } else {
           console.error('Failed to fetch availability', error);
@@ -49,6 +42,21 @@ function NumberInput() {
 
     fetchAvailability();
   }, [userId]);
+
+  const generateTimeOptions = (start, end) => {
+    const times = [];
+    let currentTime = new Date(`1970-01-01T${start}`);
+    const endTime = new Date(`1970-01-01T${end}`);
+
+    while (currentTime <= endTime) {
+      times.push(currentTime.toTimeString().slice(0, 5)); // Format to HH:MM
+      currentTime.setMinutes(currentTime.getMinutes() + 30); // Increment by 30 minutes
+    }
+
+    return times;
+  };
+
+  const timeOptions = generateTimeOptions(startTime, endTime);
 
   const handleDayChange = (event) => {
     setSelectedDay(event.target.value);
@@ -103,22 +111,23 @@ function NumberInput() {
           <select value={selectedDay} onChange={handleDayChange} className="select-list">
             <option value="">Select Date</option>
             {daysOfWeek.map((dateObj, index) => (
-    <option key={index} value={`${dateObj.date} ${dateObj.day}`}>
-      {`${dateObj.date} (${dateObj.day})`}
-    </option>
-  ))}
-</select>
+              <option key={index} value={`${dateObj.date} ${dateObj.day}`}>
+                {`${dateObj.date} (${dateObj.day})`}
+              </option>
+            ))}
+          </select>
         </div>
         <button className="btnPlus" onClick={addTimeRange}>+</button>
       </div>
 
-      {/* 조건부 렌더링으로 availability가 존재할 때만 TimeSelector 렌더링 */}
+      {/* Render TimeSelector with availability data and generated time options */}
       {availability && Object.keys(availability).length > 0 && (
         <TimeSelector 
           availability={availability} 
           handleStartChange={handleStartChange} 
           handleEndChange={handleEndChange} 
-          deleteTimeRange={deleteTimeRange} 
+          deleteTimeRange={deleteTimeRange}
+          timeOptions={timeOptions}
         />
       )}
 

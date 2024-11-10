@@ -1,13 +1,13 @@
 import React from 'react';
 
-const TimeSelector = ({ availability, handleStartChange, handleEndChange, deleteTimeRange }) => {
+const TimeSelector = ({ availability, handleStartChange, handleEndChange, deleteTimeRange, timeOptions }) => {
   return (
     <div>
-      {/* availability의 키가 존재하는지 확인 후 렌더링 */}
+      {/* Check if availability has keys and render */}
       {availability && Object.keys(availability).map((day) => (
         <div key={day} className="time-range">
           <h3 className="specific-date">{day}</h3>
-          {/* availability[day]가 배열인지 확인 */}
+          {/* Check if availability[day] is an array */}
           {Array.isArray(availability[day]) && availability[day].map((range, index) => (
             <div key={index} className="date-row">
               <div className="list-container">
@@ -17,8 +17,10 @@ const TimeSelector = ({ availability, handleStartChange, handleEndChange, delete
                   onChange={(e) => handleStartChange(day, index, e)}
                 >
                   <option className="choose" value="-1">Choose</option>
-                  {/* 시간 옵션을 여기에 추가 */}
-                  {/* 예: timeOptions.map((time) => (<option key={time} value={time}>{time}</option>)) */}
+                  {/* Map over timeOptions to populate start time options */}
+                  {timeOptions.map((time) => (
+                    <option key={time} value={time}>{time}</option>
+                  ))}
                 </select>
               </div>
               <span className="to">To</span>
@@ -29,7 +31,10 @@ const TimeSelector = ({ availability, handleStartChange, handleEndChange, delete
                   onChange={(e) => handleEndChange(day, index, e)}
                 >
                   <option className="choose" value="-1">Choose</option>
-                  {/* 시간 옵션을 여기에 추가 */}
+                  {/* Map over timeOptions to populate end time options */}
+                  {timeOptions.map((time) => (
+                    <option key={time} value={time}>{time}</option>
+                  ))}
                 </select>
               </div>
               
