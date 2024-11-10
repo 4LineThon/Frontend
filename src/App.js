@@ -8,7 +8,7 @@ import LogIn from "./login/login";
 import Home from "./Home";
 import "./App.css";
 import GroupAvailability from "./groupAvailability/GroupAvailability";
-
+import Result from "./result/Result";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -19,7 +19,7 @@ const router = createBrowserRouter([
     element: <Minju />,
   },
   {
-    path: "/groupAvailability",
+    path: "/GroupAvailability",
     element: <GroupAvailability />,
   },
   {
@@ -37,6 +37,10 @@ const router = createBrowserRouter([
   {
     path: "/LogIn",
     element: <LogIn />,
+  },
+  {
+    path: "/Result",
+    element: <Result />,
   }
 ]);
 
