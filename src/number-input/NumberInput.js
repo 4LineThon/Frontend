@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import AvailabilityHeader from "../minju/component/AvailabilityHeader";
+import AvailabilityHeader2 from './Availability Header2';
 import axios from 'axios';
 import Logo from "../minju/component/logo";
 import InsertType from '../minju/component/insertType';
@@ -173,7 +173,7 @@ function NumberInput() {
   return (
     <div className="big-container">
     <Logo/>
-<AvailabilityHeader text="My Availability" arrowDirection="left" navigateTo="/groupAvailability" />
+<AvailabilityHeader2 text="My Availability" arrowDirection="left" navigateTo="/groupAvailability" />
 <InsertType />
 
       

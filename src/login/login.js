@@ -3,6 +3,7 @@ import "./login.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Explanation from "../explanation/explanation";
+import AvailabilityHeader from "../minju/component/AvailabilityHeader";
 
 function LogIn() {
   const [name, setName] = useState("");
@@ -65,12 +66,7 @@ function LogIn() {
         <h2>4LINETHON</h2>
       </div>
 
-      <div className="availability">
-        <span onClick={() => navigate("/minju")} className="left-arrow">
-          ◄
-        </span>
-        <span>My Availability</span>
-      </div>
+      <AvailabilityHeader />
 
       <div className="login-form">
         <div className="name-container">
