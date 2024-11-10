@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import axios from 'axios';
 import AvailabilityHeader2 from './components/Availability Header2';
 import Logo from "../minju/component/logo";
 import InsertType from '../minju/component/insertType';
@@ -17,31 +16,6 @@ function NumberInput() {
   const daysOfWeek = location.state?.dates ?? [];
   const [availability, setAvailability] = useState({});
   const [selectedDay, setSelectedDay] = useState("");
-
-  useEffect(() => {
-    const fetchAvailability = async () => {
-      if (!userId) return;
-
-      try {
-        const response = await axios.get(`http://43.201.144.53/api/v1/availability/${userId}`);
-        const fetchedAvailability = response.data.reduce((acc, curr) => {
-          const day = daysOfWeek[curr.days - 1];
-          acc[day] = acc[day] || [];
-          acc[day].push({ start: curr.time_from, end: curr.time_to });
-          return acc;
-        }, {});
-        setAvailability(fetchedAvailability);
-      } catch (error) {
-        if (error.response && error.response.status === 404) {
-          setAvailability({});
-        } else {
-          console.error('Failed to fetch availability', error);
-        }
-      }
-    };
-
-    fetchAvailability();
-  }, [userId]);
 
   const generateTimeOptions = (start, end) => {
     const times = [];

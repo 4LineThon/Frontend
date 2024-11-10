@@ -24,8 +24,6 @@ function LogIn() {
   const startTime = location.state?.start_time ?? null;
   const endTime = location.state?.end_time ?? null;
 
-  console.log("Received start time:", startTime);
-  console.log("Received end time:", endTime);
 
   const handleLogin = () => {
     if (!name) {

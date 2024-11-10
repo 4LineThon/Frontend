@@ -60,10 +60,6 @@ const SelectDate = () => {
            "Content-Type": "application/json",
          },
        });
-       console.log("Event created successfully with the following details:");
-       console.log("Days:", request.days);
-       console.log("Start Time:", request.start_time);
-       console.log("End Time:", request.end_time);
        navigate("/Login", { state: { days: request.days, start_time: request.start_time, end_time: request.end_time }});
       } catch (e) {
         console.log(e);
