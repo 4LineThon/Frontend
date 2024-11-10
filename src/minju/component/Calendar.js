@@ -1,19 +1,67 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import styled from "styled-components";
+import axios from "axios";
 
 const days = ["S", "M", "T", "W", "T", "F", "S"];
 const dates = ["Oct15", "Oct16", "Oct17", "Oct18", "Oct19", "Oct20", "Oct21"];
-const times = [
-  "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00",
-  "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30",
-  "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30",
+const times = ["10:00","10:30","11:00","11:30","12:00","12:30","13:00",
+  "13:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00",
+  "17:30","18:00","18:30","19:00","19:30","20:00","20:30",
 ];
 
-const Calendar = () => {
+const Calendar = ({ onChange = () => {} }) => { // 기본값으로 빈 함수 설정
   const [gridState, setGridState] = useState(
-    Array(22).fill().map(() => Array(7).fill(false))
+    Array(22)
+      .fill()
+      .map(() => Array(7).fill(false))
   );
   const [isDragging, setIsDragging] = useState(false);
   const [currentState, setCurrentState] = useState(false);
+
+  useEffect(() => {
+    onChange(gridState); // gridState 변경 시 onChange 호출
+  }, [gridState, onChange]);
+
+  const [countState, setCountState] = useState(
+    Array(22)
+      .fill()
+      .map(() => Array(7).fill(0))
+  );
+
+  const handleSave = async () => {
+    const userId = 3; // 유저 ID 고정 값
+    const dayIds = [1, 2, 3, 4, 5, 6, 7]; // days ID (일요일부터 토요일까지)
+
+    for (let dayIndex = 0; dayIndex < dayIds.length; dayIndex++) {
+      for (let timeIndex = 0; timeIndex < times.length; timeIndex++) {
+        if (gridState[timeIndex][dayIndex]) {
+          const time = times[timeIndex];
+          const timeFrom = `${time}:00`;
+          const timeTo = `${times[timeIndex + 1]}:00` || timeFrom;
+
+          const dataToSend = {
+            days: dayIds[dayIndex],
+            user: userId,
+            time_from: timeFrom,
+            time_to: timeTo,
+          };
+
+          console.log("Sending data:", JSON.stringify(dataToSend, null, 2));
+
+          try {
+            const response = await axios.post("/api/v1/availability", dataToSend, {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            });
+            console.log("Response from server:", response.data);
+          } catch (error) {
+            console.error("Error saving data:", error);
+          }
+        }
+      }
+    }
+  };
 
   const handleMouseDown = (timeIndex, dayIndex) => {
     setIsDragging(true);
@@ -33,11 +81,26 @@ const Calendar = () => {
   };
 
   const toggleCell = (timeIndex, dayIndex, state) => {
-    setGridState(prevGrid => 
+    setGridState((prevGrid) =>
       prevGrid.map((row, rowIndex) =>
-        row.map((cell, cellIndex) => 
+        row.map((cell, cellIndex) =>
           rowIndex === timeIndex && cellIndex === dayIndex ? state : cell
         )
+      )
+    );
+
+    setCountState((prevCount) =>
+      prevCount.map((row, rowIndex) =>
+        row.map((count, cellIndex) => {
+          if (rowIndex === timeIndex && cellIndex === dayIndex) {
+            if (state && count === 0) {
+              return count + 1;
+            } else if (!state && count > 0) {
+              return count - 1;
+            }
+          }
+          return count;
+        })
       )
     );
   };
@@ -50,7 +113,6 @@ const Calendar = () => {
         viewBox="0 0 320 450"
         xmlns="http://www.w3.org/2000/svg"
       >
-        {/* 날짜와 요일 표시 */}
         {dates.map((date, i) => (
           <text
             key={i}
@@ -76,7 +138,6 @@ const Calendar = () => {
           </text>
         ))}
 
-        {/* 시간 표시 */}
         {times.map((time, i) => (
           <text
             key={i}
@@ -90,52 +151,63 @@ const Calendar = () => {
           </text>
         ))}
 
-        {/* 그리드 생성 */}
-        {Array(22).fill().map((_, timeIndex) =>
-          days.map((_, dayIndex) => (
-            <g
-              key={`${timeIndex}-${dayIndex}`}
-              onMouseDown={() => handleMouseDown(timeIndex, dayIndex)}
-              onMouseOver={() => handleMouseOver(timeIndex, dayIndex)}
-            >
-              <rect
-                x={50 + dayIndex * 36}
-                y={45 + timeIndex * 18}
-                width="36"
-                height="18"
-                fill={gridState[timeIndex][dayIndex] ? "#423E59" : "#D9D9D9"}
-                fillOpacity={gridState[timeIndex][dayIndex] ? 0.8 : 1}
-                stroke="#423E59"
-                strokeWidth="1"
-              />
-              
-              {/* 점선 추가 */}
-              {timeIndex % 2 === 1 && (
-                <line
-                  x1={50 + dayIndex * 36}
-                  y1={63 + (timeIndex - 1) * 18}
-                  x2={86 + dayIndex * 36}
-                  y2={63 + (timeIndex - 1) * 18}
+        {Array(22)
+          .fill()
+          .map((_, timeIndex) =>
+            days.map((_, dayIndex) => (
+              <g
+                key={`${timeIndex}-${dayIndex}`}
+                onMouseDown={() => handleMouseDown(timeIndex, dayIndex)}
+                onMouseOver={() => handleMouseOver(timeIndex, dayIndex)}
+              >
+                <rect
+                  x={50 + dayIndex * 36}
+                  y={45 + timeIndex * 18}
+                  width="36"
+                  height="18"
+                  fill={gridState[timeIndex][dayIndex] ? "#423E59" : "#D9D9D9"}
+                  fillOpacity={gridState[timeIndex][dayIndex] ? 0.8 : 1}
                   stroke="#423E59"
-                  strokeDasharray="2 2"
-                  strokeWidth="0.5"
+                  strokeWidth="1"
                 />
-              )}
-            </g>
-          ))
-        )}
+                {timeIndex % 2 === 1 && (
+                  <line
+                    x1={50 + dayIndex * 36}
+                    y1={63 + (timeIndex - 1) * 18}
+                    x2={86 + dayIndex * 36}
+                    y2={63 + (timeIndex - 1) * 18}
+                    stroke="#423E59"
+                    strokeDasharray="2 2"
+                    strokeWidth="0.5"
+                  />
+                )}
+              </g>
+            ))
+          )}
       </svg>
+      <button onClick={handleSave} style={styles.saveButton}>
+        Save
+      </button>
     </div>
   );
 };
 
 const styles = {
   container: {
-    display: 'flex',
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    marginTop: '20px', 
-    marginBottom: '0px', 
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    marginTop: "20px",
+    marginBottom: "0px",
+  },
+  saveButton: {
+    marginTop: "20px",
+    padding: "10px 20px",
+    fontSize: "16px",
+    backgroundColor: "#423E59",
+    color: "#fff",
+    border: "none",
+    cursor: "pointer",
   },
 };
 
