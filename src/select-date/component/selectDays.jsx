@@ -1,19 +1,27 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { Title } from "./title";
 
-const dayArr = ["S", "M", "T", "W", "T", "F", "S"];
+const dayArr = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-const SelectDays = () => {
+const SelectDays = ({ updateRequest }) => {
   const basicColor = "#D9D9D9";
   const specialColor = "#423e59";
-  const initialBtn = Array(28).fill(false);
+  const initialBtn = Array(7).fill(false);
   const [btn, setBtn] = useState(initialBtn);
 
   const handleClick = (e) => {
     const idx = Number(e.target.id);
     setBtn((prev) => prev.map((state, i) => (i === idx ? !state : state)));
   };
+
+  // handleClick 후 실행
+  useEffect(() => {
+    const tempArr = [];
+    btn.map((elt, idx) => {
+      if (elt) tempArr.push({ day: dayArr[idx] });
+    });
+    updateRequest("days", tempArr);
+  }, [btn]);
 
   return (
     <Container>
@@ -28,7 +36,7 @@ const SelectDays = () => {
               color={btn[idx] ? basicColor : specialColor}
               $bgcolor={btn[idx] ? specialColor : basicColor}
             >
-              {day}
+              {day[0]}
             </DateBox>
           );
         })}
@@ -71,14 +79,4 @@ const DateBox = styled.button`
   font-size: 24px;
   cursor: pointer;
   font-family: "Ibarra Real Nova", serif;
-`;
-
-const DayBox = styled.div`
-  width: 38px;
-  height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #423e59;
-  font-size: 24px;
 `;
