@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
-import AvailabilityHeader2 from "./components/AvailabilityHeader2";
+import AvailabilityHeader2 from './components/Availability Header2';
 import Logo from "../minju/component/logo";
 import InsertType from '../minju/component/insertType';
 import TimeSelector from './components/TimeSelector';
@@ -12,7 +12,13 @@ function NumberInput() {
   const userId = location.state?.user ?? null;
   const userName = location.state?.name ?? "Unknown User";
 
-  const daysOfWeek = ["Oct 15 Tue", "Oct 16 Wed", "Oct 17 Thu", "Oct 18 Fri", "Oct 19 Sat", "Oct 20 Sun", "Oct 21 Mon"];
+
+  const daysOfWeek = location.state?.dates ?? [];
+
+  // Extract only the day names if needed
+  const dayNames = daysOfWeek.map(dateObj => dateObj.day);
+  console.log(dayNames);
+
   const [availability, setAvailability] = useState({});
   const [selectedDay, setSelectedDay] = useState("");
 
@@ -96,10 +102,12 @@ function NumberInput() {
         <div className="select-list-container">
           <select value={selectedDay} onChange={handleDayChange} className="select-list">
             <option value="">Select Date</option>
-            {daysOfWeek.map((day) => (
-              <option key={day} value={day}>{day}</option>
-            ))}
-          </select>
+            {daysOfWeek.map((dateObj, index) => (
+    <option key={index} value={`${dateObj.date} ${dateObj.day}`}>
+      {`${dateObj.date} (${dateObj.day})`}
+    </option>
+  ))}
+</select>
         </div>
         <button className="btnPlus" onClick={addTimeRange}>+</button>
       </div>

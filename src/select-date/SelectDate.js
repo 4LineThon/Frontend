@@ -60,6 +60,7 @@ const SelectDate = () => {
            "Content-Type": "application/json",
          },
        });
+       console.log("Event created successfully with the following dates or days:", request.days);
        navigate("/Login", { state: { days: request.days }});
       } catch (e) {
         console.log(e);

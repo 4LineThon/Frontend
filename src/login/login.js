@@ -52,7 +52,8 @@ function LogIn() {
         // Navigate based on the presence of `date` fields
         if (containsDates) {
           // Navigate to `/NumberInput` if `dates` and `days` are both present
-          navigate("/NumberInput", { state: { user: id, name: responseName, dates, days } });
+          console.log("Navigating to /NumberInput with dates:", dates, "and days:", days);
+          navigate("/NumberInput", { state: { user: id, name: responseName, dates: days } });
         } else {
           // Navigate to `/NumberInputDay` if only `day` is present
           navigate("/NumberInputDay", { state: { user: id, name: responseName, days } });
