@@ -53,7 +53,6 @@ const SelectDate = () => {
     postGroup({ ...request, name });
     navigate("/Login");
   };
-
   const postGroup = async (data) => {
     try {
       await axios.post(`/api/v1/group`, data, {
@@ -61,8 +60,10 @@ const SelectDate = () => {
           "Content-Type": "application/json",
         },
       });
+      console.log("Event created successfully with the following dates or days:", request.days);
+      navigate("/Login");
     } catch (e) {
-      console.log(e);
+      console.error("Failed to post event:", e);
     }
   };
 
