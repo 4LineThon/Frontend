@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import AvailabilityHeader from "../minju/component/AvailabilityHeader";
 import axios from 'axios';
+import Logo from "../minju/component/logo";
+import InsertType from '../minju/component/insertType';
 import './NumberInput.css';
 
 function NumberInput() {
@@ -169,34 +172,11 @@ function NumberInput() {
 
   return (
     <div className="big-container">
+    <Logo/>
+<AvailabilityHeader text="My Availability" arrowDirection="left" navigateTo="/groupAvailability" />
+<InsertType />
 
-      <div className="header">
-        <h1>Timi</h1>
-        <h2>4LINETHON</h2>
-      </div>
-
-      <div className="availability">
-      <span onClick={handleFinishClick} className="left-arrow">◄</span>
-        <span>Availability for {userName || "User"}</span>
-        
-      </div>
-      <div id="insert-type">
-        <span className="type-label">Insert Type</span>
-        <div className="buttons-container">
-          <button 
-            className={`type-button fingerButton ${activeButton === 'finger' ? 'active' : 'inactive'}`}
-            onClick={handleFingerClick} // Finger 버튼 클릭 이벤트 핸들러
-          >
-            Finger
-          </button>
-          <button 
-            className={`type-button numberButton ${activeButton === 'number' ? 'active' : 'inactive'}`}
-            onClick={() => handleButtonClick('number')}
-          >
-            Number
-          </button>
-        </div>
-      </div>
+      
 
       <div>
         {/* 날짜 선택 드롭다운 */}
@@ -227,7 +207,7 @@ function NumberInput() {
                       value={range.start}
                       onChange={(e) => handleStartChange(day, index, e)}
                     >
-                      <option value="-1">Choose</option>
+                      <option className = "choose" value="-1">Choose</option>
                       {timeOptions.map((time) => (
                         <option key={time} value={time}>{time}</option>
                       ))}
@@ -240,7 +220,7 @@ function NumberInput() {
                       value={range.end}
                       onChange={(e) => handleEndChange(day, index, e)}
                     >
-                      <option value="-1">Choose</option>
+                      <option className = "choose" value="-1">Choose</option>
                       {timeOptions.map((time) => (
                         <option key={time} value={time}>{time}</option>
                       ))}
