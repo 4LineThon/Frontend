@@ -5,7 +5,6 @@ import IsAvailable from "./component/isAvailable";
 
 import Logo from "./component/logo";
 import AvailabilityHeader from "./component/AvailabilityHeader";
-import SaveButton from "./component/saveButton";
 const Minju = () => {
   
   return (
@@ -17,7 +16,7 @@ const Minju = () => {
       <IsAvailable />
       
       <Calendar />
-      <SaveButton />
+      
       
       
 

@@ -185,9 +185,9 @@ const Calendar = ({ onChange = () => {} }) => { // 기본값으로 빈 함수 �
             ))
           )}
       </svg>
-      <button onClick={handleSave} style={styles.saveButton}>
+      <StyledSaveButton onClick={handleSave}>
         Save
-      </button>
+      </StyledSaveButton>
     </div>
   );
 };
@@ -200,15 +200,26 @@ const styles = {
     marginTop: "20px",
     marginBottom: "0px",
   },
-  saveButton: {
-    marginTop: "20px",
-    padding: "10px 20px",
-    fontSize: "16px",
-    backgroundColor: "#423E59",
-    color: "#fff",
-    border: "none",
-    cursor: "pointer",
-  },
 };
+const StyledSaveButton = styled.button`
+  width: 150px;
+  height: 30px;
+  background-color: #423e59;
+  color: #d9d9d9;
+  text-align: center;
+  font-family: "Ibarra Real Nova", serif;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  border: none;
+  cursor: pointer;
+  margin: 20px auto;
+  display: block;
+
+  &:hover {
+    opacity: 0.9;
+  }
+`;
 
 export default Calendar;
