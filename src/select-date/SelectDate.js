@@ -6,12 +6,14 @@ import Logo from "./component/logo";
 import ChooseDatesOrDays from "./component/chooseDatesOrDays";
 import SelectDays from "./component/selectDays";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const SelectDate = () => {
   const [selected, setSelected] = useState("Dates");
   const [name, setName] = useState("");
   const inputRef = useRef(null);
   const [request, setRequest] = useState({});
+  const navigate = useNavigate();
 
   const updateRequest = (field, value) => {
     setRequest((prev) => ({
@@ -47,6 +49,7 @@ const SelectDate = () => {
 
     // axios 연동
     postGroup({ ...request, name });
+    navigate("/Login");
   };
 
   const postGroup = async (data) => {
