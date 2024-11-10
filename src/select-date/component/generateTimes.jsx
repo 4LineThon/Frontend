@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 
 // 시간을 1시간 단위로 생성하는 함수
@@ -13,13 +13,13 @@ const generateTimes = () => {
   return times;
 };
 
-const GenerateTimes = ({ text }) => {
+const GenerateTimes = ({ text, handleSelectChange }) => {
   const times = generateTimes();
 
   return (
     <Container>
       {text}
-      <SelectTime>
+      <SelectTime onChange={(e) => handleSelectChange(e, text)}>
         {times.map((time, idx) => (
           <OptionTime key={idx} value={time}>
             {time}

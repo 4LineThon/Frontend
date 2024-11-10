@@ -1,22 +1,84 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import styled from "styled-components";
 import SelectTimes from "./component/selectTimes";
 import SelectDates from "./component/selectDates";
 import Logo from "./component/logo";
 import ChooseDatesOrDays from "./component/chooseDatesOrDays";
 import SelectDays from "./component/selectDays";
+import axios from "axios";
 
 const SelectDate = () => {
   const [selected, setSelected] = useState("Dates");
+  const [name, setName] = useState("");
+  const inputRef = useRef(null);
+  const [request, setRequest] = useState({});
+
+  const updateRequest = (field, value) => {
+    setRequest((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const createEvent = () => {
+    // 유효성 검사
+    if (!name) {
+      alert("Please write the event name.");
+      inputRef.current.focus();
+      return;
+    }
+    if (!request.days.length) {
+      alert("Choose the Dates/Days.");
+      return;
+    }
+    if (!request.start_time || !request.end_time) {
+      alert("Please write the time.");
+      return;
+    }
+    const startTime = parseInt(request.start_time.slice(0, 2));
+    const endTime = parseInt(request.end_time.slice(0, 2));
+    if (startTime >= endTime) {
+      alert("End time must be greater than start time.");
+      return;
+    }
+
+    // name 업데이트
+    updateRequest("name", name);
+
+    // axios 연동
+    postGroup({ ...request, name });
+  };
+
+  const postGroup = async (data) => {
+    try {
+      await axios.post(`/api/v1/group`, data, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
   return (
     <Wrapper>
       <Logo />
-      <EventName maxLength={10} placeholder="new event name" />
+      <EventName
+        maxLength={10}
+        placeholder="new event name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        ref={inputRef}
+      />
       <ChooseDatesOrDays selected={selected} setSelected={setSelected} />
-      {selected === "Dates" ? <SelectDates /> : <SelectDays />}
-      <SelectTimes />
-      <CreateBtn>Create Event</CreateBtn>
+      {selected === "Dates" ? (
+        <SelectDates updateRequest={updateRequest} />
+      ) : (
+        <SelectDays updateRequest={updateRequest} />
+      )}
+      <SelectTimes updateRequest={updateRequest} />
+      <CreateBtn onClick={createEvent}>Create Event</CreateBtn>
     </Wrapper>
   );
 };
