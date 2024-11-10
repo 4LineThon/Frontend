@@ -1,6 +1,6 @@
 import React from 'react';
 
-const isAvailable = () => {
+const IsAvailable = () => {
   return (
     <div style={styles.container}>
       <div style={styles.indicatorContainer}>
@@ -19,34 +19,33 @@ const styles = {
   container: {
     display: 'flex',
     alignItems: 'center',
-    gap: '20px',
+    justifyContent: 'center',
+    gap: '40px', // Increase gap between indicators to match the spacing in the image
+    marginTop: '20px', // Optional: adjust for spacing within the form
   },
   indicatorContainer: {
     display: 'flex',
     alignItems: 'center',
+    gap: '8px', // Adjusted for consistent spacing between box and label
   },
   unavailableBox: {
-    width: '20px',
-    height: '20px',
+    width: '16px',
+    height: '16px',
     border: '2px solid #423E59',
     backgroundColor: 'transparent',
-    marginRight: '8px',
   },
   availableBox: {
-    width: '20px',
-    height: '20px',
+    width: '16px',
+    height: '16px',
     border: '2px solid #423E59',
     backgroundColor: '#423E59',
-    marginRight: '8px',
   },
   label: {
     color: '#423E59',
-    fontFamily: '"Ibarra Real Nova"',
-    fontSize: '20px',
-    fontStyle: 'normal',
+    fontFamily: '"Ibarra Real Nova", serif',
+    fontSize: '18px', // Adjusted font size to match the example
     fontWeight: 400,
-    lineHeight: 'normal',
   },
 };
 
-export default isAvailable;
+export default IsAvailable;

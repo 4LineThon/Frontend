@@ -7,7 +7,8 @@ import NumberInputDay from "./number-input(day)/NumberInputDay";
 import LogIn from "./login/login";
 import Home from "./Home";
 import "./App.css";
-
+import GroupAvailability from "./groupAvailability/GroupAvailability";
+import Result from "./result/Result";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -16,6 +17,10 @@ const router = createBrowserRouter([
   {
     path: "/minju",
     element: <Minju />,
+  },
+  {
+    path: "/GroupAvailability",
+    element: <GroupAvailability />,
   },
   {
     path: "/NumberInput",
@@ -32,6 +37,10 @@ const router = createBrowserRouter([
   {
     path: "/LogIn",
     element: <LogIn />,
+  },
+  {
+    path: "/Result",
+    element: <Result />,
   }
 ]);
 
