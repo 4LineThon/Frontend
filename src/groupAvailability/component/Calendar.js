@@ -1,4 +1,7 @@
 import React, { useState } from "react";
+import styled from "styled-components";
+import CommentBox from "./commentBox";
+import CommentInput from "./commentInput";
 
 const days = ["S", "M", "T", "W", "T", "F", "S"];
 const dates = ["Oct15", "Oct16", "Oct17", "Oct18", "Oct19", "Oct20", "Oct21"];
@@ -9,134 +12,124 @@ const times = [
 ];
 
 const Calendar = () => {
-  const [gridState, setGridState] = useState(
-    Array(22).fill().map(() => Array(7).fill(false))
-  );
-  const [isDragging, setIsDragging] = useState(false);
-  const [currentState, setCurrentState] = useState(false);
+  const [selectedCell, setSelectedCell] = useState(null);
+  const [comments, setComments] = useState({});
 
-  const handleMouseDown = (timeIndex, dayIndex) => {
-    setIsDragging(true);
-    const newState = !gridState[timeIndex][dayIndex];
-    setCurrentState(newState);
-    toggleCell(timeIndex, dayIndex, newState);
+  const handleCellClick = (timeIndex, dayIndex) => {
+    const cellId = `${timeIndex}-${dayIndex}`;
+    setSelectedCell(cellId);
   };
 
-  const handleMouseOver = (timeIndex, dayIndex) => {
-    if (isDragging) {
-      toggleCell(timeIndex, dayIndex, currentState);
-    }
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  const toggleCell = (timeIndex, dayIndex, state) => {
-    setGridState(prevGrid => 
-      prevGrid.map((row, rowIndex) =>
-        row.map((cell, cellIndex) => 
-          rowIndex === timeIndex && cellIndex === dayIndex ? state : cell
-        )
-      )
-    );
+  const handleCommentSubmit = (commentText) => {
+    setComments((prev) => ({
+      ...prev,
+      [selectedCell]: [...(prev[selectedCell] || []), commentText],
+    }));
   };
 
   return (
-    <div style={styles.container} onMouseUp={handleMouseUp}>
-      <svg
-        width="320"
-        height="450"
-        viewBox="0 0 320 450"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        {/* 날짜와 요일 표시 */}
-        {dates.map((date, i) => (
-          <text
-            key={i}
-            x={68 + i * 36}
-            y="20"
-            textAnchor="middle"
-            fontSize="10"
-            fill="#423E59"
-          >
-            {date}
-          </text>
-        ))}
-        {days.map((day, i) => (
-          <text
-            key={i}
-            x={68 + i * 36}
-            y="40"
-            textAnchor="middle"
-            fontSize="18"
-            fill="#423E59"
-          >
-            {day}
-          </text>
-        ))}
+    <Container>
+      <CalendarContainer>
+        <svg width="320" height="450" viewBox="0 0 320 450" xmlns="http://www.w3.org/2000/svg">
+          {dates.map((date, i) => (
+            <text key={i} x={68 + i * 36} y="20" textAnchor="middle" fontSize="10" fill="#423E59">
+              {date}
+            </text>
+          ))}
+          {days.map((day, i) => (
+            <text key={i} x={68 + i * 36} y="40" textAnchor="middle" fontSize="18" fill="#423E59">
+              {day}
+            </text>
+          ))}
+          {times.map((time, i) => (
+            <text key={i} x="40" y={52 + i * 18} textAnchor="end" fontSize="10" fill="#423E59">
+              {time}
+            </text>
+          ))}
 
-        {/* 시간 표시 */}
-        {times.map((time, i) => (
-          <text
-            key={i}
-            x="40"
-            y={52 + i * 18}
-            textAnchor="end"
-            fontSize="10"
-            fill="#423E59"
-          >
-            {time}
-          </text>
-        ))}
+          {Array.from({ length: 22 }).map((_, timeIndex) =>
+            days.map((_, dayIndex) => {
+              const cellId = `${timeIndex}-${dayIndex}`;
+              return (
+                <g
+                  key={`${timeIndex}-${dayIndex}`}
+                  onMouseDown={() => handleCellClick(timeIndex, dayIndex)}
+                >
+                  <rect
+                    x={50 + dayIndex * 36}
+                    y={45 + timeIndex * 18}
+                    width="36"
+                    height="18"
+                    fill="#D9D9D9"
+                    stroke="#423E59"
+                    strokeWidth="1"
+                  />
+                  {comments[cellId] && comments[cellId].length > 0 && (
+                    <circle cx={55 + dayIndex * 36} cy={50 + timeIndex * 18} r="3" fill="#474073" />
+                  )}
+                </g>
+              );
+            })
+          )}
+        </svg>
+      </CalendarContainer>
 
-        {/* 그리드 생성 */}
-        {Array(22).fill().map((_, timeIndex) =>
-          days.map((_, dayIndex) => (
-            <g
-              key={`${timeIndex}-${dayIndex}`}
-              onMouseDown={() => handleMouseDown(timeIndex, dayIndex)}
-              onMouseOver={() => handleMouseOver(timeIndex, dayIndex)}
-            >
-              <rect
-                x={50 + dayIndex * 36}
-                y={45 + timeIndex * 18}
-                width="36"
-                height="18"
-                fill={gridState[timeIndex][dayIndex] ? "#423E59" : "#D9D9D9"}
-                fillOpacity={gridState[timeIndex][dayIndex] ? 0.8 : 1}
-                stroke="#423E59"
-                strokeWidth="1"
-              />
-              
-              {/* 점선 추가 */}
-              {timeIndex % 2 === 1 && (
-                <line
-                  x1={50 + dayIndex * 36}
-                  y1={63 + (timeIndex - 1) * 18}
-                  x2={86 + dayIndex * 36}
-                  y2={63 + (timeIndex - 1) * 18}
-                  stroke="#423E59"
-                  strokeDasharray="2 2"
-                  strokeWidth="0.5"
-                />
-              )}
-            </g>
-          ))
-        )}
-      </svg>
-    </div>
+      {selectedCell && (
+        <CommentSection>
+          <CommentList>
+            {comments[selectedCell]?.map((comment, idx) => (
+              <CommentBox key={idx} commentInfo={{ name: "User", content: comment }} />
+            ))}
+          </CommentList>
+
+          <CommentInputWrapper>
+            <CommentInput
+              onSubmit={handleCommentSubmit}
+              initialComment=""
+            />
+          </CommentInputWrapper>
+        </CommentSection>
+      )}
+    </Container>
   );
 };
 
-const styles = {
-  container: {
-    display: 'flex',
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    marginTop: '20px', 
-    marginBottom: '0px', 
-  },
-};
-
 export default Calendar;
+
+// Styled components
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const CalendarContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+`;
+
+const CommentSection = styled.div`
+  width: 100%;
+  max-width: 320px;
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const CommentList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  align-items: center;
+`;
+
+const CommentInputWrapper = styled.div`
+  margin-top: 10px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+`;

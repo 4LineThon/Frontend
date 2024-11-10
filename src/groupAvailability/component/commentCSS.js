@@ -1,16 +1,14 @@
-// commentCSS.js 파일
 import styled from "styled-components";
 
 export const Wrapper = styled.div`
   width: 211px;
   display: flex;
-  align-items: center;
-  margin: auto; /* Center alignment */
+  align-items: baseline;
+  margin: 0px 73px 11px 73px;
   padding: 9px;
   border: 2px solid;
   font-family: "Ibarra Real Nova", serif;
   color: #423e59;
-  text-align: center; /* Center alignment for text */
 `;
 
 export const Bullet = styled.img.attrs({
@@ -25,7 +23,6 @@ export const Commemt = styled.div`
   display: flex;
   flex-direction: column;
   gap: 7px;
-  text-align: center; /* Center alignment for text inside comment */
 `;
 
 export const Writer = styled.div`
@@ -34,5 +31,4 @@ export const Writer = styled.div`
 
 export const Content = styled.div`
   font-size: 10px;
-  text-align: center;
 `;
