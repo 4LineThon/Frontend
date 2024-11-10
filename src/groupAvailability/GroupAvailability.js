@@ -6,7 +6,6 @@ import Logo from "../minju/component/logo";
 import AvailabilityHeader from "../minju/component/AvailabilityHeader";
 import FixButton from "./component/fixButton";
 import Calendar from "./component/Calendar";
-import Comment from "../comment/Comment";
 const GroupAvailability = () => {
   return (
     <div>
@@ -14,8 +13,7 @@ const GroupAvailability = () => {
       <AvailabilityHeader text="Group's Availability" arrowDirection="right" navigateTo="/minju" />
       <EveryoneAvailable/>
       <StatusIndicator current={0} total={5}/>
-      <Calendar/>
-      <Comment />
+      <Calendar />
       <FixButton />
     </div>
   );
