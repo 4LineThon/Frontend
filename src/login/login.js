@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./login.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import Explanation from "../explanation/explanation";
 import LoginHeader from "./loginHeader";
@@ -10,6 +10,7 @@ function LogIn() {
   const [password, setPassword] = useState("");
   const [groupId, setGroupId] = useState(1);
   const navigate = useNavigate();
+  const location = useLocation();
   const explanation = [
     "The Name/Password is only used",
     "when setting this schedule.",
@@ -18,9 +19,14 @@ function LogIn() {
     "you've already checked,",
     "please sign in using the same Name/Password.",
   ];
+
   const api = axios.create({
     baseURL: "http://43.201.144.53/api/v1",
   });
+
+  // Retrieve `dates` and `days` from location state
+  const dates = location.state?.dates ?? null;
+  const days = location.state?.days ?? null;
 
   const handleLogin = async () => {
     if (!name) {
@@ -29,19 +35,28 @@ function LogIn() {
     }
 
     try {
-      // Use template literals to insert the groupId value directly into the URL
+      // Login request
       const response = await axios.post(`/api/v1/group/${groupId}/login`, {
         name: name,
         password: password || "",
       });
 
-      console.log("Response data:", response.data);
       const { id, name: responseName } = response.data;
 
       if (id) {
-        console.log("Navigating with ID:", id);
         alert(`Welcome, ${responseName}!`);
-        navigate("/NumberInput", { state: { user: id, name: responseName } });
+        
+        // Determine whether `days` contains only `day` or both `date` and `day`
+        const containsDates = days?.every(item => item.date);
+
+        // Navigate based on the presence of `date` fields
+        if (containsDates) {
+          // Navigate to `/NumberInput` if `dates` and `days` are both present
+          navigate("/NumberInput", { state: { user: id, name: responseName, dates, days } });
+        } else {
+          // Navigate to `/NumberInputDay` if only `day` is present
+          navigate("/NumberInputDay", { state: { user: id, name: responseName, days } });
+        }
       } else {
         alert("Login failed. Please check your credentials.");
       }

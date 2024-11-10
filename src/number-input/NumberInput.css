@@ -127,7 +127,6 @@
   align-items: center; /* 수평 중앙 정렬 */
   width: 400px; /* 전체 폭을 사용 */
   padding-left: 50px;
-  margin: 10px 0; /* 상하 여백 */
 }
 
 
@@ -173,7 +172,7 @@
 
 
 .date-dropdown {
-  padding: 20px;
+  padding: 23px;
   color: #4c3f5e;
   font-size: 19px;
 }
@@ -190,7 +189,6 @@
   display: flex;
   align-items: center; /* 세로 가운데 정렬 */
   gap: 5px; /* 텍스트와 버튼들 사이 간격 */
-  margin-bottom: 15px;
   justify-content: center; /* 가로 가운데 정렬 */
   width: 150%;
   padding-right: 1px;
