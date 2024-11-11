@@ -38,28 +38,44 @@ function NumberInput() {
 
   const addTimeRange = () => {
     if (!selectedDay) return;
-
+  
     setAvailability((prev) => {
       const dayAvailability = [...(prev[selectedDay] || []), { start: "-1", end: "-1" }];
+  
       return {
         ...prev,
-        [selectedDay]: dayAvailability,
+        [selectedDay]: sortByStartTime(dayAvailability), // 추가된 정렬 함수 사용
       };
     });
   };
-
+  
   const handleStartChange = (day, index, event) => {
-    const newAvailability = { ...availability };
-    newAvailability[day][index].start = event.target.value;
-    setAvailability(newAvailability);
+    setAvailability((prev) => {
+      const newAvailability = { ...prev };
+      newAvailability[day][index].start = event.target.value;
+      newAvailability[day] = sortByStartTime(newAvailability[day]); // 정렬 적용
+      return newAvailability;
+    });
   };
-
+  
   const handleEndChange = (day, index, event) => {
-    const newAvailability = { ...availability };
-    newAvailability[day][index].end = event.target.value;
-    setAvailability(newAvailability);
+    setAvailability((prev) => {
+      const newAvailability = { ...prev };
+      newAvailability[day][index].end = event.target.value;
+      newAvailability[day] = sortByStartTime(newAvailability[day]); // 정렬 적용
+      return newAvailability;
+    });
   };
-
+  
+  // 정렬 함수
+  const sortByStartTime = (dayAvailability) => {
+    return dayAvailability.sort((a, b) => {
+      const [hoursA, minutesA] = a.start.split(':').map(Number);
+      const [hoursB, minutesB] = b.start.split(':').map(Number);
+      return hoursA - hoursB || minutesA - minutesB;
+    });
+  };
+  
   const deleteTimeRange = (day, index) => {
     const newAvailability = { ...availability };
     newAvailability[day].splice(index, 1);
