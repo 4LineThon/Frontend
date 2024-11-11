@@ -45,7 +45,8 @@ function LogIn() {
       navigate("/NumberInput", { state: { user: name, name, dates: days, start_time: startTime, end_time: endTime } });
     } else {
       console.log("Navigating to /NumberInputDay with days only:", days);
-      navigate("/NumberInputDay", { state: { user: name, name, days, start_time: startTime, end_time: endTime } });
+      navigate("/NumberInputDay", { state: { user: name, name, dates: days, start_time: startTime, end_time: endTime } });
+      
     }
   };
 
