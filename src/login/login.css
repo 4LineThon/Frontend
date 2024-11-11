@@ -51,29 +51,35 @@ body {
 .name-container,
 .password-container {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
+    width: 150%;
     margin-bottom: 15px;
 }
 
-.name,
+.name {
+        font-size: 18px;
+        color: #4a4a4a;
+        padding-right: 5px;
+        text-align: right;
+        margin-left: 60px; /* Your Name 레이블만 오른쪽으로 이동 */
+}
 .password {
-    font-size: 15px;
+    font-size: 18px;
     color: #4a4a4a;
-    margin-right: 10px;
-    width: 90px; /* 라벨의 고정 너비 */
+    padding-right: 5px;
+
     text-align: right;
 }
 
 
 #name {
     padding: 7px;
+    padding-right: 10px;
     font-size: 15px;
     width: 150px; /* 입력 필드의 고정 너비 */
     border: 1px solid #4c3f5e;
     outline: none;
     transition: border-color 0.3s ease;
+    margin-left: 10px;
 }
 
 #password {
