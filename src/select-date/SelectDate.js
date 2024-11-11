@@ -51,7 +51,13 @@ const SelectDate = () => {
 
     // axios 연동
     postGroup({ ...request, name });
-    navigate("/Login");
+    navigate("/Login", {
+      state: {
+        days: request.days,
+        start_time: request.start_time,
+        end_time: request.endTime,
+      },
+    });
   };
 
   const postGroup = async (data) => {
