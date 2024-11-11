@@ -25,3 +25,6 @@ yarn-error.log*
 # .gitignore 파일에 추가
 node_modules/
 .vercel
+
+# 환경 변수 파일
+.env
