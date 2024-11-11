@@ -93,8 +93,8 @@ function NumberInputDay() {
           <select value={selectedDay} onChange={handleDayChange} className="select-list">
             <option value="">Select Date</option>
             {daysOfWeek.map((dateObj, index) => (
-              <option key={index} value={`${dateObj.date} ${dateObj.day}`}>
-                {`${dateObj.date} (${dateObj.day})`}
+              <option key={index} value={`${dateObj.day}`}>
+                {`${dateObj.day}`}
               </option>
             ))}
           </select>
