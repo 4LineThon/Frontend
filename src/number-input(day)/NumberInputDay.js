@@ -1,47 +1,44 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import axios from 'axios';
-import AvailabilityHeader2 from "../number-input/components/Availability Header2";
+import AvailabilityHeaderDay from './components/AvailabilityHeaderDay';
 import Logo from "../minju/component/logo";
-import InsertType from '../minju/component/insertType';
-import TimeSelector from '../number-input/components/TimeSelector';
+import InsertTypeDay from './components/InsertTypeDay';
+import TimeSelectorDay from './components/TimeSelectorDay';
 import './NumberInputDay.css';
 
 function NumberInputDay() {
   const location = useLocation();
   const userId = location.state?.user ?? null;
   const userName = location.state?.name ?? "Unknown User";
-  const daysOfWeek = ["Monday", "Tuesday", "Oct 17 Thu", "Oct 18 Fri", "Oct 19 Sat", "Oct 20 Sun", "Oct 21 Mon"];
+  const startTime = location.state?.start_time ?? "09:00"; // Default start time if not provided
+  const endTime = location.state?.end_time ?? "18:00";     // Default end time if not provided
+
+  const daysOfWeek = location.state?.dates ?? [];
   const [availability, setAvailability] = useState({});
   const [selectedDay, setSelectedDay] = useState("");
 
-  useEffect(() => {
-    const fetchAvailability = async () => {
-      if (!userId) return;
+  const generateTimeOptions = (start, end) => {
+    const times = [];
+    let currentTime = new Date(`1970-01-01T${start}`);
+    const endTime = new Date(`1970-01-01T${end}`);
+  
+    while (currentTime <= endTime) {
+      times.push(currentTime.toTimeString().slice(0, 5)); // Format to HH:MM
+      currentTime.setMinutes(currentTime.getMinutes() + 30); // Increment by 30 minutes
+    }
+  
+    // 시간들을 오름차순으로 정렬
+    times.sort((a, b) => {
+      const [hoursA, minutesA] = a.split(':').map(Number);
+      const [hoursB, minutesB] = b.split(':').map(Number);
+      return hoursA - hoursB || minutesA - minutesB;
+    });
+  
+    return times;
+  };
+  
 
-      try {
-        const response = await axios.get(`http://43.201.144.53/api/v1/availability/${userId}`);
-        const fetchedAvailability = response.data.reduce((acc, curr) => {
-          const day = daysOfWeek[curr.days - 1];
-          acc[day] = acc[day] || [];
-          acc[day].push({ start: curr.time_from, end: curr.time_to });
-          return acc;
-        }, {});
-        console.log("User ID:", userId); 
-        console.log("Fetched availability data:", response.data);
-        setAvailability(fetchedAvailability);
-      } catch (error) {
-        if (error.response && error.response.status === 404) {
-          console.warn("No availability data found for this user.");
-          setAvailability({});
-        } else {
-          console.error('Failed to fetch availability', error);
-        }
-      }
-    };
-
-    fetchAvailability();
-  }, [userId]);
+  const timeOptions = generateTimeOptions(startTime, endTime);
 
   const handleDayChange = (event) => {
     setSelectedDay(event.target.value);
@@ -49,27 +46,44 @@ function NumberInputDay() {
 
   const addTimeRange = () => {
     if (!selectedDay) return;
-
+  
     setAvailability((prev) => {
       const dayAvailability = [...(prev[selectedDay] || []), { start: "-1", end: "-1" }];
+  
       return {
         ...prev,
-        [selectedDay]: dayAvailability,
+        [selectedDay]: sortByStartTime(dayAvailability), // 추가된 정렬 함수 사용
       };
     });
   };
-
+  
   const handleStartChange = (day, index, event) => {
-    const newAvailability = { ...availability };
-    newAvailability[day][index].start = event.target.value;
-    setAvailability(newAvailability);
+    setAvailability((prev) => {
+      const newAvailability = { ...prev };
+      newAvailability[day][index].start = event.target.value;
+      newAvailability[day] = sortByStartTime(newAvailability[day]); // 정렬 적용
+      return newAvailability;
+    });
   };
-
+  
   const handleEndChange = (day, index, event) => {
-    const newAvailability = { ...availability };
-    newAvailability[day][index].end = event.target.value;
-    setAvailability(newAvailability);
+    setAvailability((prev) => {
+      const newAvailability = { ...prev };
+      newAvailability[day][index].end = event.target.value;
+      newAvailability[day] = sortByStartTime(newAvailability[day]); // 정렬 적용
+      return newAvailability;
+    });
   };
+  
+  // 정렬 함수
+  const sortByStartTime = (dayAvailability) => {
+    return dayAvailability.sort((a, b) => {
+      const [hoursA, minutesA] = a.start.split(':').map(Number);
+      const [hoursB, minutesB] = b.start.split(':').map(Number);
+      return hoursA - hoursB || minutesA - minutesB;
+    });
+  };
+  
 
   const deleteTimeRange = (day, index) => {
     const newAvailability = { ...availability };
@@ -81,35 +95,46 @@ function NumberInputDay() {
   };
 
   const saveAvailability = () => {
-    console.log('Saving availability:', availability);
+    const savedTimes = [];
+  
+    // Collect all time ranges from availability
+    Object.keys(availability).forEach((day) => {
+      availability[day].forEach((range) => {
+        savedTimes.push({ day, start: range.start, end: range.end });
+      });
+    });
+  
+    console.log("Saved time:", savedTimes);
   };
-
   return (
     <div className="big-container">
       <Logo />
-      <AvailabilityHeader2 text={`My Availability`} arrowDirection="left" navigateTo="/groupAvailability" />
-      <InsertType />
+      <AvailabilityHeaderDay text={`My Availability`} arrowDirection="left" navigateTo="/groupAvailability" />
+      <InsertTypeDay />
 
       <div id="date-dropdown">
-        <span className="date-dropdown">Choose Day</span>
+        <span className="date-dropdown">Choose Date</span>
         <div className="select-list-container">
           <select value={selectedDay} onChange={handleDayChange} className="select-list">
-            <option value="">Select Day</option>
-            {daysOfWeek.map((day) => (
-              <option key={day} value={day}>{day}</option>
+            <option value="">Select Date</option>
+            {daysOfWeek.map((dateObj, index) => (
+              <option key={index} value={`${dateObj.day}`}>
+                {`${dateObj.day}`}
+              </option>
             ))}
           </select>
         </div>
         <button className="btnPlus" onClick={addTimeRange}>+</button>
       </div>
 
-      {/* 조건부 렌더링으로 availability가 존재할 때만 TimeSelector 렌더링 */}
+      {/* Render TimeSelector with availability data and generated time options */}
       {availability && Object.keys(availability).length > 0 && (
-        <TimeSelector 
+        <TimeSelectorDay 
           availability={availability} 
           handleStartChange={handleStartChange} 
           handleEndChange={handleEndChange} 
-          deleteTimeRange={deleteTimeRange} 
+          deleteTimeRange={deleteTimeRange}
+          timeOptions={timeOptions}
         />
       )}
 
@@ -118,5 +143,6 @@ function NumberInputDay() {
       )}
     </div>
   );
-  }
+}
+
 export default NumberInputDay;
