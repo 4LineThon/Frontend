@@ -24,7 +24,7 @@ const SelectDate = () => {
     }));
   };
 
-  const createEvent = () => {
+  const createEvent = async() => {
     // 유효성 검사
     if (!name) {
       alert("Please write the event name.");
@@ -46,8 +46,8 @@ const SelectDate = () => {
       return;
     }
 
-    // name 업데이트
-    updateRequest("name", name);
+     // name 업데이트
+     updateRequest("name", name);
 
     // axios 연동
     postGroup({ ...request, name });
@@ -55,7 +55,7 @@ const SelectDate = () => {
       state: {
         days: request.days,
         start_time: request.start_time,
-        end_time: request.endTime,
+        end_time: request.end_time,
       },
     });
   };

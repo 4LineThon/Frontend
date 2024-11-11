@@ -1,14 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-
+import { useNavigate, useLocation } from 'react-router-dom';
 const InsertType = () => {
-  const [selected, setSelected] = useState('Finger'); // 기본 선택을 'Finger'로 설정
+  const location = useLocation();
   const navigate = useNavigate();
+
+  const defaultSelected = location.pathname === '/NumberInput' ? 'Number' : 'Finger';
+  const [selected, setSelected] = useState(defaultSelected);
+
+  // 페이지 이동
   useEffect(() => {
-    if (selected === 'Number') {
+    if (selected === 'Number' && location.pathname !== '/NumberInput') {
       navigate('/NumberInput');
+    } else if (selected === 'Finger' && location.pathname !== '/minju') {
+      navigate('/minju');
     }
-  }, [selected, navigate]);
+  }, [selected, navigate, location.pathname]);
+
   return (
     <div style={styles.container}>
       <span style={styles.label}>Insert Type</span>
@@ -29,7 +36,6 @@ const InsertType = () => {
     </div>
   );
 };
-
 const styles = {
   container: {
     display: 'flex',
