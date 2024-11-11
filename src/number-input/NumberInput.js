@@ -87,15 +87,45 @@ function NumberInput() {
 
   const saveAvailability = () => {
     const savedTimes = [];
-  
-    // Collect all time ranges from availability
-    Object.keys(availability).forEach((day) => {
-      availability[day].forEach((range) => {
-        savedTimes.push({ day, start: range.start, end: range.end });
+   // Collect all time ranges from availability
+  Object.keys(availability).forEach((day) => {
+    availability[day].forEach((range) => {
+      savedTimes.push({
+        days: day,                     // day 정보를 API 요구사항에 맞춰 변환이 필요할 경우 여기에 추가
+        user: userId,                  // 유저 ID
+        time_from: range.start,        // 시작 시간
+        time_to: range.end             // 종료 시간
       });
     });
-  
-    console.log("Saved time:", savedTimes);
+  });
+
+  // Log collected times
+  console.log("Saved time:", savedTimes);
+
+  // Send POST request to backend API for each saved time
+  Promise.all(
+    savedTimes.map((time) =>
+      fetch("http://43.201.144.53/api/v1/availability", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(time)
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error("Failed to save availability");
+          }
+          return response.json();
+        })
+        .then(data => {
+          console.log("Successfully saved:", data);
+        })
+        .catch(error => {
+          console.error("Error saving availability:", error);
+        })
+    )
+  );
   };
 
   return (
