@@ -19,7 +19,6 @@ function LogIn() {
   ];
 
   // Retrieve `dates`, `days`, `start_time`, and `end_time` from location state
-  const dates = location.state?.dates ?? null;
   const days = location.state?.days ?? null;
   const startTime = location.state?.start_time ?? null;
   const endTime = location.state?.end_time ?? null;
@@ -35,20 +34,37 @@ function LogIn() {
     alert(`Welcome, ${name}!`);
 
     // Determine whether `days` contains only `day` or both `date` and `day`
-    const containsDates = days?.every(item => item.date);
+// containsDates 변수를 days 배열에 date 필드가 있는지 검사하는 방식으로 수정
+// 모든 항목이 date 속성을 가지고 있을 때만 true로 설정
+const containsDates = days?.every(item => 'date' in item);
 
-    // Navigate based on the presence of `date` fields
-    if (containsDates) {
-      console.log("Navigating to /NumberInput with dates:", dates, "and days:", days);
-      console.log("Start Time:", startTime);
-      console.log("End Time:", endTime);
-      navigate("/NumberInput", { state: { user: name, name, dates: days, start_time: startTime, end_time: endTime } });
-    } else {
-      console.log("Navigating to /NumberInputDay with days only:", days);
-      navigate("/NumberInputDay", { state: { user: name, name, dates: days, start_time: startTime, end_time: endTime } });
-      
-    }
-  };
+// date 필드 유무에 따라 페이지 이동
+if (containsDates) {
+  console.log("Navigating to /NumberInput with dates:", days);
+  console.log("Start Time:", startTime);
+  console.log("End Time:", endTime);
+  navigate("/NumberInput", { 
+    state: { 
+      user: name, 
+      name, 
+      dates: days, 
+      start_time: startTime, 
+      end_time: endTime 
+    } 
+  });
+} else {
+  console.log("Navigating to /NumberInputDay with days only:", days);
+  navigate("/NumberInputDay", { 
+    state: { 
+      user: name, 
+      name, 
+      dates: days, 
+      start_time: startTime, 
+      end_time: endTime 
+    } 
+  });
+}
+  }
 
   return (
     <div className="big-container">

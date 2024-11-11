@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { useNavigate, useLocation } from "react-router-dom";
 
-  const AvailabilityHeaderDay = ({ arrowDirection = "left", navigateTo = "/" }) => {
+  const AvailabilityHeaderDay = ({ arrowDirection = "left", navigateTo = "/Login" }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const userName = location.state?.name || "Guest";

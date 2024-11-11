@@ -10,7 +10,7 @@ const InsertType = () => {
 
   // 페이지 이동
   useEffect(() => {
-    if (selected === 'Number' && location.pathname !== '/NumberInput') {
+    if (selected === 'Number' && location.pathname !== '/NumberInputDay') {
       navigate('/NumberInput');
     } else if (selected === 'Finger' && location.pathname !== '/minju') {
       navigate('/minju');
