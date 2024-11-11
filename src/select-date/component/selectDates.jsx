@@ -44,7 +44,9 @@ const SelectDates = ({ updateRequest }) => {
   useEffect(() => {
     const setCalendar = async () => {
       try {
-        const response = await axios.get(`/api/v1/group/today`);
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_BASE_URL}/api/v1/group/today`
+        );
         const data = response.data;
 
         // 연도 세팅

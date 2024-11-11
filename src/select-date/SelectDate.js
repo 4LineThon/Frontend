@@ -24,7 +24,7 @@ const SelectDate = () => {
     }));
   };
 
-  const createEvent = async() => {
+  const createEvent = async () => {
     // 유효성 검사
     if (!name) {
       alert("Please write the event name.");
@@ -46,8 +46,8 @@ const SelectDate = () => {
       return;
     }
 
-     // name 업데이트
-     updateRequest("name", name);
+    // name 업데이트
+    updateRequest("name", name);
 
     // axios 연동
     postGroup({ ...request, name });
@@ -62,11 +62,15 @@ const SelectDate = () => {
 
   const postGroup = async (data) => {
     try {
-      await axios.post(`/api/v1/group`, data, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/api/v1/group`,
+        data,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
     } catch (e) {
       console.log(e);
     }
