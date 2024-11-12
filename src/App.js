@@ -6,16 +6,18 @@ import {
 } from "react-router-dom";
 import Minju from "./minju/Minju";
 import NumberInput from "./number-input/NumberInput";
-import NumberInputDay from "./number-input(day)/NumberInputDay"
+import NumberInputDay from "./number-input(day)/NumberInputDay";
 import SelectDate from "./select-date/SelectDate";
 import LogIn from "./login/login";
 import "./App.css";
 import GroupAvailability from "./groupAvailability/GroupAvailability";
 import Result from "./result/Result";
+import Home from "./Home";
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Navigate to="/SelectDate" />,
+    element: <Home />,
+    // element: <Navigate to="/SelectDate" />,
   },
   {
     path: "/minju",
