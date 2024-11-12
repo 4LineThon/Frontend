@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './NumberInput.css';
 import AvailabilityHeader2 from './components/Availability Header2';
 import Logo from "../minju/component/logo";
@@ -11,17 +11,18 @@ import TimeSelector from './components/TimeSelector';
 
 function NumberInput() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [groupName, setGroupName] = useState(""); // 그룹 이름 저장
+  const [username, setUsername] = useState(""); // 사용자 이름 저장
   const [dates, setDates] = useState([]); // 각 날짜의 date, start_time, end_time 저장
   const [timeOptions, setTimeOptions] = useState([]);  // 시간 옵션 배열
   const [availability, setAvailability] = useState({});
   const [selectedDay, setSelectedDay] = useState("");
-  const [userAvailability, setUserAvailability] = useState([]);
-
-  // 그룹 ID 가져오기
+  
+  // 그룹 ID와 사용자 ID 가져오기
   const group_id = localStorage.getItem("group_id");
+  const user_id = localStorage.getItem("user_id"); // 사용자 ID 저장
 
-  // 그룹 이름과 타임테이블 정보를 가져오기
   useEffect(() => {
     const fetchGroupData = async () => {
       try {
@@ -38,13 +39,18 @@ function NumberInput() {
             end_time: item.end_time,
           })));
         }
+
+        // 사용자 이름 가져오기
+        const userResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${user_id}`);
+        setUsername(userResponse.data.username);
+
       } catch (error) {
-        console.error("Error fetching group data:", error);
+        console.error("Error fetching data:", error);
       }
     };
 
     fetchGroupData();
-  }, [group_id]);
+  }, [group_id, user_id]);
 
   // 선택된 날짜에 따라 start_time과 end_time을 기반으로 시간 옵션을 생성
   useEffect(() => {
@@ -122,6 +128,8 @@ function NumberInput() {
 
   const saveAvailability = async () => {
     console.log("Saved availability:", JSON.stringify(availability, null, 2));
+    // 저장 작업 후 GroupAvailability 페이지로 이동
+    navigate("/GroupAvailability");
   };
 
   return (
@@ -129,7 +137,12 @@ function NumberInput() {
       <Logo />
       <h2>{groupName}</h2> {/* Axios로 받아온 groupName 표시 */}
       
-      <AvailabilityHeader2 text={`My Availability`} arrowDirection="left" navigateTo="/groupAvailability" />
+      <AvailabilityHeader2 
+        text={`My Availability`} 
+        arrowDirection="left" 
+        navigateTo="/groupAvailability"
+        userName={username}  // 사용자 이름 전달
+      />
       <InsertType />
 
       <div id="date-dropdown">
