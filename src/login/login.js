@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./login.css";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -8,7 +8,7 @@ import LoginHeader from "./loginHeader";
 function LogIn() {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
-  const [groupId, setGroupId] = useState(3); // 초기 group_id 설정
+  const [groupName, setGroupName] = useState(""); // 그룹 이름을 저장할 상태
   const navigate = useNavigate();
   const location = useLocation();
   const explanation = [
@@ -20,29 +20,45 @@ function LogIn() {
     "please sign in using the same Name/Password.",
   ];
   const days = location.state?.days ?? null;
-  
+
+  // 그룹 이름을 가져오기
+  useEffect(() => {
+    const groupId = localStorage.getItem("group_id"); // localStorage에서 group_id 가져오기
+
+    if (groupId) {
+      const fetchGroupName = async () => {
+        try {
+          const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}`);
+          setGroupName(response.data.name); // 응답에서 그룹 이름을 설정
+          console.log(response.data);
+          console.log("Fetched group name:", response.data.name); // 그룹 이름을 콘솔에 출력
+        } catch (error) {
+          console.error("Error fetching group name:", error);
+        }
+      };
+      fetchGroupName();
+    } else {
+      console.error("No group_id found in localStorage");
+    }
+  }, []);
+
   const handleLogin = async () => {
+    const groupId = localStorage.getItem("group_id"); // localStorage에서 group_id 다시 가져오기
+
     if (!name) {
       alert("Please enter your name.");
       return;
     }
 
     try {
-      // 로그인 요청 보내기
       const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}/login`, {
         name: name,
         password: password,
-        group_id: 3,
-        id: 3
       });
 
-      // 서버 응답에서 변수 이름 충돌을 피하기 위해 다른 변수 이름을 사용
-      const { id, group_id, name: userName, password: userPassword } = response.data;
-
-      // 로그인 성공 시 환영 메시지 표시
       if (response.status === 200) {
         alert(`Welcome, ${name}!`);
-        console.log("Login response data:", response.data);
+        console.log("Login response data:", response.data.name);
 
         const containsDates = days?.every(item => 'date' in item);
         
@@ -64,7 +80,7 @@ function LogIn() {
     <div className="big-container">
       <div className="header">
         <h1>Timi</h1>
-        <h2>4LINETHON</h2>
+        <h2>{groupName}</h2> {/* Axios로 받아온 groupName 표시 */}
       </div>
 
       <LoginHeader />
@@ -101,4 +117,3 @@ function LogIn() {
 }
 
 export default LogIn;
-
