@@ -1,44 +1,65 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useLocation } from 'react-router-dom';
+import './NumberInputDay.css';
 import AvailabilityHeaderDay from './components/AvailabilityHeaderDay';
 import Logo from "../minju/component/logo";
 import InsertTypeDay from './components/InsertTypeDay';
 import TimeSelectorDay from './components/TimeSelectorDay';
-import './NumberInputDay.css';
 
 function NumberInputDay() {
   const location = useLocation();
-  const userId = location.state?.user ?? null;
-  const userName = location.state?.name ?? "Unknown User";
-  const startTime = location.state?.start_time ?? "09:00"; // Default start time if not provided
-  const endTime = location.state?.end_time ?? "18:00";     // Default end time if not provided
+  const group_id = 3; // 그룹 ID
 
-  const daysOfWeek = location.state?.dates ?? [];
+  const [dates, setDates] = useState([]); // 각 날짜의 date, start_time, end_time 저장
+  const [timeOptions, setTimeOptions] = useState([]);  // 시간 옵션 배열
   const [availability, setAvailability] = useState({});
   const [selectedDay, setSelectedDay] = useState("");
+  const [userAvailability, setUserAvailability] = useState([]);
 
+  // 그룹 타임테이블 정보를 가져오기
+  useEffect(() => {
+    const fetchGroupTimetable = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/v1/group-timetable/${group_id}`);
+        if (response.data && response.data.length > 0) {
+          // date, start_time, end_time 모두 포함해 dates에 저장
+          setDates(response.data.map(item => ({
+            date: item.date,
+            start_time: item.start_time,
+            end_time: item.end_time,
+          })));
+        }
+      } catch (error) {
+        console.error("Error fetching group timetable:", error);
+      }
+    };
+
+    fetchGroupTimetable();
+  }, [group_id]);
+
+  // 선택된 날짜에 따라 start_time과 end_time을 기반으로 시간 옵션을 생성
+  useEffect(() => {
+    const selectedDateData = dates.find(dateObj => dateObj.date === selectedDay);
+    if (selectedDateData) {
+      const { start_time, end_time } = selectedDateData;
+      setTimeOptions(generateTimeOptions(start_time, end_time));
+    }
+  }, [selectedDay, dates]);
+
+  // startTime과 endTime을 기반으로 시간 옵션을 생성하는 함수
   const generateTimeOptions = (start, end) => {
     const times = [];
-    let currentTime = new Date(`1970-01-01T${start}`);
-    const endTime = new Date(`1970-01-01T${end}`);
-  
+    let currentTime = new Date(`1970-01-01T${start}Z`);  // Z를 추가하여 UTC 시간으로 설정
+    const endTime = new Date(`1970-01-01T${end}Z`);
+
     while (currentTime <= endTime) {
-      times.push(currentTime.toTimeString().slice(0, 5)); // Format to HH:MM
-      currentTime.setMinutes(currentTime.getMinutes() + 30); // Increment by 30 minutes
+      times.push(currentTime.toISOString().substring(11, 16));  // ISO 문자열에서 HH:MM 부분만 추출
+      currentTime.setMinutes(currentTime.getMinutes() + 30);  // 30분 증가
     }
-  
-    // 시간들을 오름차순으로 정렬
-    times.sort((a, b) => {
-      const [hoursA, minutesA] = a.split(':').map(Number);
-      const [hoursB, minutesB] = b.split(':').map(Number);
-      return hoursA - hoursB || minutesA - minutesB;
-    });
-  
+
     return times;
   };
-  
-
-  const timeOptions = generateTimeOptions(startTime, endTime);
 
   const handleDayChange = (event) => {
     setSelectedDay(event.target.value);
@@ -49,33 +70,31 @@ function NumberInputDay() {
   
     setAvailability((prev) => {
       const dayAvailability = [...(prev[selectedDay] || []), { start: "-1", end: "-1" }];
-  
       return {
         ...prev,
-        [selectedDay]: sortByStartTime(dayAvailability), // 추가된 정렬 함수 사용
+        [selectedDay]: sortByStartTime(dayAvailability),
       };
     });
   };
-  
+
   const handleStartChange = (day, index, event) => {
     setAvailability((prev) => {
       const newAvailability = { ...prev };
       newAvailability[day][index].start = event.target.value;
-      newAvailability[day] = sortByStartTime(newAvailability[day]); // 정렬 적용
+      newAvailability[day] = sortByStartTime(newAvailability[day]);
       return newAvailability;
     });
   };
-  
+
   const handleEndChange = (day, index, event) => {
     setAvailability((prev) => {
       const newAvailability = { ...prev };
       newAvailability[day][index].end = event.target.value;
-      newAvailability[day] = sortByStartTime(newAvailability[day]); // 정렬 적용
+      newAvailability[day] = sortByStartTime(newAvailability[day]);
       return newAvailability;
     });
   };
-  
-  // 정렬 함수
+
   const sortByStartTime = (dayAvailability) => {
     return dayAvailability.sort((a, b) => {
       const [hoursA, minutesA] = a.start.split(':').map(Number);
@@ -83,7 +102,6 @@ function NumberInputDay() {
       return hoursA - hoursB || minutesA - minutesB;
     });
   };
-  
 
   const deleteTimeRange = (day, index) => {
     const newAvailability = { ...availability };
@@ -94,18 +112,10 @@ function NumberInputDay() {
     setAvailability(newAvailability);
   };
 
-  const saveAvailability = () => {
-    const savedTimes = [];
-  
-    // Collect all time ranges from availability
-    Object.keys(availability).forEach((day) => {
-      availability[day].forEach((range) => {
-        savedTimes.push({ day, start: range.start, end: range.end });
-      });
-    });
-  
-    console.log("Saved time:", savedTimes);
+  const saveAvailability = async () => {
+    console.log("Saved availability:", JSON.stringify(availability, null, 2));
   };
+
   return (
     <div className="big-container">
       <Logo />
@@ -117,9 +127,9 @@ function NumberInputDay() {
         <div className="select-list-container">
           <select value={selectedDay} onChange={handleDayChange} className="select-list">
             <option value="">Select Date</option>
-            {daysOfWeek.map((dateObj, index) => (
-              <option key={index} value={`${dateObj.day}`}>
-                {`${dateObj.day}`}
+            {dates.map((dateObj, index) => (
+              <option key={index} value={dateObj.date}>
+                {dateObj.date}
               </option>
             ))}
           </select>
@@ -127,7 +137,6 @@ function NumberInputDay() {
         <button className="btnPlus" onClick={addTimeRange}>+</button>
       </div>
 
-      {/* Render TimeSelector with availability data and generated time options */}
       {availability && Object.keys(availability).length > 0 && (
         <TimeSelectorDay 
           availability={availability} 

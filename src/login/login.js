@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import axios from "axios";
 import "./login.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import Explanation from "../explanation/explanation";
@@ -7,6 +8,7 @@ import LoginHeader from "./loginHeader";
 function LogIn() {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
+  const [groupId, setGroupId] = useState(3); // 초기 group_id 설정
   const navigate = useNavigate();
   const location = useLocation();
   const explanation = [
@@ -17,54 +19,46 @@ function LogIn() {
     "you've already checked,",
     "please sign in using the same Name/Password.",
   ];
-
-  // Retrieve `dates`, `days`, `start_time`, and `end_time` from location state
   const days = location.state?.days ?? null;
-  const startTime = location.state?.start_time ?? null;
-  const endTime = location.state?.end_time ?? null;
-
-
-  const handleLogin = () => {
+  
+  const handleLogin = async () => {
     if (!name) {
       alert("Please enter your name.");
       return;
     }
 
-    // Show welcome message
-    alert(`Welcome, ${name}!`);
+    try {
+      // 로그인 요청 보내기
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}/login`, {
+        name: name,
+        password: password,
+        group_id: 3,
+        id: 3
+      });
 
-    // Determine whether `days` contains only `day` or both `date` and `day`
-// containsDates 변수를 days 배열에 date 필드가 있는지 검사하는 방식으로 수정
-// 모든 항목이 date 속성을 가지고 있을 때만 true로 설정
-const containsDates = days?.every(item => 'date' in item);
+      // 서버 응답에서 변수 이름 충돌을 피하기 위해 다른 변수 이름을 사용
+      const { id, group_id, name: userName, password: userPassword } = response.data;
 
-// date 필드 유무에 따라 페이지 이동
-if (containsDates) {
-  console.log("Navigating to /NumberInput with dates:", days);
-  console.log("Start Time:", startTime);
-  console.log("End Time:", endTime);
-  navigate("/NumberInput", { 
-    state: { 
-      user: name, 
-      name, 
-      dates: days, 
-      start_time: startTime, 
-      end_time: endTime 
-    } 
-  });
-} else {
-  console.log("Navigating to /NumberInputDay with days only:", days);
-  navigate("/NumberInputDay", { 
-    state: { 
-      user: name, 
-      name, 
-      dates: days, 
-      start_time: startTime, 
-      end_time: endTime 
-    } 
-  });
-}
-  }
+      // 로그인 성공 시 환영 메시지 표시
+      if (response.status === 200) {
+        alert(`Welcome, ${name}!`);
+        console.log("Login response data:", response.data);
+
+        const containsDates = days?.every(item => 'date' in item);
+        
+        if (containsDates) {
+          navigate("/NumberInput");
+        } else {
+          navigate("/NumberInputDay");
+        }
+      } else {
+        alert("Login failed. Please check your name and password.");
+      }
+    } catch (error) {
+      console.error("Error logging in:", error);
+      alert("An error occurred while trying to log in. Please try again.");
+    }
+  };
 
   return (
     <div className="big-container">
@@ -107,3 +101,4 @@ if (containsDates) {
 }
 
 export default LogIn;
+

@@ -53,4 +53,3 @@ const TimeSelectorDay = ({ availability, handleStartChange, handleEndChange, del
 };
 
 export default TimeSelectorDay;
-
