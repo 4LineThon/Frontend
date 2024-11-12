@@ -1,6 +1,8 @@
+// NumberInput.js
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './NumberInput.css';
 import AvailabilityHeader2 from './components/Availability Header2';
 import Logo from "../minju/component/logo";
@@ -9,34 +11,46 @@ import TimeSelector from './components/TimeSelector';
 
 function NumberInput() {
   const location = useLocation();
-  const group_id = 3; // 그룹 ID
-
+  const navigate = useNavigate();
+  const [groupName, setGroupName] = useState(""); // 그룹 이름 저장
+  const [username, setUsername] = useState(""); // 사용자 이름 저장
   const [dates, setDates] = useState([]); // 각 날짜의 date, start_time, end_time 저장
   const [timeOptions, setTimeOptions] = useState([]);  // 시간 옵션 배열
   const [availability, setAvailability] = useState({});
   const [selectedDay, setSelectedDay] = useState("");
-  const [userAvailability, setUserAvailability] = useState([]);
+  
+  // 그룹 ID와 사용자 ID 가져오기
+  const group_id = localStorage.getItem("group_id");
+  const user_id = localStorage.getItem("user_id"); // 사용자 ID 저장
 
-  // 그룹 타임테이블 정보를 가져오기
   useEffect(() => {
-    const fetchGroupTimetable = async () => {
+    const fetchGroupData = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/v1/group-timetable/${group_id}`);
-        if (response.data && response.data.length > 0) {
-          // date, start_time, end_time 모두 포함해 dates에 저장
-          setDates(response.data.map(item => ({
+        // 그룹 이름 가져오기
+        const groupResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${group_id}`);
+        setGroupName(groupResponse.data.name);
+
+        // 그룹 타임테이블 가져오기
+        const timetableResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/v1/group-timetable/${group_id}`);
+        if (timetableResponse.data && timetableResponse.data.length > 0) {
+          setDates(timetableResponse.data.map(item => ({
             date: item.date,
             start_time: item.start_time,
             end_time: item.end_time,
           })));
         }
+
+        // 사용자 이름 가져오기
+        const userResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${user_id}`);
+        setUsername(userResponse.data.username);
+
       } catch (error) {
-        console.error("Error fetching group timetable:", error);
+        console.error("Error fetching data:", error);
       }
     };
 
-    fetchGroupTimetable();
-  }, [group_id]);
+    fetchGroupData();
+  }, [group_id, user_id]);
 
   // 선택된 날짜에 따라 start_time과 end_time을 기반으로 시간 옵션을 생성
   useEffect(() => {
@@ -50,12 +64,12 @@ function NumberInput() {
   // startTime과 endTime을 기반으로 시간 옵션을 생성하는 함수
   const generateTimeOptions = (start, end) => {
     const times = [];
-    let currentTime = new Date(`1970-01-01T${start}Z`);  // Z를 추가하여 UTC 시간으로 설정
+    let currentTime = new Date(`1970-01-01T${start}Z`);
     const endTime = new Date(`1970-01-01T${end}Z`);
 
     while (currentTime <= endTime) {
-      times.push(currentTime.toISOString().substring(11, 16));  // ISO 문자열에서 HH:MM 부분만 추출
-      currentTime.setMinutes(currentTime.getMinutes() + 30);  // 30분 증가
+      times.push(currentTime.toISOString().substring(11, 16));
+      currentTime.setMinutes(currentTime.getMinutes() + 30);
     }
 
     return times;
@@ -114,12 +128,21 @@ function NumberInput() {
 
   const saveAvailability = async () => {
     console.log("Saved availability:", JSON.stringify(availability, null, 2));
+    // 저장 작업 후 GroupAvailability 페이지로 이동
+    navigate("/GroupAvailability");
   };
 
   return (
     <div className="big-container">
       <Logo />
-      <AvailabilityHeader2 text={`My Availability`} arrowDirection="left" navigateTo="/groupAvailability" />
+      <h2>{groupName}</h2> {/* Axios로 받아온 groupName 표시 */}
+      
+      <AvailabilityHeader2 
+        text={`My Availability`} 
+        arrowDirection="left" 
+        navigateTo="/groupAvailability"
+        userName={username}  // 사용자 이름 전달
+      />
       <InsertType />
 
       <div id="date-dropdown">
@@ -136,7 +159,7 @@ function NumberInput() {
         </div>
         <button className="btnPlus" onClick={addTimeRange}>+</button>
       </div>
-
+     
       {availability && Object.keys(availability).length > 0 && (
         <TimeSelector 
           availability={availability} 
