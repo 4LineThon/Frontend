@@ -18,25 +18,26 @@ function NumberInput() {
   const name = location.state?.name; // 사용자 이름을 쿼리 파라미터에서 가져옵니다.
 
   const [groupName, setGroupName] = useState(""); // 그룹 이름 저장
-  const [dates, setDates] = useState([]); // 각 날짜의 date, start_time, end_time 저장
+  const [dates, setDates] = useState([]); // 각 날짜의 date, day, start_time, end_time 저장
   const [timeOptions, setTimeOptions] = useState([]);  // 시간 옵션 배열
   const [availability, setAvailability] = useState({});
   const [selectedDay, setSelectedDay] = useState("");
-
 
   useEffect(() => {
     const fetchGroupData = async () => {
       try {
         // 그룹 타임테이블 가져오기
         const timetableResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/v1/group-timetable/${groupId}`);
+        
         if (timetableResponse.data && timetableResponse.data.length > 0) {
           const dateData = timetableResponse.data.map(item => ({
             date: item.date,
+            day: item.day,  // 요일도 저장
             start_time: item.start_time,
             end_time: item.end_time,
           }));
           setDates(dateData);
-          console.log("Fetched dates22:", dateData); // <== 데이터 확인용 로그
+          console.log("Fetched dates:", dateData); // <== 데이터 확인용 로그
         } else {
           console.log("No dates found in response.");
         }
@@ -52,37 +53,37 @@ function NumberInput() {
   
 
  // 선택된 날짜에 따라 start_time과 end_time을 기반으로 시간 옵션을 생성
-useEffect(() => {
-  const selectedDateData = dates.find(
-    dateObj => dateObj.date === selectedDay
-  );
-  if (selectedDateData) {
-    const { start_time, end_time } = selectedDateData;
-    setTimeOptions(generateTimeOptions(start_time, end_time));
-  } else {
-    console.log("No matching date found in dates array.");
-  }
-}, [selectedDay, dates]);
+  useEffect(() => {
+    const selectedDateData = dates.find(
+      dateObj => dateObj.date === selectedDay
+    );
+    if (selectedDateData) {
+      const { start_time, end_time } = selectedDateData;
+      setTimeOptions(generateTimeOptions(start_time, end_time));
+    } else {
+      console.log("No matching date found in dates array.");
+    }
+  }, [selectedDay, dates]);
 
 
-// startTime과 endTime을 기반으로 시간 옵션을 생성하는 함수
-const generateTimeOptions = (start, end) => {
-  const times = [];
-  let currentTime = new Date(`1970-01-01T${start}Z`);
-  const endTime = new Date(`1970-01-01T${end}Z`);
+  // startTime과 endTime을 기반으로 시간 옵션을 생성하는 함수
+  const generateTimeOptions = (start, end) => {
+    const times = [];
+    let currentTime = new Date(`1970-01-01T${start}Z`);
+    const endTime = new Date(`1970-01-01T${end}Z`);
 
-  while (currentTime <= endTime) {
-    times.push(currentTime.toISOString().substring(11, 16));
-    currentTime.setMinutes(currentTime.getMinutes() + 30);
-  }
-  console.log("Generated time options:", times);
-  return times;
-};
+    while (currentTime <= endTime) {
+      times.push(currentTime.toISOString().substring(11, 16));
+      currentTime.setMinutes(currentTime.getMinutes() + 30);
+    }
+    console.log("Generated time options:", times);
+    return times;
+  };
 
-const handleDayChange = (event) => {
-  setSelectedDay(event.target.value);
-  console.log("Selected day:", event.target.value); // 선택된 날짜 확인
-};
+  const handleDayChange = (event) => {
+    setSelectedDay(event.target.value);
+    console.log("Selected day:", event.target.value); // 선택된 날짜 확인
+  };
 
 
   const addTimeRange = () => {
@@ -152,26 +153,24 @@ const handleDayChange = (event) => {
       <InsertType />
       
       <div id="date-dropdown">
-    <span className="date-dropdown">Choose Date</span>
-    <div className="select-list-container">
-      {console.log("Rendering dates in dropdown:", dates)} {/* 드롭다운 렌더링 확인 */}
-      {console.log("Selected day:", selectedDay)} 
-      <select value={selectedDay} onChange={handleDayChange} className="select-list">
-        <option value="">Select Date</option>
-        {dates.length > 0 ? (
-          dates.map((dateObj, index) => (
-            <option key={index} value={dateObj.date}>
-              {dateObj.date}
-            </option>
-          ))
-        ) : (
-          <option disabled>Loading dates...</option>
-        )}
-      </select>
-    </div>
-    <button className="btnPlus" onClick={addTimeRange}>+</button>
-  </div>
-
+        <span className="date-dropdown">Choose Date</span>
+        <div className="select-list-container">
+          {console.log("Rendering dates in dropdown:", dates)} {/* 드롭다운 렌더링 확인 */}
+          <select value={selectedDay} onChange={handleDayChange} className="select-list">
+            <option value="">Select Date</option>
+            {dates.length > 0 ? (
+              dates.map((dateObj, index) => (
+                <option key={index} value={dateObj.date}>
+                  {dateObj.date} ({dateObj.day}) {/* 날짜와 요일 모두 표시 */}
+                </option>
+              ))
+            ) : (
+              <option disabled>Loading dates...</option>
+            )}
+          </select>
+        </div>
+        <button className="btnPlus" onClick={addTimeRange}>+</button>
+      </div>
 
      
       {availability && Object.keys(availability).length > 0 && (
