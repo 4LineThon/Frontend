@@ -1,6 +1,10 @@
-import React from 'react';
-
+import React, { useEffect } from 'react';
 const TimeSelector = ({ availability, handleStartChange, handleEndChange, deleteTimeRange, timeOptions }) => {
+
+  useEffect(() => {
+    console.log("Availability:", availability);
+    console.log("Time options:", timeOptions);
+  }, [availability, timeOptions]);
   return (
     <div>
       {/* Check if availability has keys and render */}

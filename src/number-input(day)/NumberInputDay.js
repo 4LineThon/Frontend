@@ -9,26 +9,39 @@ import TimeSelectorDay from './components/TimeSelectorDay';
 
 function NumberInputDay() {
   const location = useLocation();
-  const group_id = 3; // 그룹 ID
+  const queryParams = new URLSearchParams(location.search);
+  const groupId = queryParams.get("groupId"); // 쿼리 파라미터로 groupId 받아오기
 
-  const [dates, setDates] = useState([]); // 각 날짜의 date, start_time, end_time 저장
+  const [days, setDays] = useState([]); // 전체 데이터 저장
+  const [uniqueDays, setUniqueDays] = useState([]); // 중복 없는 요일만 저장
   const [timeOptions, setTimeOptions] = useState([]);  // 시간 옵션 배열
   const [availability, setAvailability] = useState({});
   const [selectedDay, setSelectedDay] = useState("");
-  const [userAvailability, setUserAvailability] = useState([]);
 
   // 그룹 타임테이블 정보를 가져오기
   useEffect(() => {
     const fetchGroupTimetable = async () => {
+      if (!groupId) {
+        console.error("No groupId found in query parameters.");
+        return;
+      }
+
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/v1/group-timetable/${group_id}`);
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_BASE_URL}/api/v1/group-timetable/${groupId}`
+        );
+        
         if (response.data && response.data.length > 0) {
-          // date, start_time, end_time 모두 포함해 dates에 저장
-          setDates(response.data.map(item => ({
-            date: item.date,
-            start_time: item.start_time,
-            end_time: item.end_time,
-          })));
+          // 전체 데이터를 저장
+          setDays(response.data);
+          
+          // 중복되지 않은 day 값만 추출하여 uniqueDays에 저장
+          const uniqueDaysList = Array.from(new Set(response.data.map(item => item.day)));
+          setUniqueDays(uniqueDaysList);
+          
+          console.log("Fetched unique days:", uniqueDaysList);
+        } else {
+          console.warn("No data received for group timetable.");
         }
       } catch (error) {
         console.error("Error fetching group timetable:", error);
@@ -36,25 +49,25 @@ function NumberInputDay() {
     };
 
     fetchGroupTimetable();
-  }, [group_id]);
+  }, [groupId]);
 
-  // 선택된 날짜에 따라 start_time과 end_time을 기반으로 시간 옵션을 생성
+  // 선택된 요일에 따라 start_time과 end_time을 기반으로 시간 옵션을 생성
   useEffect(() => {
-    const selectedDateData = dates.find(dateObj => dateObj.date === selectedDay);
+    const selectedDateData = days.find(dateObj => dateObj.day === selectedDay);
     if (selectedDateData) {
       const { start_time, end_time } = selectedDateData;
       setTimeOptions(generateTimeOptions(start_time, end_time));
     }
-  }, [selectedDay, dates]);
+  }, [selectedDay, days]);
 
   // startTime과 endTime을 기반으로 시간 옵션을 생성하는 함수
   const generateTimeOptions = (start, end) => {
     const times = [];
-    let currentTime = new Date(`1970-01-01T${start}Z`);  // Z를 추가하여 UTC 시간으로 설정
+    let currentTime = new Date(`1970-01-01T${start}Z`);
     const endTime = new Date(`1970-01-01T${end}Z`);
 
     while (currentTime <= endTime) {
-      times.push(currentTime.toISOString().substring(11, 16));  // ISO 문자열에서 HH:MM 부분만 추출
+      times.push(currentTime.toISOString().substring(11, 16));  // HH:MM 형식
       currentTime.setMinutes(currentTime.getMinutes() + 30);  // 30분 증가
     }
 
@@ -126,10 +139,10 @@ function NumberInputDay() {
         <span className="date-dropdown">Choose Date</span>
         <div className="select-list-container">
           <select value={selectedDay} onChange={handleDayChange} className="select-list">
-            <option value="">Select Date</option>
-            {dates.map((dateObj, index) => (
-              <option key={index} value={dateObj.date}>
-                {dateObj.date}
+            <option value="">Select Day</option>
+            {uniqueDays.map((day, index) => (
+              <option key={index} value={day}>
+                {day}
               </option>
             ))}
           </select>
