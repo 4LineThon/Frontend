@@ -59,10 +59,11 @@ const SelectDate = () => {
           },
         }
       );
-      const createdGroupId = response.data.id; // 생성된 group_id
-      localStorage.setItem("group_id", createdGroupId); // group_id를 localStorage에 저장
+      const groupId = response.data.id; // 생성된 group_id
+      localStorage.setItem("group_id", groupId); // group_id를 localStorage에 저장
 
-      navigate("/Login", {
+      const url = `/Login?event=${generateRandomString()}&groupId=${groupId}`;
+      navigate(url, {
         state: {
           days: request.days,
           start_time: request.start_time,
@@ -73,6 +74,12 @@ const SelectDate = () => {
       console.log(e);
     }
   };
+
+  function generateRandomString(length = 8) {
+    const array = new Uint8Array(length);
+    crypto.getRandomValues(array);
+    return Array.from(array, (byte) => byte.toString(36).slice(-1)).join("");
+  }
 
   return (
     <Wrapper>
