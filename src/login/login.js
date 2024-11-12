@@ -11,6 +11,10 @@ function LogIn() {
   const [groupName, setGroupName] = useState(""); // 그룹 이름을 저장할 상태
   const navigate = useNavigate();
   const location = useLocation();
+  const queryParams = new URLSearchParams(location.search); // 추가함
+  const event = queryParams.get("event"); // 추가함
+  const groupId = queryParams.get("groupId"); // 추가함
+
   const explanation = [
     "The Name/Password is only used",
     "when setting this schedule.",
@@ -23,12 +27,13 @@ function LogIn() {
 
   // 그룹 이름을 가져오기
   useEffect(() => {
-    const groupId = localStorage.getItem("group_id"); // localStorage에서 group_id 가져오기
-
+    // const groupId = localStorage.getItem("group_id"); // localStorage에서 group_id 가져오기
     if (groupId) {
       const fetchGroupName = async () => {
         try {
-          const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}`);
+          const response = await axios.get(
+            `${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}`
+          );
           setGroupName(response.data.name); // 응답에서 그룹 이름을 설정
           console.log(response.data);
           console.log("Fetched group name:", response.data.name); // 그룹 이름을 콘솔에 출력
@@ -51,17 +56,20 @@ function LogIn() {
     }
 
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}/login`, {
-        name: name,
-        password: password,
-      });
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}/login`,
+        {
+          name: name,
+          password: password,
+        }
+      );
 
       if (response.status === 200) {
         alert(`Welcome, ${name}!`);
         console.log("Login response data:", response.data.name);
 
-        const containsDates = days?.every(item => 'date' in item);
-        
+        const containsDates = days?.every((item) => "date" in item);
+
         if (containsDates) {
           navigate("/NumberInput");
         } else {
