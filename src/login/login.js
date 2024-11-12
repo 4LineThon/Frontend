@@ -66,7 +66,7 @@ function LogIn() {
   
       if (response.status === 200) {
         alert(`Welcome, ${name}!`);
-        console.log("Login response data:", response.data.name);
+        console.log("Login response data!!!:", response.data);
   
         // 쿼리 파라미터를 포함하여 /minju 페이지로 이동
         const url = `/minju?event=${event}&groupId=${groupId}`;

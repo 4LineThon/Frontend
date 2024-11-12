@@ -8,33 +8,35 @@ import AvailabilityHeader from "./component/AvailabilityHeader";
 
 const Minju = () => {
   const location = useLocation();
-  const [name, setName] = useState("");
-  const [id, setId] = useState(null);
+  const queryParams = new URLSearchParams(location.search);
+  const event = queryParams.get("event");
+  const groupId = queryParams.get("groupId");
 
+  const [id] = useState(location.state?.id || null);
+  const [name] = useState(location.state?.name || "User");
   useEffect(() => {
-    // location.state에서 ID와 Name 가져와서 상태 설정
-    setId(location.state?.id);
-    setName(location.state?.name);
-  }, [location.state]);
+    console.log("Received query parametersMinju:");
+    console.log("Event:", event);
+    console.log("GroupId:", groupId);
+
+    console.log("Received state parametersMinju:");
+    console.log("ID:", id);
+    console.log("Name:", name);
+  }, [event, groupId, location.state]);
 
   return (
     <div>
       <Logo />
-      {/* AvailabilityHeader 컴포넌트에서 name 값 사용 */}
       <AvailabilityHeader 
-        text={`Availability for ${name || "User"}`} 
+        text={`Availability for ${name}`} 
         arrowDirection="left" 
         navigateTo="/groupAvailability" 
       />
       <InsertType />
       <IsAvailable />
-      <Calendar />
+      <Calendar groupId={groupId}/>
 
-      {/* 추가로 ID와 Name을 화면에 표시 */}
-      <div style={{ marginTop: "20px", textAlign: "center" }}>
-        <h3>ID: {id}</h3>
-        <h3>Name: {name}</h3>
-      </div>
+      
     </div>
   );
 };
