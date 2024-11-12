@@ -1,5 +1,3 @@
-// SelectDate.js
-
 import React, { useRef, useState } from "react";
 import styled from "styled-components";
 import axios from "axios";
