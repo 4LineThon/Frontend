@@ -12,13 +12,11 @@ import LogIn from "./login/login";
 import "./App.css";
 import GroupAvailability from "./groupAvailability/GroupAvailability";
 import Result from "./result/Result";
-import Home from "./Home";
 const router = createBrowserRouter(
   [
     {
       path: "/",
-      element: <Home />,
-      // element: <Navigate to="/SelectDate" />,
+      element: <Navigate to="/SelectDate" />,
     },
     {
       path: "/minju",
