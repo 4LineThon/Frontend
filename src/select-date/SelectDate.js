@@ -1,13 +1,13 @@
 import React, { useRef, useState } from "react";
 import styled from "styled-components";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import Explanation from "../explanation/explanation";
 import SelectTimes from "./component/selectTimes";
 import SelectDates from "./component/selectDates";
 import Logo from "./component/logo";
 import ChooseDatesOrDays from "./component/chooseDatesOrDays";
 import SelectDays from "./component/selectDays";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import Explanation from "../explanation/explanation";
 
 const SelectDate = () => {
   const [selected, setSelected] = useState("Dates");
@@ -31,7 +31,7 @@ const SelectDate = () => {
       inputRef.current.focus();
       return;
     }
-    if (!request.days.length) {
+    if (!request.days?.length) {
       alert("Choose the Dates/Days.");
       return;
     }
@@ -49,28 +49,26 @@ const SelectDate = () => {
     // name 업데이트
     updateRequest("name", name);
 
-    // axios 연동
-    postGroup({ ...request, name });
-    navigate("/Login", {
-      state: {
-        days: request.days,
-        start_time: request.start_time,
-        end_time: request.end_time,
-      },
-    });
-  };
-
-  const postGroup = async (data) => {
     try {
-      await axios.post(
+      const response = await axios.post(
         `${process.env.REACT_APP_API_BASE_URL}/api/v1/group`,
-        data,
+        { ...request, name },
         {
           headers: {
             "Content-Type": "application/json",
           },
         }
       );
+      const createdGroupId = response.data.id; // 생성된 group_id
+      localStorage.setItem("group_id", createdGroupId); // group_id를 localStorage에 저장
+
+      navigate("/Login", {
+        state: {
+          days: request.days,
+          start_time: request.start_time,
+          end_time: request.end_time,
+        },
+      });
     } catch (e) {
       console.log(e);
     }

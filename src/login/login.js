@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import "./login.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import Explanation from "../explanation/explanation";
@@ -7,6 +8,7 @@ import LoginHeader from "./loginHeader";
 function LogIn() {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
+  const [groupName, setGroupName] = useState(""); // 그룹 이름을 저장할 상태
   const navigate = useNavigate();
   const location = useLocation();
   const explanation = [
@@ -17,60 +19,68 @@ function LogIn() {
     "you've already checked,",
     "please sign in using the same Name/Password.",
   ];
-
-  // Retrieve `dates`, `days`, `start_time`, and `end_time` from location state
   const days = location.state?.days ?? null;
-  const startTime = location.state?.start_time ?? null;
-  const endTime = location.state?.end_time ?? null;
 
+  // 그룹 이름을 가져오기
+  useEffect(() => {
+    const groupId = localStorage.getItem("group_id"); // localStorage에서 group_id 가져오기
 
-  const handleLogin = () => {
+    if (groupId) {
+      const fetchGroupName = async () => {
+        try {
+          const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}`);
+          setGroupName(response.data.name); // 응답에서 그룹 이름을 설정
+          console.log(response.data);
+          console.log("Fetched group name:", response.data.name); // 그룹 이름을 콘솔에 출력
+        } catch (error) {
+          console.error("Error fetching group name:", error);
+        }
+      };
+      fetchGroupName();
+    } else {
+      console.error("No group_id found in localStorage");
+    }
+  }, []);
+
+  const handleLogin = async () => {
+    const groupId = localStorage.getItem("group_id"); // localStorage에서 group_id 다시 가져오기
+
     if (!name) {
       alert("Please enter your name.");
       return;
     }
 
-    // Show welcome message
-    alert(`Welcome, ${name}!`);
+    try {
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}/login`, {
+        name: name,
+        password: password,
+      });
 
-    // Determine whether `days` contains only `day` or both `date` and `day`
-// containsDates 변수를 days 배열에 date 필드가 있는지 검사하는 방식으로 수정
-// 모든 항목이 date 속성을 가지고 있을 때만 true로 설정
-const containsDates = days?.every(item => 'date' in item);
+      if (response.status === 200) {
+        alert(`Welcome, ${name}!`);
+        console.log("Login response data:", response.data.name);
 
-// date 필드 유무에 따라 페이지 이동
-if (containsDates) {
-  console.log("Navigating to /NumberInput with dates:", days);
-  console.log("Start Time:", startTime);
-  console.log("End Time:", endTime);
-  navigate("/NumberInput", { 
-    state: { 
-      user: name, 
-      name, 
-      dates: days, 
-      start_time: startTime, 
-      end_time: endTime 
-    } 
-  });
-} else {
-  console.log("Navigating to /NumberInputDay with days only:", days);
-  navigate("/NumberInputDay", { 
-    state: { 
-      user: name, 
-      name, 
-      dates: days, 
-      start_time: startTime, 
-      end_time: endTime 
-    } 
-  });
-}
-  }
+        const containsDates = days?.every(item => 'date' in item);
+        
+        if (containsDates) {
+          navigate("/NumberInput");
+        } else {
+          navigate("/NumberInputDay");
+        }
+      } else {
+        alert("Login failed. Please check your name and password.");
+      }
+    } catch (error) {
+      console.error("Error logging in:", error);
+      alert("An error occurred while trying to log in. Please try again.");
+    }
+  };
 
   return (
     <div className="big-container">
       <div className="header">
         <h1>Timi</h1>
-        <h2>4LINETHON</h2>
+        <h2>{groupName}</h2> {/* Axios로 받아온 groupName 표시 */}
       </div>
 
       <LoginHeader />
