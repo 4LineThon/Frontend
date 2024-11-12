@@ -12,7 +12,6 @@ function NumberInputDay() {
   const queryParams = new URLSearchParams(location.search);
   const groupId = queryParams.get("groupId"); // 쿼리 파라미터로 groupId 받아오기
 
-
   const [days, setDays] = useState([]); // 전체 데이터 저장
   const [uniqueDays, setUniqueDays] = useState([]); // 중복 없는 요일만 저장
   const [timeOptions, setTimeOptions] = useState([]);  // 시간 옵션 배열
@@ -31,6 +30,7 @@ function NumberInputDay() {
         const response = await axios.get(
           `${process.env.REACT_APP_API_BASE_URL}/api/v1/group-timetable/${groupId}`
         );
+        
         if (response.data && response.data.length > 0) {
           // 전체 데이터를 저장
           setDays(response.data);
@@ -139,7 +139,7 @@ function NumberInputDay() {
         <span className="date-dropdown">Choose Date</span>
         <div className="select-list-container">
           <select value={selectedDay} onChange={handleDayChange} className="select-list">
-          <option value="">Select Day</option>
+            <option value="">Select Day</option>
             {uniqueDays.map((day, index) => (
               <option key={index} value={day}>
                 {day}
