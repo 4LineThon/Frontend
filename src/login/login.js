@@ -49,12 +49,12 @@ function LogIn() {
 
   const handleLogin = async () => {
     const groupId = localStorage.getItem("group_id"); // localStorage에서 group_id 다시 가져오기
-
+  
     if (!name) {
       alert("Please enter your name.");
       return;
     }
-
+  
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}/login`,
@@ -63,18 +63,22 @@ function LogIn() {
           password: password,
         }
       );
-
+  
       if (response.status === 200) {
         alert(`Welcome, ${name}!`);
         console.log("Login response data:", response.data.name);
-
-        const containsDates = days?.every((item) => "date" in item);
-
-        if (containsDates) {
-          navigate("/NumberInput");
-        } else {
-          navigate("/NumberInputDay");
-        }
+  
+        // 쿼리 파라미터를 포함하여 /minju 페이지로 이동
+        const url = `/minju?event=${event}&groupId=${groupId}`;
+        navigate(url, {
+          state: {
+            days: location.state?.days,
+            start_time: location.state?.start_time,
+            end_time: location.state?.end_time,
+            id: response.data.id,    
+            name: response.data.name, 
+          },
+        });
       } else {
         alert("Login failed. Please check your name and password.");
       }

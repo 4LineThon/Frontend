@@ -12,6 +12,24 @@ import TimeSelector from './components/TimeSelector';
 function NumberInput() {
   const location = useLocation();
   const navigate = useNavigate();
+
+  const queryParams = new URLSearchParams(location.search);
+  const event = queryParams.get("event");
+  const groupId = queryParams.get("groupId");
+  const id = location.state?.id;
+  const name = location.state?.name;
+
+  // 콘솔에 쿼리 파라미터와 상태 데이터 출력
+  useEffect(() => {
+    console.log("Received query parameters:");
+    console.log("Event:", event);
+    console.log("GroupId:", groupId);
+    
+    console.log("Received state parameters:");
+    console.log("ID:", id);
+    console.log("Name:", name);
+  }, [event, groupId, id, name]);
+  
   const [groupName, setGroupName] = useState(""); // 그룹 이름 저장
   const [username, setUsername] = useState(""); // 사용자 이름 저장
   const [dates, setDates] = useState([]); // 각 날짜의 date, start_time, end_time 저장
