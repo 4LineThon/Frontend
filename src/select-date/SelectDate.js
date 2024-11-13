@@ -15,7 +15,10 @@ const SelectDate = () => {
   const inputRef = useRef(null);
   const [request, setRequest] = useState({});
   const navigate = useNavigate();
-  const explanation = ["Please select the date for scheduling."];
+  const explanation = [
+    "Please select the date for scheduling.",
+    "(up to 7 selections allowed)",
+  ];
 
   const updateRequest = (field, value) => {
     setRequest((prev) => ({
