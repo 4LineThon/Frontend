@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Logo from "../minju/component/logo";
 import AvailabilityHeader from "./component/AvailabilityHeader";
 import Explanation from "../explanation/explanation";
+import CopyButton from "../copy-event-link/CopyButton";
 
 const Result = () => {
   const [time, setTime] = useState("");
@@ -33,6 +34,7 @@ const Result = () => {
 
   return (
     <div style={styles.wrapper}>
+      <CopyButton />
       <Logo />
       <AvailabilityHeader text="Result" />
 
@@ -101,6 +103,7 @@ const styles = {
     alignItems: "center",
     gap: "10px",
     marginTop: "20px",
+    position: "relative", // for copy-event-link
   },
   formContainer: {
     display: "flex",
