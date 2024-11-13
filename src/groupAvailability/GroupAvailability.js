@@ -8,6 +8,7 @@ import Logo from "../minju/component/logo";
 import AvailabilityHeader from "../minju/component/AvailabilityHeader";
 import FixButton from "./component/fixButton";
 import Explanation from "../explanation/explanation";
+import CopyButton from "../copy-event-link/CopyButton";
 
 const GroupAvailability = () => {
   const location = useLocation();
@@ -32,28 +33,34 @@ const GroupAvailability = () => {
 
   useEffect(() => {
     if (groupId) {
-      axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/v1/group-timetable/${groupId}`)
-        .then(response => {
+      axios
+        .get(
+          `${process.env.REACT_APP_API_BASE_URL}/api/v1/group-timetable/${groupId}`
+        )
+        .then((response) => {
           const rawData = response.data;
           console.log("Fetched group timetable data:", rawData);
 
           // 시간대를 만들고, 각 슬롯에 따라 가용 인원 수를 표시
-          const processedData = rawData.map(item => ({
+          const processedData = rawData.map((item) => ({
             ...item,
             slots: item.slots.reduce((acc, slot) => {
               acc[slot.time] = slot.availability_count;
               return acc;
-            }, {})
+            }, {}),
           }));
 
           setGroupTimetableData(processedData);
 
           if (rawData.length > 0) {
-            const slots = generateTimeSlots(rawData[0].start_time, rawData[0].end_time);
+            const slots = generateTimeSlots(
+              rawData[0].start_time,
+              rawData[0].end_time
+            );
             setTimeSlots(slots);
           }
         })
-        .catch(error => {
+        .catch((error) => {
           console.error("Error fetching group timetable data:", error);
         });
     }
@@ -80,7 +87,8 @@ const GroupAvailability = () => {
   };
 
   return (
-    <div>
+    <div style={{ position: "relative" }}>
+      <CopyButton />
       <Logo />
       <AvailabilityHeader
         text="Group's Availability"
@@ -98,10 +106,25 @@ const GroupAvailability = () => {
         {/* 요일 및 날짜 표시 */}
         {groupTimetableData.map((day, dayIndex) => (
           <React.Fragment key={dayIndex}>
-            <text x={68 + dayIndex * 36} y="15" textAnchor="middle" fontSize="10" fill="#423E59">
-              {new Date(day.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+            <text
+              x={68 + dayIndex * 36}
+              y="15"
+              textAnchor="middle"
+              fontSize="10"
+              fill="#423E59"
+            >
+              {new Date(day.date).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+              })}
             </text>
-            <text x={68 + dayIndex * 36} y="30" textAnchor="middle" fontSize="18" fill="#423E59">
+            <text
+              x={68 + dayIndex * 36}
+              y="30"
+              textAnchor="middle"
+              fontSize="18"
+              fill="#423E59"
+            >
               {day.day.charAt(0)}
             </text>
 
