@@ -11,33 +11,58 @@ function NumberInput() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // 쿼리 파라미터에서 groupId와 event를 가져옵니다.
   const queryParams = new URLSearchParams(location.search);
   const event = queryParams.get("event");
   const groupId = queryParams.get("groupId");
-  const name = location.state?.name; // 사용자 이름을 쿼리 파라미터에서 가져옵니다.
+  const userid = queryParams.get("userid");
 
-  const [groupName, setGroupName] = useState(""); // 그룹 이름 저장
-  const [dates, setDates] = useState([]); // 각 날짜의 date, day, start_time, end_time 저장
-  const [timeOptions, setTimeOptions] = useState([]);  // 시간 옵션 배열
+  const [id, setId] = useState(location.state?.id || localStorage.getItem('id') || null);
+  const [name, setName] = useState(location.state?.name || localStorage.getItem('name') || "User");
+  const [dates, setDates] = useState([]);
+  const [timeOptions, setTimeOptions] = useState([]);
   const [availability, setAvailability] = useState({});
-  const [selectedDay, setSelectedDay] = useState("");
+  const [selectedDay, setSelectedDay] = useState(localStorage.getItem('lastSelectedDay') || ""); 
+  const [groupName, setGroupName] = useState("");
 
+  // 초기 렌더링 시 savedAvailability 및 lastSelectedDay 불러오기
+  useEffect(() => {
+    const storedAvailability = localStorage.getItem('savedAvailability');
+    if (storedAvailability) {
+      setAvailability(JSON.parse(storedAvailability));
+    }
+
+    const lastSelectedDay = localStorage.getItem('lastSelectedDay');
+    if (lastSelectedDay) {
+      setSelectedDay(lastSelectedDay);
+    }
+  }, []);
+
+  // id와 name을 localStorage에 저장
+  useEffect(() => {
+    if (id) {
+      localStorage.setItem('id', id);
+    }
+    if (name) {
+      localStorage.setItem('name', name);
+    }
+  }, [id, name]);
+
+  // groupId가 있을 때 시간표 데이터를 가져오는 함수
   useEffect(() => {
     const fetchGroupData = async () => {
       try {
-        // 그룹 타임테이블 가져오기
         const timetableResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/v1/group-timetable/${groupId}`);
         
         if (timetableResponse.data && timetableResponse.data.length > 0) {
           const dateData = timetableResponse.data.map(item => ({
+            id: item.id,
+            day: item.day,
             date: item.date,
-            day: item.day,  // 요일도 저장
             start_time: item.start_time,
             end_time: item.end_time,
+            slots: item.slots || []
           }));
           setDates(dateData);
-          console.log("Fetched dates:", dateData); // <== 데이터 확인용 로그
         } else {
           console.log("No dates found in response.");
         }
@@ -50,23 +75,20 @@ function NumberInput() {
       fetchGroupData();
     }
   }, [groupId]);
-  
 
- // 선택된 날짜에 따라 start_time과 end_time을 기반으로 시간 옵션을 생성
+  // selectedDay가 설정될 때 해당 날짜의 시간 옵션과 availability 불러오기
   useEffect(() => {
-    const selectedDateData = dates.find(
-      dateObj => dateObj.date === selectedDay
-    );
-    if (selectedDateData) {
-      const { start_time, end_time } = selectedDateData;
-      setTimeOptions(generateTimeOptions(start_time, end_time));
-    } else {
-      console.log("No matching date found in dates array.");
+    if (selectedDay) {
+      const selectedDateData = dates.find(
+        dateObj => dateObj.date === selectedDay
+      );
+      if (selectedDateData) {
+        const { start_time, end_time } = selectedDateData;
+        setTimeOptions(generateTimeOptions(start_time, end_time));
+      }
     }
   }, [selectedDay, dates]);
 
-
-  // startTime과 endTime을 기반으로 시간 옵션을 생성하는 함수
   const generateTimeOptions = (start, end) => {
     const times = [];
     let currentTime = new Date(`1970-01-01T${start}Z`);
@@ -76,16 +98,16 @@ function NumberInput() {
       times.push(currentTime.toISOString().substring(11, 16));
       currentTime.setMinutes(currentTime.getMinutes() + 30);
     }
-    console.log("Generated time options:", times);
     return times;
   };
 
   const handleDayChange = (event) => {
-    setSelectedDay(event.target.value);
-    console.log("Selected day:", event.target.value); // 선택된 날짜 확인
+    const newSelectedDay = event.target.value;
+    setSelectedDay(newSelectedDay);
+    localStorage.setItem('lastSelectedDay', newSelectedDay); // 선택한 날짜를 localStorage에 저장
   };
 
-
+  // 선택한 날짜에 새로운 시간 범위를 추가
   const addTimeRange = () => {
     if (!selectedDay) return;
   
@@ -98,11 +120,11 @@ function NumberInput() {
     });
   };
 
+  // 기존 시간을 수정할 때 호출되는 함수
   const handleStartChange = (day, index, event) => {
     setAvailability((prev) => {
       const newAvailability = { ...prev };
       newAvailability[day][index].start = event.target.value;
-      newAvailability[day] = sortByStartTime(newAvailability[day]);
       return newAvailability;
     });
   };
@@ -111,7 +133,6 @@ function NumberInput() {
     setAvailability((prev) => {
       const newAvailability = { ...prev };
       newAvailability[day][index].end = event.target.value;
-      newAvailability[day] = sortByStartTime(newAvailability[day]);
       return newAvailability;
     });
   };
@@ -135,39 +156,43 @@ function NumberInput() {
 
   const saveAvailability = async () => {
     try {
-      const availabilityData = JSON.stringify(availability, null, 2);
-      console.log("Saved availability:", availabilityData);
-  
-      // GroupAvailability로 이동할 때 쿼리 파라미터로 availability 데이터 전송
-      navigate(`/GroupAvailability?availability=${encodeURIComponent(availabilityData)}`);
+      localStorage.setItem('savedAvailability', JSON.stringify(availability));
+      navigate(
+        `/GroupAvailability?event=${encodeURIComponent(event)}&groupId=${encodeURIComponent(groupId)}&userid=${encodeURIComponent(userid)}&availability=${encodeURIComponent(JSON.stringify(availability))}&name=${encodeURIComponent(name)}&date=${encodeURIComponent(selectedDay)}&day=${encodeURIComponent(dates.find(dateObj => dateObj.date === selectedDay)?.day || "")}`
+      );
     } catch (error) {
       console.error("Error navigating with availability data:", error);
     }
   };
 
+
+  // availability가 변경될 때마다 localStorage에 저장
+  useEffect(() => {
+    localStorage.setItem('savedAvailability', JSON.stringify(availability));
+  }, [availability]);
+
   return (
     <div className="big-container">
       <Logo />
-      <h2>{groupName}</h2> {/* Axios로 받아온 groupName 표시 */}
+      <h2>{groupName}</h2> 
       
       <AvailabilityHeader2 
         text={`My Availability`} 
         arrowDirection="left" 
         navigateTo="/groupAvailability"
-        userName={name}  // 쿼리 파라미터에서 가져온 사용자 이름을 전달
+        userName={name}  
       />
       <InsertType />
       
       <div id="date-dropdown">
         <span className="date-dropdown">Choose Date</span>
         <div className="select-list-container">
-          {console.log("Rendering dates in dropdown:", dates)} {/* 드롭다운 렌더링 확인 */}
           <select value={selectedDay} onChange={handleDayChange} className="select-list">
             <option value="">Select Date</option>
             {dates.length > 0 ? (
               dates.map((dateObj, index) => (
                 <option key={index} value={dateObj.date}>
-                  {dateObj.date} ({dateObj.day}) {/* 날짜와 요일 모두 표시 */}
+                  {dateObj.date} ({dateObj.day}) 
                 </option>
               ))
             ) : (
@@ -178,7 +203,6 @@ function NumberInput() {
         <button className="btnPlus" onClick={addTimeRange}>+</button>
       </div>
 
-     
       {availability && Object.keys(availability).length > 0 && (
         <TimeSelector 
           availability={availability} 
@@ -192,6 +216,8 @@ function NumberInput() {
       {Object.keys(availability).length > 0 && (
         <button className="btn-save" onClick={saveAvailability}>Save</button>
       )}
+
+  
     </div>
   );
 }
