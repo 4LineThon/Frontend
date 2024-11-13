@@ -75,21 +75,24 @@ const CreateCalendar = ({ groupTimetableData, userid, onChange = () => {} }) => 
   const timeSlots = gridState.length > 0 ? generateTimeSlots(groupTimetableData[0].startTime, groupTimetableData[0].endTime) : [];
   
   const handleSave = async () => {
-    const dayIds = groupTimetableData.map((_, index) => index + 1); // days ID를 1부터 시작하도록 설정
-
-    for (let dayIndex = 0; dayIndex < dayIds.length; dayIndex++) {
+    for (let dayIndex = 0; dayIndex < groupTimetableData.length; dayIndex++) {
+      const dayData = groupTimetableData[dayIndex];
+      const dayName = dayData.day; // days의 day
+      const dayDate = dayData.date; // days의 date
+  
       for (let timeIndex = 0; timeIndex < timeSlots.length - 1; timeIndex++) { // 마지막 time slot은 제외
         if (gridState[timeIndex][dayIndex]) {
           const timeFrom = `${timeSlots[timeIndex]}:00`;
           const timeTo = `${timeSlots[timeIndex + 1]}:00`;
-
+  
           const dataToSend = {
-            days: dayIds[dayIndex],
             user: userid,
+            day: dayName,
+            date: dayDate, // date를 선택적으로 추가
             time_from: timeFrom,
             time_to: timeTo,
           };
-
+  
           try {
             const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability`, dataToSend, {
               headers: {
@@ -103,7 +106,7 @@ const CreateCalendar = ({ groupTimetableData, userid, onChange = () => {} }) => 
         }
       }
     }
-
+  
     // Save 완료 후 이동할 URL 생성
     const url = `/groupavailability?event=${event}&groupId=${groupId}`;
     navigate(url, {
@@ -111,10 +114,11 @@ const CreateCalendar = ({ groupTimetableData, userid, onChange = () => {} }) => 
         gridState,
         timeSlots,
         groupTimetableData,
-        userid
+        userid,
       },
     });
   };
+  
 
   return (
     <CalendarContainer onMouseUp={handleMouseUp}>
