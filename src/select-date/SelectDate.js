@@ -63,7 +63,6 @@ const SelectDate = () => {
         }
       );
       const groupId = response.data.id; // 생성된 group_id
-      localStorage.setItem("group_id", groupId); // group_id를 localStorage에 저장
 
       const url = `/Login?event=${generateRandomString()}&groupId=${groupId}`;
       navigate(url, {

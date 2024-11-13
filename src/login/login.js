@@ -48,8 +48,6 @@ function LogIn() {
   }, []);
 
   const handleLogin = async () => {
-    const groupId = localStorage.getItem("group_id"); // localStorage에서 group_id 다시 가져오기
-  
     if (!name) {
       alert("Please enter your name.");
       return;
