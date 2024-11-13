@@ -31,10 +31,17 @@ const SelectDates = ({ updateRequest }) => {
 
   const handleClick = (e) => {
     const idx = Number(e.target.id);
+    if (isOverSeven() && !btn[idx]) return; // 이미 7개 이상 체크했고 더 클릭하려고 하면
     setBtn((prev) => prev.map((state, i) => (i === idx ? !state : state)));
   };
 
-  // handleClick 후 실행
+  // 7개 초과로 클릭하는지 확인
+  function isOverSeven() {
+    const trueCount = btn.filter((value) => value === true).length;
+    return trueCount >= 7;
+  }
+
+  // (handleClick 후 실행) request 요청 업데이트
   useEffect(() => {
     const request = response.filter((_, idx) => btn[idx]);
     updateRequest("days", request);
