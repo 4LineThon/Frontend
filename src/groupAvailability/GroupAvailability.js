@@ -144,7 +144,7 @@ const GroupAvailability = () => {
           </React.Fragment>
         ))}
       </StyledSVG>
-      <FixButton />
+      <FixButton event={event} groupId={groupId} userid = {userid} />
       <Explanation textArr={explanation} />
     </div>
   );
