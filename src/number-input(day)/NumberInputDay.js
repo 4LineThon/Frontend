@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './NumberInputDay.css';
 import AvailabilityHeaderDay from './components/AvailabilityHeaderDay';
 import Logo from "../minju/component/logo";
@@ -9,6 +9,8 @@ import TimeSelectorDay from './components/TimeSelectorDay';
 
 function NumberInputDay() {
   const location = useLocation();
+  const navigate = useNavigate(); // navigate 함수 선언
+
   const queryParams = new URLSearchParams(location.search);
   const groupId = queryParams.get("groupId"); // 쿼리 파라미터로 groupId 받아오기
 
@@ -126,7 +128,15 @@ function NumberInputDay() {
   };
 
   const saveAvailability = async () => {
-    console.log("Saved availability:", JSON.stringify(availability, null, 2));
+    try {
+      const availabilityData = JSON.stringify(availability);
+      console.log("Saved availability:", availabilityData);
+
+      // navigate로 /groupAvailability 페이지로 이동하면서 쿼리 파라미터로 데이터 전달
+      navigate(`/groupAvailability?availability=${encodeURIComponent(availabilityData)}`);
+    } catch (error) {
+      console.error("Error while saving availability:", error);
+    }
   };
 
   return (

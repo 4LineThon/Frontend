@@ -134,9 +134,15 @@ function NumberInput() {
   };
 
   const saveAvailability = async () => {
-    console.log("Saved availability:", JSON.stringify(availability, null, 2));
-    // 저장 작업 후 GroupAvailability 페이지로 이동
-    navigate("/GroupAvailability");
+    try {
+      const availabilityData = JSON.stringify(availability, null, 2);
+      console.log("Saved availability:", availabilityData);
+  
+      // GroupAvailability로 이동할 때 쿼리 파라미터로 availability 데이터 전송
+      navigate(`/GroupAvailability?availability=${encodeURIComponent(availabilityData)}`);
+    } catch (error) {
+      console.error("Error navigating with availability data:", error);
+    }
   };
 
   return (
