@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './NumberInputDay.css';
 import AvailabilityHeaderDay from './components/AvailabilityHeaderDay';
 import Logo from "../minju/component/logo";
@@ -9,6 +9,8 @@ import TimeSelectorDay from './components/TimeSelectorDay';
 
 function NumberInputDay() {
   const location = useLocation();
+  const navigate = useNavigate(); // navigate 함수 선언
+
   const queryParams = new URLSearchParams(location.search);
   const groupId = queryParams.get("groupId"); // 쿼리 파라미터로 groupId 받아오기
 
