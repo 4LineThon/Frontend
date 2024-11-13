@@ -5,7 +5,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import EveryoneAvailable from "./component/Everyoneavailable";
 import StatusIndicator from "./component/StatusIndicator";
 import Logo from "../minju/component/logo";
-import AvailabilityHeader from "../minju/component/AvailabilityHeader";
+import AvailabilityHeader from "./component/AvailabilityHeader";
 import FixButton from "./component/fixButton";
 import Explanation from "../explanation/explanation";
 import CopyButton from "../copy-event-link/CopyButton";
@@ -18,19 +18,14 @@ const GroupAvailability = () => {
   const [maxAvailability, setMaxAvailability] = useState(1); // 최댓값을 저장할 상태
   const queryParams = new URLSearchParams(location.search);
   const event = queryParams.get("event");
-  // 일단은 groupidid로 바꿨는데 나중에 제대로 된 값 전달되면 groupdId로 수정하면 됨
-  const groupIdid = queryParams.get("groupId");
+  const groupId = queryParams.get("groupId");
   const userid = location.state?.userid;
 
   // 쿼리 파라미터 확인 (디버깅용)
   console.log("Event:", event);
-  console.log("GroupId:", groupIdid);
+  console.log("GroupId:", groupId);
   console.log("userid:", userid);
 
-
-  // 일단 그룹 아이디 1로 하고 화면만 일단 띄움
-  const groupId = 1;
-  
   const explanation = [
     "You can confirm the meeting time",
     "by clicking “Fix Time” button.",
@@ -104,7 +99,9 @@ const GroupAvailability = () => {
       <AvailabilityHeader
         text="Group's Availability"
         arrowDirection="right"
-        navigateTo="/minju"
+        navigateTo={() => navigate(`/minju?event=${event}&groupId=${groupId}`, {
+          state: { userid }
+        })}
       />
       <EveryoneAvailable />
       <StatusIndicator current={0} total={maxAvailability} />
@@ -175,7 +172,7 @@ const GroupAvailability = () => {
 
       
       {/* 여기 groupIdid도 나중에 제대로 받아지면 그때 groupId로 수정하면됨 */}  
-      <FixButton event={event} groupId={groupIdid} userid = {userid} />
+      <FixButton event={event} groupId={groupId} userid = {userid} />
       <Explanation textArr={explanation} />
     </div>
   );
