@@ -16,18 +16,19 @@ const GroupAvailability = () => {
   const [groupTimetableData, setGroupTimetableData] = useState([]);
   const [timeSlots, setTimeSlots] = useState([]);
   const [maxAvailability, setMaxAvailability] = useState(1); // 최댓값을 저장할 상태
-  //const queryParams = new URLSearchParams(location.search);
-  //const event = queryParams.get("event");
-  //const groupId = queryParams.get("groupId");
-  //const userid = location.state?.userid;
+  const queryParams = new URLSearchParams(location.search);
+  const event = queryParams.get("event");
+  // 일단은 groupidid로 바꿨는데 나중에 제대로 된 값 전달되면 groupdId로 수정하면 됨
+  const groupIdid = queryParams.get("groupId");
+  const userid = location.state?.userid;
 
   // 쿼리 파라미터 확인 (디버깅용)
-  // console.log("Event:", event);
-  // console.log("GroupId:", groupId);
-  // console.log("userid:", userid);
+  console.log("Event:", event);
+  console.log("GroupId:", groupIdid);
+  console.log("userid:", userid);
 
 
-  // 일단 그룹 아이디 1로 하고 만드는 중
+  // 일단 그룹 아이디 1로 하고 화면만 일단 띄움
   const groupId = 1;
   
   const explanation = [
@@ -171,8 +172,10 @@ const GroupAvailability = () => {
   </StyledSVG>
 </CalendarContainer>
 
+
       
-      {/*<FixButton event={event} groupId={groupId} userid = {userid} />*/}
+      {/* 여기 groupIdid도 나중에 제대로 받아지면 그때 groupId로 수정하면됨 */}  
+      <FixButton event={event} groupId={groupIdid} userid = {userid} />
       <Explanation textArr={explanation} />
     </div>
   );
