@@ -46,6 +46,11 @@ const router = createBrowserRouter(
       path: "/Result",
       element: <Result />,
     },
+    // 모든 경로가 잘못된 경우 /SelectDate로 리디렉션
+    {
+      path: "*",
+      element: <Navigate to="/SelectDate" />,
+    },
   ],
   {
     future: {
