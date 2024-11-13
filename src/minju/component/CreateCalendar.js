@@ -65,6 +65,7 @@ const CreateCalendar = ({ groupTimetableData, userid, onChange = () => {} }) => 
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return ""; // 날짜가 없으면 빈 문자열 반환
     const date = new Date(dateString);
     const month = date.toLocaleString("en-US", { month: "short" });
     const day = date.getDate();
@@ -72,7 +73,7 @@ const CreateCalendar = ({ groupTimetableData, userid, onChange = () => {} }) => 
   };
 
   const timeSlots = gridState.length > 0 ? generateTimeSlots(groupTimetableData[0].startTime, groupTimetableData[0].endTime) : [];
-
+  
   const handleSave = async () => {
     const dayIds = groupTimetableData.map((_, index) => index + 1); // days ID를 1부터 시작하도록 설정
 
@@ -118,9 +119,9 @@ const CreateCalendar = ({ groupTimetableData, userid, onChange = () => {} }) => 
   return (
     <CalendarContainer onMouseUp={handleMouseUp}>
       <StyledSVG
-        width="320"
+        width={50 + groupTimetableData.length * 36} // 동적으로 SVG 너비를 설정
         height={timeSlots.length * 18 + 70}
-        viewBox={`0 0 320 ${timeSlots.length * 18 + 70}`}
+        viewBox={`0 0 ${50 + groupTimetableData.length * 36} ${timeSlots.length * 18 + 70}`}
         xmlns="http://www.w3.org/2000/svg"
       >
         {groupTimetableData.map((day, i) => (
