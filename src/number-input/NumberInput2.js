@@ -7,7 +7,7 @@ import Logo from "../minju/component/logo";
 import InsertType from '../minju/component/insertType';
 import TimeSelector from './components/TimeSelector';
 
-function NumberInput() {
+function NumberInput2() {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -190,4 +190,4 @@ function NumberInput() {
   );
 }
 
-export default NumberInput;
+export default NumberInput2;

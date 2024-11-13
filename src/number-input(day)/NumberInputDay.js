@@ -126,7 +126,15 @@ function NumberInputDay() {
   };
 
   const saveAvailability = async () => {
-    console.log("Saved availability:", JSON.stringify(availability, null, 2));
+    try {
+      const availabilityData = JSON.stringify(availability);
+      console.log("Saved availability:", availabilityData);
+
+      // navigate로 /groupAvailability 페이지로 이동하면서 쿼리 파라미터로 데이터 전달
+      navigate(`/groupAvailability?availability=${encodeURIComponent(availabilityData)}`);
+    } catch (error) {
+      console.error("Error while saving availability:", error);
+    }
   };
 
   return (
