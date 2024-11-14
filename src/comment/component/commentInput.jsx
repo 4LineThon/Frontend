@@ -1,13 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { Bullet, Wrapper } from "./commentCSS";
 
-const CommentInput = () => {
+const CommentInput = ({ postComment }) => {
+  const [text, setText] = useState("");
+  console.log(text);
+
   return (
     <InputWrapper>
       <Bullet />
-      <TextArea />
-      <SendButton />
+      <TextArea value={text} onChange={(e) => setText(e.target.value)} />
+      <SendButton onClick={() => postComment(text)} />
     </InputWrapper>
   );
 };

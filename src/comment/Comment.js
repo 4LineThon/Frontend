@@ -2,34 +2,35 @@ import React, { useEffect, useState } from "react";
 import CommentBox from "./component/commentBox";
 import CommentInput from "./component/commentInput";
 import styled from "styled-components";
+import axios from "axios";
 
-const Comment = () => {
-  const [comments, setComments] = useState([]);
+const Comment = ({ comments, selectedSlot }) => {
+  const isClicked = selectedSlot !== null;
+  console.log("selectedSlot", selectedSlot);
 
-  useEffect(() => {
-    setComments([
-      {
-        name: "최OO",
-        content:
-          "수업이 있는데, 시험 기간이라 휴강 할 수도 있어요! 알아보고 다시 알려드릴게요!",
-      },
-      {
-        name: "김OO",
-        content: "알바 일정이 확실하지 않아서 일단 된다고 했습니다.",
-      },
-    ]);
-  }, []);
+  const postComment = async (text) => {
+    axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/v1/comment`, {
+      user: localStorage.getItem("userId"),
+      days: "",
+      time: "",
+      text,
+    });
+  };
 
   return (
     <Wrapper>
       {comments.map((comment, idx) => {
         return <CommentBox key={idx} commentInfo={comment} />;
       })}
-      <CommentInput />
+      {isClicked ? <CommentInput postComment={postComment} /> : null}
     </Wrapper>
   );
 };
 
 export default Comment;
 
-const Wrapper = styled.div``;
+const Wrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+`;
