@@ -19,6 +19,7 @@ const GroupAvailability = () => {
   const [timeSlots, setTimeSlots] = useState([]);
   const [userCount, setUserCount] = useState(0);
   const [slotAvailabilityCounts, setSlotAvailabilityCounts] = useState({});
+  const [loading, setLoading] = useState(true);
   const queryParams = new URLSearchParams(location.search);
   const event = queryParams.get("event");
   const groupId = Number(queryParams.get("groupId"));
@@ -48,7 +49,7 @@ const GroupAvailability = () => {
               rawData[0].end_time
             );
             setTimeSlots(slots);
-            fetchAllSlotDetails(rawData, slots); // 초기화 시 모든 슬롯 데이터를 가져옴
+            fetchAllSlotDetails(rawData, slots);
           }
         })
         .catch((error) => {
@@ -57,7 +58,6 @@ const GroupAvailability = () => {
     }
   }, [groupId]);
 
-  // 모든 슬롯에 대해 availabilitydetail 데이터를 미리 요청하여 slotAvailabilityCounts 상태에 저장
   const fetchAllSlotDetails = async (timetableData, slots) => {
     const counts = {};
 
@@ -98,7 +98,8 @@ const GroupAvailability = () => {
       }
     }
 
-    setSlotAvailabilityCounts(counts); // 모든 슬롯의 카운트 데이터를 초기 상태로 설정
+    setSlotAvailabilityCounts(counts);
+    setLoading(false);
   };
 
   const generateTimeSlots = (start, end) => {
@@ -128,7 +129,7 @@ const GroupAvailability = () => {
             `${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}`
           );
           setGroupName(response.data.name);
-          setUserCount(response.data.user_count); // user_count 값 저장
+          setUserCount(response.data.user_count);
         } catch (error) {
           console.error("Error fetching group name:", error);
         }
@@ -173,6 +174,10 @@ const GroupAvailability = () => {
       console.error("Error fetching availability detail:", error);
     }
   };
+
+  if (loading) {
+    return <LoadingMessage>그룹 시간표를 조회중입니다. 잠시만 기다려주세요</LoadingMessage>;
+  }
 
   return (
     <div style={{ position: "relative" }}>
@@ -278,8 +283,16 @@ const GroupAvailability = () => {
     </div>
   );
 };
-
 export default GroupAvailability;
+const LoadingMessage = styled.div`
+  text-align: center;
+  font-family: "Ibarra Real Nova";
+  font-size: 20px;
+  margin-top: 50px;
+  color: #423E59;
+`;
+
+
 
 
 
