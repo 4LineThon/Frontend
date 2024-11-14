@@ -94,6 +94,7 @@ const GroupAvailability = () => {
     return `rgba(66, 62, 89, ${0.2 + opacity * 0.8})`; 
   };
 
+
   useEffect(() => {
     if (groupId) {
       const fetchGroupName = async () => {
@@ -190,6 +191,7 @@ const GroupAvailability = () => {
     ))}
   </StyledSVG>
 </CalendarContainer>
+
 
       
       {/* 여기 groupIdid도 나중에 제대로 받아지면 그때 groupId로 수정하면됨 */}  

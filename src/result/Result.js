@@ -18,7 +18,6 @@ const Result = () => {
   const queryParams = new URLSearchParams(location.search);
   const event = queryParams.get("event");
   const groupId = queryParams.get("groupId");
-  const [groupName, setGroupName] = useState("");
 
    // 디버깅용
   useEffect(() => {
