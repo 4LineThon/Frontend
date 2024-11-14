@@ -23,6 +23,7 @@ function NumberInput() {
   const [availability, setAvailability] = useState({});
   const [selectedDay, setSelectedDay] = useState("");
 
+
   useEffect(() => {
     const fetchGroupData = async () => {
       try {
@@ -145,6 +146,26 @@ function NumberInput() {
     }
   };
 
+  useEffect(() => {
+    if (groupId) {
+      const fetchGroupName = async () => {
+        try {
+          const response = await axios.get(
+            `${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}`
+          );
+          setGroupName(response.data.name); // 응답에서 그룹 이름을 설정
+          console.log(response.data);
+          console.log("Fetched group name:", response.data.name); // 그룹 이름을 콘솔에 출력
+        } catch (error) {
+          console.error("Error fetching group name:", error);
+        }
+      };
+      fetchGroupName();
+    } else {
+      console.error("No group_id found in localStorage");
+    }
+  }, []);
+
   return (
     <div className="big-container">
       <Logo />
@@ -197,3 +218,4 @@ function NumberInput() {
 }
 
 export default NumberInput;
+

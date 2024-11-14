@@ -5,12 +5,15 @@ import InsertType from "./component/insertType";
 import IsAvailable from "./component/isAvailable";
 import Logo from "./component/logo";
 import AvailabilityHeader from "./component/AvailabilityHeader";
+import axios from 'axios';
+import styled from "styled-components";
 
 const Minju = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const event = queryParams.get("event");
   const groupId = queryParams.get("groupId");
+  const [groupName, setGroupName] = useState("");
 
   const [id] = useState(location.state?.id || null);
   const [name] = useState(location.state?.name || "User");
@@ -24,9 +27,30 @@ const Minju = () => {
     console.log("Name:", name);
   }, [event, groupId, location.state]);
 
+  useEffect(() => {
+    if (groupId) {
+      const fetchGroupName = async () => {
+        try {
+          const response = await axios.get(
+            `${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}`
+          );
+          setGroupName(response.data.name); // 응답에서 그룹 이름을 설정
+          console.log(response.data);
+          console.log("Fetched group name:", response.data.name); // 그룹 이름을 콘솔에 출력
+        } catch (error) {
+          console.error("Error fetching group name:", error);
+        }
+      };
+      fetchGroupName();
+    } else {
+      console.error("No group_id found in localStorage");
+    }
+  }, []);
+
   return (
     <div>
       <Logo />
+      <HeaderH2>{groupName}</HeaderH2>
       <AvailabilityHeader 
         text={`Availability for ${name}`} 
         arrowDirection="left" 
@@ -42,3 +66,12 @@ const Minju = () => {
 };
 
 export default Minju;
+
+const HeaderH2 = styled.h2`
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0;
+  color: #4c3f5e;
+  margin-bottom: 10px; /* 4LINETON과 My Availability 사이 간격 추가 */
+`;

@@ -20,6 +20,7 @@ const GroupAvailability = () => {
   const event = queryParams.get("event");
   const groupId = queryParams.get("groupId");
   const userid = location.state?.userid;
+  const [groupName, setGroupName] = useState("");
 
   // 쿼리 파라미터 확인 (디버깅용)
   console.log("Event:", event);
@@ -92,10 +93,32 @@ const GroupAvailability = () => {
     const opacity = count / maxAvailability; 
     return `rgba(66, 62, 89, ${0.2 + opacity * 0.8})`; 
   };
+
+
+  useEffect(() => {
+    if (groupId) {
+      const fetchGroupName = async () => {
+        try {
+          const response = await axios.get(
+            `${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}`
+          );
+          setGroupName(response.data.name); // 응답에서 그룹 이름을 설정
+          console.log("Fetched group name:", response.data.name); // 그룹 이름 콘솔에 출력
+        } catch (error) {
+          console.error("Error fetching group name:", error);
+        }
+      };
+      fetchGroupName();
+    } else {
+      console.error("No group_id found");
+    }
+  }, [groupId]); // `groupId`를 의존성 배열에 추가
+
   return (
     <div style={{ position: "relative" }}>
       <CopyButton />
       <Logo />
+      <HeaderH2>{groupName}</HeaderH2> 
       <AvailabilityHeader
         text="Group's Availability"
         arrowDirection="right"
@@ -192,3 +215,12 @@ const StyledSVG = styled.svg`
 
 
 export default GroupAvailability;
+
+const HeaderH2 = styled.h2`
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0;
+  color: #4c3f5e;
+  margin-bottom: 10px; /* 4LINETON과 My Availability 사이 간격 추가 */
+`;

@@ -7,6 +7,7 @@ import CopyButton from "../copy-event-link/CopyButton";
 import styled from 'styled-components';
 import axios from 'axios';
 
+
 const Result = () => {
   const [place, setPlace] = useState("");
   const [isSaved, setIsSaved] = useState(false);
@@ -17,6 +18,7 @@ const Result = () => {
   const queryParams = new URLSearchParams(location.search);
   const event = queryParams.get("event");
   const groupId = queryParams.get("groupId");
+
    // 디버깅용
   useEffect(() => {
     console.log("Result page ::::: Event:", event);
@@ -57,10 +59,31 @@ const Result = () => {
     });
   };
 
+  useEffect(() => {
+    if (groupId) {
+      const fetchGroupName = async () => {
+        try {
+          const response = await axios.get(
+            `${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}`
+          );
+          setGroupName(response.data.name); // 응답에서 그룹 이름을 설정
+          console.log(response.data);
+          console.log("Fetched group name:", response.data.name); // 그룹 이름을 콘솔에 출력
+        } catch (error) {
+          console.error("Error fetching group name:", error);
+        }
+      };
+      fetchGroupName();
+    } else {
+      console.error("No group_id found in localStorage");
+    }
+  }, []);
+
   return (
     <div style={styles.wrapper}>
       <CopyButton />
       <Logo />
+      <HeaderH2>{groupName}</HeaderH2> 
       <AvailabilityHeader text="Result" />
 
       <div style={styles.formContainer}>
@@ -190,3 +213,12 @@ const styles = {
 };
 
 export default Result;
+
+const HeaderH2 = styled.h2`
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0;
+  color: #4c3f5e;
+  margin-bottom: 10px; /* 4LINETON과 My Availability 사이 간격 추가 */
+`;
