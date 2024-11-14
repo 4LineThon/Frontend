@@ -7,25 +7,27 @@ import CopyButton from "../copy-event-link/CopyButton";
 import styled from 'styled-components';
 import axios from 'axios';
 
-
 const Result = () => {
+  const [time, setTime] = useState("");
   const [place, setPlace] = useState("");
   const [isSaved, setIsSaved] = useState(false);
-  const navigate = useNavigate(); // Initialize navigate function
+  const [errorMessage, setErrorMessage] = useState(""); // Error message state
+  const navigate = useNavigate();
   const location = useLocation();
   const userid = location.state?.userid;
+
   // Get query parameters
   const queryParams = new URLSearchParams(location.search);
   const event = queryParams.get("event");
   const groupId = queryParams.get("groupId");
   const groupName = location.state?.groupName;
 
-   // 디버깅용
+  // Debugging logs
   useEffect(() => {
     console.log("Result page ::::: Event:", event);
     console.log("GroupId:", groupId);
-    console.log("userid",userid);
-  }, [event, groupId,userid]);
+    console.log("userid", userid);
+  }, [event, groupId, userid]);
 
   const preConfirmExplanation = [
     'When the "Save" button is clicked,',
@@ -39,14 +41,22 @@ const Result = () => {
   ];
 
   const handleSave = async () => {
+    // Validation to check if time and place are filled
+    if (!time || !place) {
+      setErrorMessage("Both Time and Place must be filled.");
+      return;
+    }
+
     try {
       // Send the result
-      const response =await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/v1/result`, {
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/v1/result`, {
         group: groupId,
-        text: place,
+        place: place,
+        time: time
       });
       setIsSaved(true);
-      console.log("Response from server:", response.data); // Log the response data
+      console.log("Response from server:", response.data);
+      setErrorMessage(""); // Clear any previous error message
     } catch (error) {
       console.error("Error saving data:", error);
     }
@@ -55,8 +65,9 @@ const Result = () => {
   const handleReschedule = () => {
     setIsSaved(false);
     setPlace("");
+    setTime("");
     navigate(`/groupAvailability?event=${event}&groupId=${groupId}`, {
-      state: { userid }, // Pass the userid as state
+      state: { userid },
     });
   };
 
@@ -67,9 +78,7 @@ const Result = () => {
           const response = await axios.get(
             `${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}`
           );
-          // setGroupName(response.data.name); // 응답에서 그룹 이름을 설정
-          console.log(response.data);
-          console.log("Fetched group name:", response.data.name); // 그룹 이름을 콘솔에 출력
+          console.log("Fetched group name:", response.data.name);
         } catch (error) {
           console.error("Error fetching group name:", error);
         }
@@ -90,6 +99,22 @@ const Result = () => {
       <div style={styles.formContainer}>
         <div style={styles.inputContainer}>
           <div style={styles.labelContainer}>
+            <span style={styles.label}>Time</span>
+            {isSaved ? (
+              <span style={styles.fixedText}>{time}</span>
+            ) : (
+              <input
+                type="text"
+                style={styles.input}
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                placeholder="Enter Time"
+              />
+            )}
+          </div>
+        </div>
+        <div style={styles.inputContainer}>
+          <div style={styles.labelContainer}>
             <span style={styles.label}>Place</span>
             {isSaved ? (
               <span style={styles.fixedText}>{place}</span>
@@ -104,6 +129,9 @@ const Result = () => {
             )}
           </div>
         </div>
+
+        {/* Error message display */}
+        {errorMessage && <span style={styles.errorText}>{errorMessage}</span>}
 
         {isSaved ? (
           <>
@@ -124,19 +152,6 @@ const Result = () => {
     </div>
   );
 };
-const StyledInput = styled.input`
-  width: 160px;
-  height: 28px;
-  font-size: ８px;
-  color: #423E59;
-  border: none;
-  border-bottom: 2px solid #423E59;
-  background-color: transparent;
-  font-family: "Ibarra Real Nova", serif;
-  text-align: center;
-  outline: none;
-
-`;
 
 const styles = {
   wrapper: {
@@ -145,7 +160,7 @@ const styles = {
     alignItems: "center",
     gap: "10px",
     marginTop: "20px",
-    position: "relative", // for copy-event-link
+    position: "relative",
   },
   formContainer: {
     display: "flex",
@@ -191,6 +206,11 @@ const styles = {
     fontFamily: '"Ibarra Real Nova", serif',
     textAlign: "center",
   },
+  errorText: {
+    color: "red",
+    fontSize: "14px",
+    marginTop: "-10px",
+  },
   saveButton: {
     width: "160px",
     height: "38px",
@@ -213,13 +233,13 @@ const styles = {
   },
 };
 
-export default Result;
-
 const HeaderH2 = styled.h2`
   text-align: center;
   font-size: 18px;
   font-weight: bold;
   margin: 0;
   color: #4c3f5e;
-  margin-bottom: 10px; /* 4LINETON과 My Availability 사이 간격 추가 */
+  margin-bottom: 10px;
 `;
+
+export default Result;
