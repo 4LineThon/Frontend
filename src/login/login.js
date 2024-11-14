@@ -71,9 +71,6 @@ function LogIn() {
       const url = `/minju?event=${event}&groupId=${groupId}`;
       navigate(url, {
         state: {
-          days: location.state?.days,
-          start_time: location.state?.start_time,
-          end_time: location.state?.end_time,
           id: response.data.id,
           name: response.data.name,
         },

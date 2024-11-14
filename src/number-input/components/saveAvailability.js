@@ -58,7 +58,7 @@ function SaveAvailability({ availability, groupId, userid, event, fetchedData = 
 
     // 각 변환된 availability 데이터를 POST 요청으로 서버에 전송
     for (const data of transformedAvailability) {
-      console.log("Sending data:", data); // 전송 전 데이터 확인
+      //console.log("Sending data:", data); // 전송 전 데이터 확인
       try {
         const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability`, data, {
           headers: {

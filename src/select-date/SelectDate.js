@@ -65,13 +65,7 @@ const SelectDate = () => {
       const groupId = response.data.id; // 생성된 group_id
 
       const url = `/Login?event=${generateRandomString()}&groupId=${groupId}`;
-      navigate(url, {
-        state: {
-          days: request.days,
-          start_time: request.start_time,
-          end_time: request.end_time,
-        },
-      });
+      navigate(url);
     } catch (e) {
       console.log(e);
     }

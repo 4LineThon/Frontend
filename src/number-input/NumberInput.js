@@ -17,9 +17,8 @@ function NumberInput() {
   const event = queryParams.get("event");
   const [groupName, setGroupName] = useState("");
 
-  // localStorage에서 userId 가져오기
   const userid = location.state?.id;
-  console.log("userid!!!! 잘 받아지고 있나: ",userid);
+  console.log("userid!!!! ",userid);
 
   const [days, setDays] = useState([]);
   const [uniqueDays, setUniqueDays] = useState([]);
@@ -44,13 +43,13 @@ function NumberInput() {
           setDays(response.data);
           setFetchedData(response.data);
   
-          // Format dates with day of the week (e.g., "2024-11-14(목)")
+          
           const uniqueDaysList = Array.from(new Set(response.data.map(item => {
-            // Parse `item.day` to a standard format (assuming it's in YYYY-MM-DD format)
+            
             const date = new Date(item.date);
             if (isNaN(date)) {
               console.warn(`Invalid date format for ${item.date}`);
-              return item.date; // Return original if parsing fails
+              return item.date; 
             }
             const dayOfWeek = date.toLocaleDateString('ko-KR', { weekday: 'short' });
             return `${item.date}(${dayOfWeek})`;
@@ -166,7 +165,7 @@ function NumberInput() {
             `${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}`
           );
           setGroupName(response.data.name); // 응답에서 그룹 이름을 설정
-          console.log("Fetched group name:", response.data.name); // 그룹 이름 콘솔에 출력
+          //console.log("Fetched group name:", response.data.name); // 그룹 이름 콘솔에 출력
         } catch (error) {
           console.error("Error fetching group name:", error);
         }
