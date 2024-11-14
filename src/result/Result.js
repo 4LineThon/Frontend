@@ -1,14 +1,29 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import Logo from "../minju/component/logo";
 import AvailabilityHeader from "./component/AvailabilityHeader";
 import Explanation from "../explanation/explanation";
+import CopyButton from "../copy-event-link/CopyButton";
+import styled from 'styled-components';
+import axios from 'axios';
 
 const Result = () => {
-  const [time, setTime] = useState("");
   const [place, setPlace] = useState("");
   const [isSaved, setIsSaved] = useState(false);
   const navigate = useNavigate(); // Initialize navigate function
+  const location = useLocation();
+  const userid = location.state?.userid;
+  // Get query parameters
+  const queryParams = new URLSearchParams(location.search);
+  const event = queryParams.get("event");
+  const groupId = queryParams.get("groupId");
+   // 디버깅용
+  useEffect(() => {
+    console.log("Result page ::::: Event:", event);
+    console.log("GroupId:", groupId);
+    console.log("userid",userid);
+  }, [event, groupId,userid]);
+
   const preConfirmExplanation = [
     'When the "Save" button is clicked,',
     "the meeting time is confirmed.",
@@ -20,43 +35,35 @@ const Result = () => {
     "But the previously selected group availability will remain unchanged.",
   ];
 
-  const handleSave = () => {
-    setIsSaved(true);
+  const handleSave = async () => {
+    try {
+      // Send the result
+      const response =await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/v1/result`, {
+        group: groupId,
+        text: place,
+      });
+      setIsSaved(true);
+      console.log("Response from server:", response.data); // Log the response data
+    } catch (error) {
+      console.error("Error saving data:", error);
+    }
   };
 
   const handleReschedule = () => {
     setIsSaved(false);
-    setTime("");
     setPlace("");
-    navigate("/groupAvailability"); // Redirect to /groupAvailability
+    navigate(`/groupAvailability?event=${event}&groupId=${groupId}`, {
+      state: { userid }, // Pass the userid as state
+    });
   };
 
   return (
     <div style={styles.wrapper}>
+      <CopyButton />
       <Logo />
       <AvailabilityHeader text="Result" />
 
       <div style={styles.formContainer}>
-        <div style={styles.inputContainer}>
-          <div style={styles.labelContainer}>
-            <span style={styles.label}>Time</span>
-            {isSaved ? (
-              <span style={styles.fixedText}>{time}</span>
-            ) : (
-              <select
-                style={styles.input}
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-              >
-                <option value="">Select a time</option>
-                <option value="10:00">10:00</option>
-                <option value="11:00">11:00</option>
-                <option value="12:00">12:00</option>
-              </select>
-            )}
-          </div>
-        </div>
-
         <div style={styles.inputContainer}>
           <div style={styles.labelContainer}>
             <span style={styles.label}>Place</span>
@@ -93,6 +100,19 @@ const Result = () => {
     </div>
   );
 };
+const StyledInput = styled.input`
+  width: 160px;
+  height: 28px;
+  font-size: ８px;
+  color: #423E59;
+  border: none;
+  border-bottom: 2px solid #423E59;
+  background-color: transparent;
+  font-family: "Ibarra Real Nova", serif;
+  text-align: center;
+  outline: none;
+
+`;
 
 const styles = {
   wrapper: {
@@ -101,6 +121,7 @@ const styles = {
     alignItems: "center",
     gap: "10px",
     marginTop: "20px",
+    position: "relative", // for copy-event-link
   },
   formContainer: {
     display: "flex",
