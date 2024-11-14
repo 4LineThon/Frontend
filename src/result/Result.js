@@ -11,7 +11,7 @@ const Result = () => {
   const [time, setTime] = useState("");
   const [place, setPlace] = useState("");
   const [isSaved, setIsSaved] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(""); // Error message state
+  const [errorMessage, setErrorMessage] = useState(""); 
   const navigate = useNavigate();
   const location = useLocation();
   const userid = location.state?.userid;
@@ -43,7 +43,7 @@ const Result = () => {
   const handleSave = async () => {
     // Validation to check if time and place are filled
     if (!time || !place) {
-      setErrorMessage("Both Time and Place must be filled.");
+      setErrorMessage("Time과 Place 모두 입력해주세요");
       return;
     }
 
@@ -207,8 +207,9 @@ const styles = {
     textAlign: "center",
   },
   errorText: {
-    color: "red",
+    color: "#423E59",
     fontSize: "14px",
+    fontFamily: '"Ibarra Real Nova", serif',
     marginTop: "-10px",
   },
   saveButton: {
