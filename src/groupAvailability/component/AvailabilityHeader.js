@@ -1,22 +1,15 @@
 import React from "react";
 import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
 
-const AvailabilityHeader = ({ text = "My Availability", arrowDirection = "left", navigateTo = "/" }) => {
-  const navigate = useNavigate();
-
-  const handleNavigation = () => {
-    navigate(navigateTo);
-  };
-
+const AvailabilityHeader = ({ text = "My Availability", arrowDirection = "left", navigateTo = () => {} }) => {
   return (
     <HeaderContainer>
       {arrowDirection === "left" && (
-        <Arrow onClick={handleNavigation} direction="left">{"<"}</Arrow>
+        <Arrow onClick={navigateTo} direction="left">{"<"}</Arrow>
       )}
       <HeaderText>{text}</HeaderText>
       {arrowDirection === "right" && (
-        <Arrow onClick={handleNavigation} direction="right">{">"}</Arrow>
+        <Arrow onClick={navigateTo} direction="right">{">"}</Arrow>
       )}
     </HeaderContainer>
   );
