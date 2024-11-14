@@ -51,7 +51,7 @@ function LogIn() {
       alert("Please enter your name.");
       return;
     }
-  
+
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}/login`,
@@ -60,34 +60,30 @@ function LogIn() {
           password: password,
         }
       );
-  
-      if (response.status === 200) {
-        alert(`Welcome, ${name}!`);
-        console.log("Login response data:", response.data);
-  
-        // userId를 localStorage에 저장
-        localStorage.setItem("userId", response.data.id);
-  
-        // 쿼리 파라미터를 포함하여 /minju 페이지로 이동
-        const url = `/minju?event=${event}&groupId=${groupId}`;
-        navigate(url, {
-          state: {
-            days: location.state?.days,
-            start_time: location.state?.start_time,
-            end_time: location.state?.end_time,
-            id: response.data.id,    
-            name: response.data.name, 
-          },
-        });
-      } else {
-        alert("Login failed. Please check your name and password.");
-      }
+
+      alert(`Welcome, ${name}!`);
+      console.log("Login response data:", response.data);
+
+      // userId를 localStorage에 저장
+      localStorage.setItem("userId", response.data.id);
+
+      // 쿼리 파라미터를 포함하여 /minju 페이지로 이동
+      const url = `/minju?event=${event}&groupId=${groupId}`;
+      navigate(url, {
+        state: {
+          days: location.state?.days,
+          start_time: location.state?.start_time,
+          end_time: location.state?.end_time,
+          id: response.data.id,
+          name: response.data.name,
+        },
+      });
     } catch (error) {
       console.error("Error logging in:", error);
-      alert("An error occurred while trying to log in. Please try again.");
+      alert("Login failed. Please check your name and password.");
     }
   };
-  
+
   return (
     <div className="big-container">
       <div className="header">
