@@ -134,6 +134,7 @@ const GroupAvailability = () => {
       }
     };
 
+    if (!selectedSlot) return;
     fetchAvailabilityDetail();
   }, [selectedSlot]);
 
