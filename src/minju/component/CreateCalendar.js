@@ -3,6 +3,7 @@ import styled from "styled-components";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 
+
 const CreateCalendar = ({ groupTimetableData, userid, onChange = () => {} }) => {
   const [gridState, setGridState] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -14,12 +15,60 @@ const CreateCalendar = ({ groupTimetableData, userid, onChange = () => {} }) => 
   const event = queryParams.get("event");
 
   useEffect(() => {
-    if (groupTimetableData && groupTimetableData.length > 0) {
-      const { startTime, endTime } = groupTimetableData[0];
-      const timeSlots = generateTimeSlots(startTime, endTime);
-      setGridState(Array(timeSlots.length).fill().map(() => Array(groupTimetableData.length).fill(false)));
+    const fetchAvailabilityData = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${userid}`);
+        const availabilityData = response.data;
+        console.log("Fetched availability data:", availabilityData); // 불러온 데이터 확인
+
+        if (groupTimetableData && groupTimetableData.length > 0) {
+          const { startTime, endTime } = groupTimetableData[0];
+          const timeSlots = generateTimeSlots(startTime, endTime);
+          const initialGridState = Array(timeSlots.length).fill().map(() => Array(groupTimetableData.length).fill(false));
+
+          // availabilityData에서 gridState에 반영
+          availabilityData.forEach((availability) => {
+            const availabilityDate = availability.date; // 변환하지 않고 문자열 그대로 사용
+            const dayIndex = groupTimetableData.findIndex(day => day.date === availabilityDate);
+          
+            const timeFromIndex = timeSlots.findIndex(time => `${time}:00` === availability.time_from);
+            const timeToIndex = timeSlots.findIndex(time => `${time}:00` === availability.time_to);
+          
+            console.log("Matching availability data:", availability);
+            console.log("Calculated dayIndex:", dayIndex);
+            console.log("Calculated timeFromIndex:", timeFromIndex);
+            console.log("Calculated timeToIndex:", timeToIndex);
+          
+            if (dayIndex !== -1 && timeFromIndex !== -1 && timeToIndex !== -1) {
+              for (let i = timeFromIndex; i <= timeToIndex; i++) {
+                initialGridState[i][dayIndex] = true;
+              }
+            }
+          });
+          
+
+          setGridState(initialGridState);
+          console.log("Initialized gridState with availability:", initialGridState); // 초기 gridState 확인
+        }
+      } catch (error) {
+        if (error.response && error.response.status === 404) {
+          // 데이터가 없는 경우 빈 상태로 설정
+          console.log("No availability data found for this user. Initializing with empty grid.");
+          if (groupTimetableData && groupTimetableData.length > 0) {
+            const { startTime, endTime } = groupTimetableData[0];
+            const timeSlots = generateTimeSlots(startTime, endTime);
+            setGridState(Array(timeSlots.length).fill().map(() => Array(groupTimetableData.length).fill(false)));
+          }
+        } else {
+          console.error("Error fetching availability data:", error);
+        }
+      }
+    };
+
+    if (groupTimetableData.length > 0) {
+      fetchAvailabilityData();
     }
-  }, [groupTimetableData]);
+  }, [userid, groupTimetableData]);
 
   const generateTimeSlots = (start, end) => {
     const slots = [];
@@ -27,7 +76,7 @@ const CreateCalendar = ({ groupTimetableData, userid, onChange = () => {} }) => 
     const endTime = new Date(`1970-01-01T${end}Z`);
     
     while (current <= endTime) {
-      slots.push(current.toISOString().substring(11, 16)); // "HH:MM" 형식
+      slots.push(current.toISOString().substring(11, 16));
       current.setMinutes(current.getMinutes() + 30);
     }
     return slots;
@@ -65,7 +114,7 @@ const CreateCalendar = ({ groupTimetableData, userid, onChange = () => {} }) => 
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return ""; // 날짜가 없으면 빈 문자열 반환
+    if (!dateString) return ""; 
     const date = new Date(dateString);
     const month = date.toLocaleString("en-US", { month: "short" });
     const day = date.getDate();
@@ -77,22 +126,22 @@ const CreateCalendar = ({ groupTimetableData, userid, onChange = () => {} }) => 
   const handleSave = async () => {
     for (let dayIndex = 0; dayIndex < groupTimetableData.length; dayIndex++) {
       const dayData = groupTimetableData[dayIndex];
-      const dayName = dayData.day; // days의 day
-      const dayDate = dayData.date; // days의 date
-  
-      for (let timeIndex = 0; timeIndex < timeSlots.length - 1; timeIndex++) { // 마지막 time slot은 제외
+      const dayName = dayData.day;
+      const dayDate = dayData.date;
+
+      for (let timeIndex = 0; timeIndex < timeSlots.length - 1; timeIndex++) {
         if (gridState[timeIndex][dayIndex]) {
           const timeFrom = `${timeSlots[timeIndex]}:00`;
           const timeTo = `${timeSlots[timeIndex + 1]}:00`;
-  
+
           const dataToSend = {
             user: userid,
             day: dayName,
-            date: dayDate, // date를 선택적으로 추가
+            date: dayDate,
             time_from: timeFrom,
             time_to: timeTo,
           };
-          console.log("datatoSend", dataToSend);
+          console.log("datatoSend", dataToSend)
           try {
             const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability`, dataToSend, {
               headers: {
@@ -107,7 +156,6 @@ const CreateCalendar = ({ groupTimetableData, userid, onChange = () => {} }) => 
       }
     }
   
-    // Save 완료 후 이동할 URL 생성
     const url = `/groupavailability?event=${event}&groupId=${groupId}`;
     navigate(url, {
       state: {
@@ -118,12 +166,11 @@ const CreateCalendar = ({ groupTimetableData, userid, onChange = () => {} }) => 
       },
     });
   };
-  
 
   return (
     <CalendarContainer onMouseUp={handleMouseUp}>
       <StyledSVG
-        width={50 + groupTimetableData.length * 36} // 동적으로 SVG 너비를 설정
+        width={50 + groupTimetableData.length * 36}
         height={timeSlots.length * 18 + 70}
         viewBox={`0 0 ${50 + groupTimetableData.length * 36} ${timeSlots.length * 18 + 70}`}
         xmlns="http://www.w3.org/2000/svg"
@@ -176,6 +223,7 @@ const CreateCalendar = ({ groupTimetableData, userid, onChange = () => {} }) => 
     </CalendarContainer>
   );
 };
+
 
 const CalendarContainer = styled.div`
   display: flex;
