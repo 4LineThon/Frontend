@@ -2,13 +2,13 @@ import React from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 
-const FixButton = ({ event, groupId, userid }) => {
+const FixButton = ({ event, groupId, userid, groupName }) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
     
     navigate(`/result?event=${event}&groupId=${groupId}`, {
-      state: { userid },
+      state: { userid, groupName },
     });
   };
 

@@ -92,7 +92,7 @@ const CreateCalendar = ({ groupTimetableData, userid, onChange = () => {} }) => 
             time_from: timeFrom,
             time_to: timeTo,
           };
-  
+          console.log("datatoSend", dataToSend);
           try {
             const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability`, dataToSend, {
               headers: {
