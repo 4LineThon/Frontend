@@ -23,22 +23,32 @@ function NumberInput() {
   const [availability, setAvailability] = useState({});
   const [selectedDay, setSelectedDay] = useState("");
 
+
   useEffect(() => {
-    if (groupId) {
-      const fetchGroupName = async () => {
-        try {
-          const response = await axios.get(
-            `${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}`
-          );
-          setGroupName(response.data.name); // 응답에서 그룹 이름을 설정
-          console.log("Group Name",response.data);
-        } catch (error) {
-          console.error("Error fetching group name:", error);
+    const fetchGroupData = async () => {
+      try {
+        // 그룹 타임테이블 가져오기
+        const timetableResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/v1/group-timetable/${groupId}`);
+        
+        if (timetableResponse.data && timetableResponse.data.length > 0) {
+          const dateData = timetableResponse.data.map(item => ({
+            date: item.date,
+            day: item.day,  // 요일도 저장
+            start_time: item.start_time,
+            end_time: item.end_time,
+          }));
+          setDates(dateData);
+          console.log("Fetched dates:", dateData); // <== 데이터 확인용 로그
+        } else {
+          console.log("No dates found in response.");
         }
-      };
-      fetchGroupName();
-    } else {
-      console.error("No group_id found");
+      } catch (error) {
+        console.error("Error fetching timetable data:", error);
+      }
+    };
+  
+    if (groupId) {
+      fetchGroupData();
     }
   }, [groupId]);
   
@@ -135,8 +145,8 @@ function NumberInput() {
       console.error("Error navigating with availability data:", error);
     }
   };
+
   useEffect(() => {
-    // const groupId = localStorage.getItem("group_id"); // localStorage에서 group_id 가져오기
     if (groupId) {
       const fetchGroupName = async () => {
         try {
@@ -208,3 +218,4 @@ function NumberInput() {
 }
 
 export default NumberInput;
+

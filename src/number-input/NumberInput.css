@@ -46,7 +46,6 @@
   font-family: 'Jaro', sans-serif;
   font-size: 70px;
   color: #4c3f5e;
-  margin-bottom: 10px; /* TIMI와 4LINETON 사이 간격 추가 */
 }
 .header h2 {
   text-align:center;
