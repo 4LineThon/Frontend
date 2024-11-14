@@ -11,34 +11,35 @@ function NumberInput() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // 쿼리 파라미터에서 groupId와 event를 가져옵니다.
   const queryParams = new URLSearchParams(location.search);
   const event = queryParams.get("event");
   const groupId = queryParams.get("groupId");
-  const name = location.state?.name; // 사용자 이름을 쿼리 파라미터에서 가져옵니다.
+  const name = location.state?.name;
 
-  const [groupName, setGroupName] = useState(""); // 그룹 이름 저장
-  const [dates, setDates] = useState([]); // 각 날짜의 date, day, start_time, end_time 저장
-  const [timeOptions, setTimeOptions] = useState([]);  // 시간 옵션 배열
-  const [availability, setAvailability] = useState({});
+  const [groupName, setGroupName] = useState("");
+  const [dates, setDates] = useState([]);
+  const [timeSlots, setTimeSlots] = useState([]);
+  const [gridState, setGridState] = useState([]);
   const [selectedDay, setSelectedDay] = useState("");
-
+  const [selectedRange, setSelectedRange] = useState({ start: "", end: "" });
 
   useEffect(() => {
     const fetchGroupData = async () => {
       try {
-        // 그룹 타임테이블 가져오기
         const timetableResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/v1/group-timetable/${groupId}`);
         
         if (timetableResponse.data && timetableResponse.data.length > 0) {
           const dateData = timetableResponse.data.map(item => ({
             date: item.date,
-            day: item.day,  // 요일도 저장
+            day: item.day,
             start_time: item.start_time,
             end_time: item.end_time,
           }));
           setDates(dateData);
-          console.log("Fetched dates:", dateData); // <== 데이터 확인용 로그
+
+          const slots = generateTimeSlots(dateData[0].start_time, dateData[0].end_time);
+          setTimeSlots(slots);
+          setGridState(Array(dateData.length).fill().map(() => Array(slots.length).fill(false)));
         } else {
           console.log("No dates found in response.");
         }
@@ -51,98 +52,100 @@ function NumberInput() {
       fetchGroupData();
     }
   }, [groupId]);
-  
 
- // 선택된 날짜에 따라 start_time과 end_time을 기반으로 시간 옵션을 생성
-  useEffect(() => {
-    const selectedDateData = dates.find(
-      dateObj => dateObj.date === selectedDay
-    );
-    if (selectedDateData) {
-      const { start_time, end_time } = selectedDateData;
-      setTimeOptions(generateTimeOptions(start_time, end_time));
-    } else {
-      console.log("No matching date found in dates array.");
-    }
-  }, [selectedDay, dates]);
-
-
-  // startTime과 endTime을 기반으로 시간 옵션을 생성하는 함수
-  const generateTimeOptions = (start, end) => {
-    const times = [];
+  const generateTimeSlots = (start, end) => {
+    const slots = [];
     let currentTime = new Date(`1970-01-01T${start}Z`);
     const endTime = new Date(`1970-01-01T${end}Z`);
 
     while (currentTime <= endTime) {
-      times.push(currentTime.toISOString().substring(11, 16));
+      slots.push(currentTime.toISOString().substring(11, 16));
       currentTime.setMinutes(currentTime.getMinutes() + 30);
     }
-    console.log("Generated time options:", times);
-    return times;
+    return slots;
   };
 
   const handleDayChange = (event) => {
     setSelectedDay(event.target.value);
-    console.log("Selected day:", event.target.value); // 선택된 날짜 확인
   };
 
-
-  const addTimeRange = () => {
-    if (!selectedDay) return;
-  
-    setAvailability((prev) => {
-      const dayAvailability = [...(prev[selectedDay] || []), { start: "-1", end: "-1" }];
-      return {
-        ...prev,
-        [selectedDay]: sortByStartTime(dayAvailability),
-      };
-    });
+  const handleStartChange = (event) => {
+    setSelectedRange((prev) => ({ ...prev, start: event.target.value }));
   };
 
-  const handleStartChange = (day, index, event) => {
-    setAvailability((prev) => {
-      const newAvailability = { ...prev };
-      newAvailability[day][index].start = event.target.value;
-      newAvailability[day] = sortByStartTime(newAvailability[day]);
-      return newAvailability;
-    });
+  const handleEndChange = (event) => {
+    setSelectedRange((prev) => ({ ...prev, end: event.target.value }));
   };
 
-  const handleEndChange = (day, index, event) => {
-    setAvailability((prev) => {
-      const newAvailability = { ...prev };
-      newAvailability[day][index].end = event.target.value;
-      newAvailability[day] = sortByStartTime(newAvailability[day]);
-      return newAvailability;
-    });
-  };
+  const addTimeRangeToGridState = () => {
+    const dayIndex = dates.findIndex(dateObj => dateObj.date === selectedDay);
+    if (dayIndex === -1 || !selectedRange.start || !selectedRange.end) return;
 
-  const sortByStartTime = (dayAvailability) => {
-    return dayAvailability.sort((a, b) => {
-      const [hoursA, minutesA] = a.start.split(':').map(Number);
-      const [hoursB, minutesB] = b.start.split(':').map(Number);
-      return hoursA - hoursB || minutesA - minutesB;
-    });
-  };
+    const startIndex = timeSlots.indexOf(selectedRange.start);
+    const endIndex = timeSlots.indexOf(selectedRange.end);
 
-  const deleteTimeRange = (day, index) => {
-    const newAvailability = { ...availability };
-    newAvailability[day].splice(index, 1);
-    if (newAvailability[day].length === 0) {
-      delete newAvailability[day];
+    if (startIndex === -1 || endIndex === -1 || startIndex >= endIndex) {
+      console.error("Invalid time range selected.");
+      return;
     }
-    setAvailability(newAvailability);
+
+    setGridState((prevGrid) =>
+      prevGrid.map((row, dIndex) =>
+        dIndex === dayIndex
+          ? row.map((cell, timeIndex) =>
+              timeIndex >= startIndex && timeIndex < endIndex ? true : cell
+            )
+          : row
+      )
+    );
+    console.log("Updated gridState:", gridState);
   };
 
   const saveAvailability = async () => {
+    const userId = location.state?.userId;
+
     try {
-      const availabilityData = JSON.stringify(availability, null, 2);
-      console.log("Saved availability:", availabilityData);
+      for (let dayIndex = 0; dayIndex < dates.length; dayIndex++) {
+        const dayData = dates[dayIndex];
   
-      // GroupAvailability로 이동할 때 쿼리 파라미터로 availability 데이터 전송
-      navigate(`/GroupAvailability?availability=${encodeURIComponent(availabilityData)}`);
+        for (let timeIndex = 0; timeIndex < timeSlots.length - 1; timeIndex++) {
+          if (gridState[dayIndex][timeIndex]) {
+            const timeFrom = `${timeSlots[timeIndex]}:00`;
+            const timeTo = `${timeSlots[timeIndex + 1]}:00`;
+  
+            const dataToSend = {
+              user: userId,
+              day: dayData.day,
+              date: dayData.date,
+              time_from: timeFrom,
+              time_to: timeTo,
+            };
+  
+            try {
+              const response = await axios.post(
+                `${process.env.REACT_APP_API_BASE_URL}/api/v1/availability`,
+                dataToSend,
+                { headers: { "Content-Type": "application/json" } }
+              );
+              console.log("Response from server:", response.data);
+            } catch (error) {
+              console.error("Error saving data:", error);
+            }
+          }
+        }
+      }
+
+      const url = `/groupavailability?event=${event}&groupId=${groupId}`;
+      navigate(url, {
+        state: {
+          gridState,
+          timeSlots,
+          dates,
+          userName: name,
+        },
+      });
     } catch (error) {
-      console.error("Error navigating with availability data:", error);
+      console.error("Error saving availability data:", error);
     }
   };
 
@@ -153,42 +156,37 @@ function NumberInput() {
           const response = await axios.get(
             `${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}`
           );
-          setGroupName(response.data.name); // 응답에서 그룹 이름을 설정
-          console.log(response.data);
-          console.log("Fetched group name:", response.data.name); // 그룹 이름을 콘솔에 출력
+          setGroupName(response.data.name);
         } catch (error) {
           console.error("Error fetching group name:", error);
         }
       };
       fetchGroupName();
-    } else {
-      console.error("No group_id found in localStorage");
     }
-  }, []);
+  }, [groupId]);
 
   return (
     <div className="big-container">
       <Logo />
-      <h2>{groupName}</h2> {/* Axios로 받아온 groupName 표시 */}
+      <h2>{groupName}</h2>
       
       <AvailabilityHeader2 
         text={`My Availability`} 
         arrowDirection="left" 
         navigateTo="/groupAvailability"
-        userName={name}  // 쿼리 파라미터에서 가져온 사용자 이름을 전달
+        userName={name}  
       />
       <InsertType />
       
       <div id="date-dropdown">
         <span className="date-dropdown">Choose Date</span>
         <div className="select-list-container">
-          {console.log("Rendering dates in dropdown:", dates)} {/* 드롭다운 렌더링 확인 */}
           <select value={selectedDay} onChange={handleDayChange} className="select-list">
             <option value="">Select Date</option>
             {dates.length > 0 ? (
               dates.map((dateObj, index) => (
                 <option key={index} value={dateObj.date}>
-                  {dateObj.date} ({dateObj.day}) {/* 날짜와 요일 모두 표시 */}
+                  {dateObj.date} ({dateObj.day})
                 </option>
               ))
             ) : (
@@ -196,26 +194,19 @@ function NumberInput() {
             )}
           </select>
         </div>
-        <button className="btnPlus" onClick={addTimeRange}>+</button>
+        <button className="btnPlus" onClick={addTimeRangeToGridState}>+</button>
       </div>
 
-     
-      {availability && Object.keys(availability).length > 0 && (
-        <TimeSelector 
-          availability={availability} 
-          handleStartChange={handleStartChange} 
-          handleEndChange={handleEndChange} 
-          deleteTimeRange={deleteTimeRange}
-          timeOptions={timeOptions}
-        />
-      )}
+      <TimeSelector 
+        timeSlots={timeSlots} 
+        selectedRange={selectedRange}
+        onStartChange={handleStartChange} 
+        onEndChange={handleEndChange} 
+      />
 
-      {Object.keys(availability).length > 0 && (
-        <button className="btn-save" onClick={saveAvailability}>Save</button>
-      )}
+      <button className="btn-save" onClick={saveAvailability}>Save</button>
     </div>
   );
 }
 
 export default NumberInput;
-

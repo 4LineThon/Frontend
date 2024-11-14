@@ -21,7 +21,11 @@ const GroupAvailability = () => {
   const groupId = queryParams.get("groupId");
   const userid = location.state?.userid;
   const [groupName, setGroupName] = useState("");
-
+  const { availability, userId } = location.state || {};
+  
+  console.log("Received Availability (in GroupAvailability):", availability);
+  
+  
   // 쿼리 파라미터 확인 (디버깅용)
   console.log("Event:", event);
   console.log("GroupId:", groupId);
