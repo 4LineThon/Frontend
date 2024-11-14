@@ -1,17 +1,11 @@
-import React, { useEffect } from 'react';
-const TimeSelector = ({ availability, handleStartChange, handleEndChange, deleteTimeRange, timeOptions }) => {
+import React from 'react';
 
-  useEffect(() => {
-    console.log("Availability:", availability);
-    console.log("Time options:", timeOptions);
-  }, [availability, timeOptions]);
+const TimeSelector = ({ availability, handleStartChange, handleEndChange, deleteTimeRange, timeOptions }) => {
   return (
     <div>
-      {/* Check if availability has keys and render */}
       {availability && Object.keys(availability).map((day) => (
         <div key={day} className="time-range">
           <h3 className="specific-date">{day}</h3>
-          {/* Check if availability[day] is an array */}
           {Array.isArray(availability[day]) && availability[day].map((range, index) => (
             <div key={index} className="date-row">
               <div className="list-container">
@@ -21,7 +15,7 @@ const TimeSelector = ({ availability, handleStartChange, handleEndChange, delete
                   onChange={(e) => handleStartChange(day, index, e)}
                 >
                   <option className="choose" value="-1">Choose</option>
-                  {/* Map over timeOptions to populate start time options */}
+                  {/* timeOptions 배열을 map을 이용해 옵션으로 렌더링 */}
                   {timeOptions.map((time) => (
                     <option key={time} value={time}>{time}</option>
                   ))}
@@ -35,7 +29,7 @@ const TimeSelector = ({ availability, handleStartChange, handleEndChange, delete
                   onChange={(e) => handleEndChange(day, index, e)}
                 >
                   <option className="choose" value="-1">Choose</option>
-                  {/* Map over timeOptions to populate end time options */}
+                  {/* timeOptions 배열을 map을 이용해 옵션으로 렌더링 */}
                   {timeOptions.map((time) => (
                     <option key={time} value={time}>{time}</option>
                   ))}
@@ -57,4 +51,3 @@ const TimeSelector = ({ availability, handleStartChange, handleEndChange, delete
 };
 
 export default TimeSelector;
-

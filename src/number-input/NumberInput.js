@@ -34,18 +34,29 @@ function NumberInput() {
         console.error("No groupId found in query parameters.");
         return;
       }
-
+  
       try {
         const response = await axios.get(
           `${process.env.REACT_APP_API_BASE_URL}/api/v1/group-timetable/${groupId}`
         );
-
+  
         if (response.data && response.data.length > 0) {
           setDays(response.data);
-          setFetchedData(response.data); // fetchedData 설정
-          const uniqueDaysList = Array.from(new Set(response.data.map(item => item.day)));
+          setFetchedData(response.data);
+  
+          // Format dates with day of the week (e.g., "2024-11-14(목)")
+          const uniqueDaysList = Array.from(new Set(response.data.map(item => {
+            // Parse `item.day` to a standard format (assuming it's in YYYY-MM-DD format)
+            const date = new Date(item.date);
+            if (isNaN(date)) {
+              console.warn(`Invalid date format for ${item.date}`);
+              return item.date; // Return original if parsing fails
+            }
+            const dayOfWeek = date.toLocaleDateString('ko-KR', { weekday: 'short' });
+            return `${item.date}(${dayOfWeek})`;
+          })));
+  
           setUniqueDays(uniqueDaysList);
-          console.log("Fetched Data:", response.data); // fetchedData 확인용
         } else {
           console.warn("No data received for group timetable.");
         }
@@ -53,17 +64,24 @@ function NumberInput() {
         console.error("Error fetching group timetable:", error);
       }
     };
-
+  
     fetchGroupTimetable();
   }, [groupId]);
 
   useEffect(() => {
-    const selectedDateData = days.find(dateObj => dateObj.day === selectedDay);
+    const selectedDateData = days.find(dateObj => 
+      `${dateObj.date}(${new Date(dateObj.date).toLocaleDateString('ko-KR', { weekday: 'short' })})` === selectedDay
+    );
+  
     if (selectedDateData) {
       const { start_time, end_time } = selectedDateData;
       setTimeOptions(generateTimeOptions(start_time, end_time));
+      console.log("생성된 timeOptions:", generateTimeOptions(start_time, end_time));
+    } else {
+      console.warn("`selectedDay`와 일치하는 날짜가 `days`에 없습니다:", selectedDay);
     }
   }, [selectedDay, days]);
+  
 
   const generateTimeOptions = (start, end) => {
     const times = [];
