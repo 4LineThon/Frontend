@@ -46,7 +46,6 @@ function LogIn() {
       console.error("No group_id found in localStorage");
     }
   }, []);
-
   const handleLogin = async () => {
     if (!name) {
       alert("Please enter your name.");
@@ -64,7 +63,10 @@ function LogIn() {
   
       if (response.status === 200) {
         alert(`Welcome, ${name}!`);
-        console.log("Login response data!!!:", response.data);
+        console.log("Login response data:", response.data);
+  
+        // userId를 localStorage에 저장
+        localStorage.setItem("userId", response.data.id);
   
         // 쿼리 파라미터를 포함하여 /minju 페이지로 이동
         const url = `/minju?event=${event}&groupId=${groupId}`;
@@ -85,7 +87,7 @@ function LogIn() {
       alert("An error occurred while trying to log in. Please try again.");
     }
   };
-
+  
   return (
     <div className="big-container">
       <div className="header">

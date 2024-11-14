@@ -7,15 +7,33 @@ const InsertType = () => {
 
   // 기본 선택을 'Number'로 설정
   const [selected, setSelected] = useState('Number');
+  const queryParams = new URLSearchParams(location.search);
+  const event = queryParams.get('event');
+  const groupId = queryParams.get('groupId');
+  const id = location.state?.id || localStorage.getItem('id') || null;
+  const name = location.state?.name || localStorage.getItem('name') || 'User';
 
-  // 페이지 이동
-  useEffect(() => {
-    if (selected === 'Number' && location.pathname !== '/NumberInputDay') {
-      navigate('/NumberInput');
-    } else if (selected === 'Finger' && location.pathname !== '/minju') {
-      navigate('/minju');
-    }
-  }, [selected, navigate, location.pathname]);
+      // Save id and name to localStorage if they exist in location.state
+      useEffect(() => {
+        if (id) localStorage.setItem('id', id);
+        if (name) localStorage.setItem('name', name);
+      }, [id, name]);
+// Function to handle navigation with query parameters
+const navigateToPage = (path) => {
+  const urlWithParams = `${path}?event=${event}&groupId=${groupId}`;
+  navigate(urlWithParams, { state: { id, name } });
+};
+
+// Update navigation based on selected type
+useEffect(() => {
+  if (selected === 'Number' && location.pathname !== '/NumberInputDay') {
+    navigateToPage('/NumberInputDay');
+  } else if (selected === 'Finger' && location.pathname !== '/minju') {
+    navigateToPage('/minju');
+  }
+}, [selected, location.pathname, event, groupId, id, name]);
+
+
 
   return (
     <div style={styles.container}>

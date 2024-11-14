@@ -1,26 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import './NumberInputDay.css';
 import AvailabilityHeaderDay from './components/AvailabilityHeaderDay';
 import Logo from "../minju/component/logo";
 import InsertTypeDay from './components/InsertTypeDay';
 import TimeSelectorDay from './components/TimeSelectorDay';
+import SaveAvailability from './components/saveAvailability';
+import styled from "styled-components";
 
 function NumberInputDay() {
   const location = useLocation();
-  const navigate = useNavigate(); // navigate 함수 선언
 
   const queryParams = new URLSearchParams(location.search);
-  const groupId = queryParams.get("groupId"); // 쿼리 파라미터로 groupId 받아오기
+  const groupId = queryParams.get("groupId");
+  const event = queryParams.get("event");
+  const [groupName, setGroupName] = useState("");
 
-  const [days, setDays] = useState([]); // 전체 데이터 저장
-  const [uniqueDays, setUniqueDays] = useState([]); // 중복 없는 요일만 저장
-  const [timeOptions, setTimeOptions] = useState([]);  // 시간 옵션 배열
+  // localStorage에서 userId 가져오기
+  const userId = localStorage.getItem("userId");
+  console.log("userid: ",userId);
+
+  const [days, setDays] = useState([]);
+  const [uniqueDays, setUniqueDays] = useState([]);
+  const [timeOptions, setTimeOptions] = useState([]);
   const [availability, setAvailability] = useState({});
   const [selectedDay, setSelectedDay] = useState("");
+  const [fetchedData, setFetchedData] = useState([]); // fetchedData 상태 추가
 
-  // 그룹 타임테이블 정보를 가져오기
   useEffect(() => {
     const fetchGroupTimetable = async () => {
       if (!groupId) {
@@ -32,16 +39,13 @@ function NumberInputDay() {
         const response = await axios.get(
           `${process.env.REACT_APP_API_BASE_URL}/api/v1/group-timetable/${groupId}`
         );
-        
+
         if (response.data && response.data.length > 0) {
-          // 전체 데이터를 저장
           setDays(response.data);
-          
-          // 중복되지 않은 day 값만 추출하여 uniqueDays에 저장
+          setFetchedData(response.data); // fetchedData 설정
           const uniqueDaysList = Array.from(new Set(response.data.map(item => item.day)));
           setUniqueDays(uniqueDaysList);
-          
-          console.log("Fetched unique days:", uniqueDaysList);
+          console.log("Fetched Data:", response.data); // fetchedData 확인용
         } else {
           console.warn("No data received for group timetable.");
         }
@@ -53,7 +57,6 @@ function NumberInputDay() {
     fetchGroupTimetable();
   }, [groupId]);
 
-  // 선택된 요일에 따라 start_time과 end_time을 기반으로 시간 옵션을 생성
   useEffect(() => {
     const selectedDateData = days.find(dateObj => dateObj.day === selectedDay);
     if (selectedDateData) {
@@ -62,18 +65,33 @@ function NumberInputDay() {
     }
   }, [selectedDay, days]);
 
-  // startTime과 endTime을 기반으로 시간 옵션을 생성하는 함수
   const generateTimeOptions = (start, end) => {
     const times = [];
     let currentTime = new Date(`1970-01-01T${start}Z`);
     const endTime = new Date(`1970-01-01T${end}Z`);
 
     while (currentTime <= endTime) {
-      times.push(currentTime.toISOString().substring(11, 16));  // HH:MM 형식
-      currentTime.setMinutes(currentTime.getMinutes() + 30);  // 30분 증가
+      times.push(currentTime.toISOString().substring(11, 16));
+      currentTime.setMinutes(currentTime.getMinutes() + 30);
     }
 
     return times;
+  };
+
+  const generateSlots = (start, end) => {
+    const slots = [];
+    let currentTime = new Date(`1970-01-01T${start}Z`);
+    const endTime = new Date(`1970-01-01T${end}Z`);
+
+    while (currentTime <= endTime) {
+      slots.push({
+        availability_count: 1,
+        time: currentTime.toISOString().substring(11, 19)
+      });
+      currentTime.setMinutes(currentTime.getMinutes() + 30);
+    }
+
+    return slots;
   };
 
   const handleDayChange = (event) => {
@@ -84,7 +102,7 @@ function NumberInputDay() {
     if (!selectedDay) return;
   
     setAvailability((prev) => {
-      const dayAvailability = [...(prev[selectedDay] || []), { start: "-1", end: "-1" }];
+      const dayAvailability = [...(prev[selectedDay] || []), { start: "-1", end: "-1", slots: [] }];
       return {
         ...prev,
         [selectedDay]: sortByStartTime(dayAvailability),
@@ -106,6 +124,12 @@ function NumberInputDay() {
       const newAvailability = { ...prev };
       newAvailability[day][index].end = event.target.value;
       newAvailability[day] = sortByStartTime(newAvailability[day]);
+
+      const { start, end } = newAvailability[day][index];
+      if (start !== "-1" && end !== "-1") {
+        newAvailability[day][index].slots = generateSlots(start, end);
+      }
+
       return newAvailability;
     });
   };
@@ -118,30 +142,29 @@ function NumberInputDay() {
     });
   };
 
-  const deleteTimeRange = (day, index) => {
-    const newAvailability = { ...availability };
-    newAvailability[day].splice(index, 1);
-    if (newAvailability[day].length === 0) {
-      delete newAvailability[day];
+  useEffect(() => {
+    if (groupId) {
+      const fetchGroupName = async () => {
+        try {
+          const response = await axios.get(
+            `${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}`
+          );
+          setGroupName(response.data.name); // 응답에서 그룹 이름을 설정
+          console.log("Fetched group name:", response.data.name); // 그룹 이름 콘솔에 출력
+        } catch (error) {
+          console.error("Error fetching group name:", error);
+        }
+      };
+      fetchGroupName();
+    } else {
+      console.error("No group_id found");
     }
-    setAvailability(newAvailability);
-  };
-
-  const saveAvailability = async () => {
-    try {
-      const availabilityData = JSON.stringify(availability);
-      console.log("Saved availability:", availabilityData);
-
-      // navigate로 /groupAvailability 페이지로 이동하면서 쿼리 파라미터로 데이터 전달
-      navigate(`/groupAvailability?availability=${encodeURIComponent(availabilityData)}`);
-    } catch (error) {
-      console.error("Error while saving availability:", error);
-    }
-  };
+  }, [groupId]); // `groupId`를 의존성 배열에 추가
 
   return (
     <div className="big-container">
       <Logo />
+      <HeaderH2>{groupName}</HeaderH2> 
       <AvailabilityHeaderDay text={`My Availability`} arrowDirection="left" navigateTo="/groupAvailability" />
       <InsertTypeDay />
 
@@ -165,16 +188,35 @@ function NumberInputDay() {
           availability={availability} 
           handleStartChange={handleStartChange} 
           handleEndChange={handleEndChange} 
-          deleteTimeRange={deleteTimeRange}
+          deleteTimeRange={(day, index) => {
+            const newAvailability = { ...availability };
+            newAvailability[day].splice(index, 1);
+            if (newAvailability[day].length === 0) delete newAvailability[day];
+            setAvailability(newAvailability);
+          }}
           timeOptions={timeOptions}
         />
       )}
 
       {Object.keys(availability).length > 0 && (
-        <button className="btn-save" onClick={saveAvailability}>Save</button>
+        <SaveAvailability 
+          availability={availability} 
+          groupId={groupId} 
+          userId={userId} 
+          event={event}
+          fetchedData={fetchedData} // fetchedData 전달
+        />
       )}
     </div>
   );
 }
 
 export default NumberInputDay;
+const HeaderH2 = styled.h2`
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0;
+  color: #4c3f5e;
+  margin-bottom: 10px; /* 4LINETON과 My Availability 사이 간격 추가 */
+`;
