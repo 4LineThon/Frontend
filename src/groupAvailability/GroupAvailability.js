@@ -250,7 +250,7 @@ const GroupAvailability = () => {
       </CalendarContainer>
 
       {/* 코멘트 */}
-      <Comment comments={comments} isClicked={selectedSlot !== null} />
+      <Comment comments={comments} selectedSlot={selectedSlot} />
 
       {/* 여기 groupIdid도 나중에 제대로 받아지면 그때 groupId로 수정하면됨 */}
       <FixButton
