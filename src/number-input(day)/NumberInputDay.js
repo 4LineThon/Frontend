@@ -7,6 +7,7 @@ import Logo from "../minju/component/logo";
 import InsertTypeDay from './components/InsertTypeDay';
 import TimeSelectorDay from './components/TimeSelectorDay';
 import SaveAvailability from './components/saveAvailability';
+import styled from "styled-components";
 
 function NumberInputDay() {
   const location = useLocation();
@@ -14,6 +15,7 @@ function NumberInputDay() {
   const queryParams = new URLSearchParams(location.search);
   const groupId = queryParams.get("groupId");
   const event = queryParams.get("event");
+  const [groupName, setGroupName] = useState("");
 
   // localStorage에서 userId 가져오기
   const userId = localStorage.getItem("userId");
@@ -140,9 +142,29 @@ function NumberInputDay() {
     });
   };
 
+  useEffect(() => {
+    if (groupId) {
+      const fetchGroupName = async () => {
+        try {
+          const response = await axios.get(
+            `${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}`
+          );
+          setGroupName(response.data.name); // 응답에서 그룹 이름을 설정
+          console.log("Fetched group name:", response.data.name); // 그룹 이름 콘솔에 출력
+        } catch (error) {
+          console.error("Error fetching group name:", error);
+        }
+      };
+      fetchGroupName();
+    } else {
+      console.error("No group_id found");
+    }
+  }, [groupId]); // `groupId`를 의존성 배열에 추가
+
   return (
     <div className="big-container">
       <Logo />
+      <HeaderH2>{groupName}</HeaderH2> 
       <AvailabilityHeaderDay text={`My Availability`} arrowDirection="left" navigateTo="/groupAvailability" />
       <InsertTypeDay />
 
@@ -190,3 +212,11 @@ function NumberInputDay() {
 }
 
 export default NumberInputDay;
+const HeaderH2 = styled.h2`
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0;
+  color: #4c3f5e;
+  margin-bottom: 10px; /* 4LINETON과 My Availability 사이 간격 추가 */
+`;
