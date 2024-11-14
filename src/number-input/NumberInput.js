@@ -6,62 +6,91 @@ import AvailabilityHeader2 from './components/Availability Header2';
 import Logo from "../minju/component/logo";
 import InsertType from '../minju/component/insertType';
 import TimeSelector from './components/TimeSelector';
+import styled from "styled-components";
+import SaveAvailability from './components/saveAvailability';
 
 function NumberInput() {
   const location = useLocation();
-  const navigate = useNavigate();
 
   const queryParams = new URLSearchParams(location.search);
-  const event = queryParams.get("event");
   const groupId = queryParams.get("groupId");
-  const name = location.state?.name;
-
+  const event = queryParams.get("event");
   const [groupName, setGroupName] = useState("");
-  const [dates, setDates] = useState([]);
-  const [timeSlots, setTimeSlots] = useState([]);
-  const [gridState, setGridState] = useState([]);
+
+  // localStorage에서 userId 가져오기
+  const userId = localStorage.getItem("userId");
+  console.log("userid: ",userId);
+
+  const [days, setDays] = useState([]);
+  const [uniqueDays, setUniqueDays] = useState([]);
+  const [timeOptions, setTimeOptions] = useState([]);
+  const [availability, setAvailability] = useState({});
   const [selectedDay, setSelectedDay] = useState("");
-  const [selectedRange, setSelectedRange] = useState({ start: "", end: "" });
+  const [fetchedData, setFetchedData] = useState([]); // fetchedData 상태 추가
 
   useEffect(() => {
-    const fetchGroupData = async () => {
-      try {
-        const timetableResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/v1/group-timetable/${groupId}`);
-        
-        if (timetableResponse.data && timetableResponse.data.length > 0) {
-          const dateData = timetableResponse.data.map(item => ({
-            date: item.date,
-            day: item.day,
-            start_time: item.start_time,
-            end_time: item.end_time,
-          }));
-          setDates(dateData);
+    const fetchGroupTimetable = async () => {
+      if (!groupId) {
+        console.error("No groupId found in query parameters.");
+        return;
+      }
 
-          const slots = generateTimeSlots(dateData[0].start_time, dateData[0].end_time);
-          setTimeSlots(slots);
-          setGridState(Array(dateData.length).fill().map(() => Array(slots.length).fill(false)));
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_BASE_URL}/api/v1/group-timetable/${groupId}`
+        );
+
+        if (response.data && response.data.length > 0) {
+          setDays(response.data);
+          setFetchedData(response.data); // fetchedData 설정
+          const uniqueDaysList = Array.from(new Set(response.data.map(item => item.day)));
+          setUniqueDays(uniqueDaysList);
+          console.log("Fetched Data:", response.data); // fetchedData 확인용
         } else {
-          console.log("No dates found in response.");
+          console.warn("No data received for group timetable.");
         }
       } catch (error) {
-        console.error("Error fetching timetable data:", error);
+        console.error("Error fetching group timetable:", error);
       }
     };
-  
-    if (groupId) {
-      fetchGroupData();
-    }
+
+    fetchGroupTimetable();
   }, [groupId]);
 
-  const generateTimeSlots = (start, end) => {
+  useEffect(() => {
+    const selectedDateData = days.find(dateObj => dateObj.day === selectedDay);
+    if (selectedDateData) {
+      const { start_time, end_time } = selectedDateData;
+      setTimeOptions(generateTimeOptions(start_time, end_time));
+    }
+  }, [selectedDay, days]);
+
+  const generateTimeOptions = (start, end) => {
+    const times = [];
+    let currentTime = new Date(`1970-01-01T${start}Z`);
+    const endTime = new Date(`1970-01-01T${end}Z`);
+
+    while (currentTime <= endTime) {
+      times.push(currentTime.toISOString().substring(11, 16));
+      currentTime.setMinutes(currentTime.getMinutes() + 30);
+    }
+
+    return times;
+  };
+
+  const generateSlots = (start, end) => {
     const slots = [];
     let currentTime = new Date(`1970-01-01T${start}Z`);
     const endTime = new Date(`1970-01-01T${end}Z`);
 
     while (currentTime <= endTime) {
-      slots.push(currentTime.toISOString().substring(11, 16));
+      slots.push({
+        availability_count: 1,
+        time: currentTime.toISOString().substring(11, 19)
+      });
       currentTime.setMinutes(currentTime.getMinutes() + 30);
     }
+
     return slots;
   };
 
@@ -69,84 +98,48 @@ function NumberInput() {
     setSelectedDay(event.target.value);
   };
 
-  const handleStartChange = (event) => {
-    setSelectedRange((prev) => ({ ...prev, start: event.target.value }));
+  const addTimeRange = () => {
+    if (!selectedDay) return;
+  
+    setAvailability((prev) => {
+      const dayAvailability = [...(prev[selectedDay] || []), { start: "-1", end: "-1", slots: [] }];
+      return {
+        ...prev,
+        [selectedDay]: sortByStartTime(dayAvailability),
+      };
+    });
   };
 
-  const handleEndChange = (event) => {
-    setSelectedRange((prev) => ({ ...prev, end: event.target.value }));
+  const handleStartChange = (day, index, event) => {
+    setAvailability((prev) => {
+      const newAvailability = { ...prev };
+      newAvailability[day][index].start = event.target.value;
+      newAvailability[day] = sortByStartTime(newAvailability[day]);
+      return newAvailability;
+    });
   };
 
-  const addTimeRangeToGridState = () => {
-    const dayIndex = dates.findIndex(dateObj => dateObj.date === selectedDay);
-    if (dayIndex === -1 || !selectedRange.start || !selectedRange.end) return;
+  const handleEndChange = (day, index, event) => {
+    setAvailability((prev) => {
+      const newAvailability = { ...prev };
+      newAvailability[day][index].end = event.target.value;
+      newAvailability[day] = sortByStartTime(newAvailability[day]);
 
-    const startIndex = timeSlots.indexOf(selectedRange.start);
-    const endIndex = timeSlots.indexOf(selectedRange.end);
-
-    if (startIndex === -1 || endIndex === -1 || startIndex >= endIndex) {
-      console.error("Invalid time range selected.");
-      return;
-    }
-
-    setGridState((prevGrid) =>
-      prevGrid.map((row, dIndex) =>
-        dIndex === dayIndex
-          ? row.map((cell, timeIndex) =>
-              timeIndex >= startIndex && timeIndex < endIndex ? true : cell
-            )
-          : row
-      )
-    );
-    console.log("Updated gridState:", gridState);
-  };
-
-  const saveAvailability = async () => {
-    const userId = location.state?.userId;
-
-    try {
-      for (let dayIndex = 0; dayIndex < dates.length; dayIndex++) {
-        const dayData = dates[dayIndex];
-  
-        for (let timeIndex = 0; timeIndex < timeSlots.length - 1; timeIndex++) {
-          if (gridState[dayIndex][timeIndex]) {
-            const timeFrom = `${timeSlots[timeIndex]}:00`;
-            const timeTo = `${timeSlots[timeIndex + 1]}:00`;
-  
-            const dataToSend = {
-              user: userId,
-              day: dayData.day,
-              date: dayData.date,
-              time_from: timeFrom,
-              time_to: timeTo,
-            };
-  
-            try {
-              const response = await axios.post(
-                `${process.env.REACT_APP_API_BASE_URL}/api/v1/availability`,
-                dataToSend,
-                { headers: { "Content-Type": "application/json" } }
-              );
-              console.log("Response from server:", response.data);
-            } catch (error) {
-              console.error("Error saving data:", error);
-            }
-          }
-        }
+      const { start, end } = newAvailability[day][index];
+      if (start !== "-1" && end !== "-1") {
+        newAvailability[day][index].slots = generateSlots(start, end);
       }
 
-      const url = `/groupavailability?event=${event}&groupId=${groupId}`;
-      navigate(url, {
-        state: {
-          gridState,
-          timeSlots,
-          dates,
-          userName: name,
-        },
-      });
-    } catch (error) {
-      console.error("Error saving availability data:", error);
-    }
+      return newAvailability;
+    });
+  };
+
+  const sortByStartTime = (dayAvailability) => {
+    return dayAvailability.sort((a, b) => {
+      const [hoursA, minutesA] = a.start.split(':').map(Number);
+      const [hoursB, minutesB] = b.start.split(':').map(Number);
+      return hoursA - hoursB || minutesA - minutesB;
+    });
   };
 
   useEffect(() => {
@@ -156,57 +149,75 @@ function NumberInput() {
           const response = await axios.get(
             `${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}`
           );
-          setGroupName(response.data.name);
+          setGroupName(response.data.name); // 응답에서 그룹 이름을 설정
+          console.log("Fetched group name:", response.data.name); // 그룹 이름 콘솔에 출력
         } catch (error) {
           console.error("Error fetching group name:", error);
         }
       };
       fetchGroupName();
+    } else {
+      console.error("No group_id found");
     }
-  }, [groupId]);
+  }, [groupId]); // `groupId`를 의존성 배열에 추가
 
   return (
     <div className="big-container">
       <Logo />
-      <h2>{groupName}</h2>
-      
-      <AvailabilityHeader2 
-        text={`My Availability`} 
-        arrowDirection="left" 
-        navigateTo="/groupAvailability"
-        userName={name}  
-      />
+      <HeaderH2>{groupName}</HeaderH2> 
+      <AvailabilityHeader2 text={`My Availability`} arrowDirection="left" navigateTo="/groupAvailability" />
       <InsertType />
-      
+
       <div id="date-dropdown">
         <span className="date-dropdown">Choose Date</span>
         <div className="select-list-container">
           <select value={selectedDay} onChange={handleDayChange} className="select-list">
-            <option value="">Select Date</option>
-            {dates.length > 0 ? (
-              dates.map((dateObj, index) => (
-                <option key={index} value={dateObj.date}>
-                  {dateObj.date} ({dateObj.day})
-                </option>
-              ))
-            ) : (
-              <option disabled>Loading dates...</option>
-            )}
+            <option value="">Select Day</option>
+            {uniqueDays.map((day, index) => (
+              <option key={index} value={day}>
+                {day}
+              </option>
+            ))}
           </select>
         </div>
-        <button className="btnPlus" onClick={addTimeRangeToGridState}>+</button>
+        <button className="btnPlus" onClick={addTimeRange}>+</button>
       </div>
 
-      <TimeSelector 
-        timeSlots={timeSlots} 
-        selectedRange={selectedRange}
-        onStartChange={handleStartChange} 
-        onEndChange={handleEndChange} 
-      />
+      {availability && Object.keys(availability).length > 0 && (
+        <TimeSelector
+          availability={availability} 
+          handleStartChange={handleStartChange} 
+          handleEndChange={handleEndChange} 
+          deleteTimeRange={(day, index) => {
+            const newAvailability = { ...availability };
+            newAvailability[day].splice(index, 1);
+            if (newAvailability[day].length === 0) delete newAvailability[day];
+            setAvailability(newAvailability);
+          }}
+          timeOptions={timeOptions}
+        />
+      )}
 
-      <button className="btn-save" onClick={saveAvailability}>Save</button>
+      {Object.keys(availability).length > 0 && (
+        <SaveAvailability 
+          availability={availability} 
+          groupId={groupId} 
+          userId={userId} 
+          event={event}
+          fetchedData={fetchedData} // fetchedData 전달
+        />
+      )}
     </div>
   );
 }
 
 export default NumberInput;
+
+const HeaderH2 = styled.h2`
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0;
+  color: #4c3f5e;
+  margin-bottom: 10px; /* 4LINETON과 My Availability 사이 간격 추가 */
+`;
