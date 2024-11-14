@@ -14,6 +14,7 @@ function SaveAvailability({ availability, groupId, userId, event, fetchedData = 
       const fetchedStartTime = fetchedDayData ? fetchedDayData.start_time : null;
       const fetchedEndTime = fetchedDayData ? fetchedDayData.end_time : null;
       console.log("fetchedDayData: " ,fetchedDayData)
+      console.log("userid: ",userId)
 
       availability[day].forEach((range) => {
         const slots = generateSlots(range.start, range.end);
@@ -54,14 +55,14 @@ function SaveAvailability({ availability, groupId, userId, event, fetchedData = 
   
     console.log("Transformed Availability (before navigate):", transformedAvailability);
   
-    const url = `/groupAvailability?event=${event}&groupId=${groupId}`;
+    const url = `/groupAvailability?event=${event}&groupId=${groupId}&userId=${userId}`;
     navigate(url, {
       state: {
         availability: transformedAvailability,
-        userId: userId,
       },
     });
   };
+  
 
   return (
     <button className="btn-save" onClick={handleSave}>Save</button>

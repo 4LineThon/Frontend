@@ -17,6 +17,7 @@ function NumberInputDay() {
 
   // localStorage에서 userId 가져오기
   const userId = localStorage.getItem("userId");
+  console.log("userid: ",userId);
 
   const [days, setDays] = useState([]);
   const [uniqueDays, setUniqueDays] = useState([]);

@@ -19,10 +19,11 @@ const GroupAvailability = () => {
   const queryParams = new URLSearchParams(location.search);
   const event = queryParams.get("event");
   const groupId = queryParams.get("groupId");
-  const userid = location.state?.userid;
+  const userid = queryParams.get("userId"); // userId 가져오기
   const [groupName, setGroupName] = useState("");
-  const { availability, userId } = location.state || {};
+  const { availability} = location.state || {};
   
+  console.log("Received UserId:", userid); // userId 확인용
   console.log("Received Availability (in GroupAvailability):", availability);
   
   

@@ -1,13 +1,31 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate, useLocation } from "react-router-dom";
 
-  const AvailabilityHeaderDay = ({ arrowDirection = "left", navigateTo = "/Login" }) => {
+const AvailabilityHeaderDay = ({ arrowDirection = "left", navigateTo = "/Login" }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const userName = location.state?.name || "Guest";
+
+  // Extract `event`, `groupId`, and `userName` from URL or `location.state`
+  const queryParams = new URLSearchParams(location.search);
+  const event = queryParams.get("event");
+  const groupId = queryParams.get("groupId");
+  let userName = queryParams.get("userName") || location.state?.name;
+
+  // Store `userName` in `localStorage` if it is provided in the URL or location state
+  useEffect(() => {
+    if (userName) {
+      localStorage.setItem("userName", userName);
+    } else {
+      userName = localStorage.getItem("userName") || "Guest";
+    }
+  }, [userName]);
+
+  // Handle navigation with `userName` passed in `location.state` as `name`
   const handleNavigation = () => {
-    navigate(navigateTo);
+    navigate(navigateTo, {
+      state: { event, groupId, name: userName },
+    });
   };
 
   return (
