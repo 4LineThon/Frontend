@@ -24,7 +24,7 @@ const GroupAvailability = () => {
   const { availability} = location.state || {};
   
   console.log("Received UserId:", userid); // userId 확인용
-  console.log("Received Availability (in GroupAvailability):", availability);
+  // console.log("Received Availability (in GroupAvailability):", availability);
   
   
   // 쿼리 파라미터 확인 (디버깅용)
@@ -127,10 +127,11 @@ const GroupAvailability = () => {
       <AvailabilityHeader
         text="Group's Availability"
         arrowDirection="right"
-        navigateTo={() => navigate(`/minju?event=${event}&groupId=${groupId}`, {
-          state: { userid, groupName}
+        navigateTo={() => navigate(`/login?event=${event}&groupId=${groupId}`, {
+          state: { groupName }
         })}
       />
+
       <EveryoneAvailable />
       <StatusIndicator current={0} total={maxAvailability} />
       <CalendarContainer>
