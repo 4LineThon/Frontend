@@ -18,6 +18,7 @@ const Result = () => {
   const queryParams = new URLSearchParams(location.search);
   const event = queryParams.get("event");
   const groupId = queryParams.get("groupId");
+  const groupName = location.state?.groupName;
 
    // 디버깅용
   useEffect(() => {
@@ -66,7 +67,7 @@ const Result = () => {
           const response = await axios.get(
             `${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}`
           );
-          setGroupName(response.data.name); // 응답에서 그룹 이름을 설정
+          // setGroupName(response.data.name); // 응답에서 그룹 이름을 설정
           console.log(response.data);
           console.log("Fetched group name:", response.data.name); // 그룹 이름을 콘솔에 출력
         } catch (error) {

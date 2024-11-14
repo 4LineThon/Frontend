@@ -18,8 +18,8 @@ function NumberInput() {
   const [groupName, setGroupName] = useState("");
 
   // localStorage에서 userId 가져오기
-  const userId = localStorage.getItem("userId");
-  console.log("userid: ",userId);
+  const userid = location.state?.id;
+  console.log("userid!!!! 잘 받아지고 있나: ",userid);
 
   const [days, setDays] = useState([]);
   const [uniqueDays, setUniqueDays] = useState([]);
@@ -218,7 +218,7 @@ function NumberInput() {
         <SaveAvailability 
           availability={availability} 
           groupId={groupId} 
-          userId={userId} 
+          userid={userid} 
           event={event}
           fetchedData={fetchedData} // fetchedData 전달
         />

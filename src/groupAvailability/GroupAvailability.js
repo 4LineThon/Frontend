@@ -19,7 +19,7 @@ const GroupAvailability = () => {
   const queryParams = new URLSearchParams(location.search);
   const event = queryParams.get("event");
   const groupId = queryParams.get("groupId");
-  const userid = queryParams.get("userId"); // userId 가져오기
+  const userid = location.state?.userid;
   const [groupName, setGroupName] = useState("");
   const { availability} = location.state || {};
   
@@ -128,7 +128,7 @@ const GroupAvailability = () => {
         text="Group's Availability"
         arrowDirection="right"
         navigateTo={() => navigate(`/minju?event=${event}&groupId=${groupId}`, {
-          state: { userid }
+          state: { userid, groupName}
         })}
       />
       <EveryoneAvailable />
@@ -200,7 +200,7 @@ const GroupAvailability = () => {
 
       
       {/* 여기 groupIdid도 나중에 제대로 받아지면 그때 groupId로 수정하면됨 */}  
-      <FixButton event={event} groupId={groupId} userid = {userid} />
+      <FixButton event={event} groupId={groupId} userid = {userid} groupName = {groupName}/>
       <Explanation textArr={explanation} />
     </div>
   );
