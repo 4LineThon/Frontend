@@ -76,10 +76,8 @@ function NumberInput() {
     if (selectedDateData) {
       const { start_time, end_time } = selectedDateData;
       setTimeOptions(generateTimeOptions(start_time, end_time));
-      console.log("생성된 timeOptions:", generateTimeOptions(start_time, end_time));
-    } else {
-      console.warn("`selectedDay`와 일치하는 날짜가 `days`에 없습니다:", selectedDay);
-    }
+      console.log("generated timeOptions:", generateTimeOptions(start_time, end_time));
+    } 
   }, [selectedDay, days]);
   
 
