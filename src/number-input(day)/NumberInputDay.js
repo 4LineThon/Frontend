@@ -11,19 +11,22 @@ import styled from "styled-components";
 
 function NumberInputDay() {
   const location = useLocation();
+
   const queryParams = new URLSearchParams(location.search);
   const groupId = queryParams.get("groupId");
   const event = queryParams.get("event");
-  const userId = location.state?.id;
-  console.log("userId:", userId);
-
   const [groupName, setGroupName] = useState("");
+
+  const userid = location.state?.id;
+  console.log("userid!!!! ",userid);
+
+
   const [days, setDays] = useState([]);
-  const [uniqueDays, setUniqueDays] = useState([]); // Stores dates directly for dropdown
+  const [uniqueDays, setUniqueDays] = useState([]);
   const [timeOptions, setTimeOptions] = useState([]);
   const [availability, setAvailability] = useState({});
   const [selectedDay, setSelectedDay] = useState("");
-  const [fetchedData, setFetchedData] = useState([]);
+  const [fetchedData, setFetchedData] = useState([]); // fetchedData 상태 추가
 
   useEffect(() => {
     const fetchGroupTimetable = async () => {
@@ -31,22 +34,18 @@ function NumberInputDay() {
         console.error("No groupId found in query parameters.");
         return;
       }
-  
+
       try {
         const response = await axios.get(
           `${process.env.REACT_APP_API_BASE_URL}/api/v1/group-timetable/${groupId}`
         );
-  
-        console.log("Full response data:", response.data);
-  
+
         if (response.data && response.data.length > 0) {
           setDays(response.data);
-          setFetchedData(response.data);
-  
-          // Use the `day` field for the dropdown instead of `date`
-          const dayNames = response.data.map(item => item.day); // This should populate with the days of the week
-          setUniqueDays(dayNames);
-          console.log("Days for dropdown:", dayNames);
+          setFetchedData(response.data); // fetchedData 설정
+          const uniqueDaysList = Array.from(new Set(response.data.map(item => item.day)));
+          setUniqueDays(uniqueDaysList);
+          //console.log("Fetched Data:", response.data); // fetchedData 확인용
         } else {
           console.warn("No data received for group timetable.");
         }
@@ -54,44 +53,30 @@ function NumberInputDay() {
         console.error("Error fetching group timetable:", error);
       }
     };
-  
+
     fetchGroupTimetable();
   }, [groupId]);
-  
-  
 
   useEffect(() => {
-    const selectedDateData = days.find(dateObj => 
-      dateObj.day === selectedDay
-    );
-  
+    const selectedDateData = days.find(dateObj => dateObj.day === selectedDay);
     if (selectedDateData) {
       const { start_time, end_time } = selectedDateData;
-      console.log("Selected day start_time:", start_time, "end_time:", end_time);
-  
-      // Only set time options if start_time and end_time are valid
-      if (start_time && end_time) {
-        setTimeOptions(generateTimeOptions(start_time, end_time));
-      } else {
-        console.warn("Invalid start_time or end_time for the selected day.");
-      }
+      setTimeOptions(generateTimeOptions(start_time, end_time));
     }
   }, [selectedDay, days]);
-  
+
   const generateTimeOptions = (start, end) => {
     const times = [];
     let currentTime = new Date(`1970-01-01T${start}Z`);
     const endTime = new Date(`1970-01-01T${end}Z`);
-  
+
     while (currentTime <= endTime) {
-      times.push(currentTime.toISOString().substring(11, 16)); // "HH:MM" format
+      times.push(currentTime.toISOString().substring(11, 16));
       currentTime.setMinutes(currentTime.getMinutes() + 30);
     }
-  
-    console.log("Generated time options:", times); // Log the generated time options
+
     return times;
   };
-  
 
   const generateSlots = (start, end) => {
     const slots = [];
@@ -101,7 +86,7 @@ function NumberInputDay() {
     while (currentTime <= endTime) {
       slots.push({
         availability_count: 1,
-        time: currentTime.toISOString().substring(11, 19),
+        time: currentTime.toISOString().substring(11, 19)
       });
       currentTime.setMinutes(currentTime.getMinutes() + 30);
     }
@@ -115,7 +100,7 @@ function NumberInputDay() {
 
   const addTimeRange = () => {
     if (!selectedDay) return;
-
+  
     setAvailability((prev) => {
       const dayAvailability = [...(prev[selectedDay] || []), { start: "-1", end: "-1", slots: [] }];
       return {
@@ -164,43 +149,45 @@ function NumberInputDay() {
           const response = await axios.get(
             `${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}`
           );
-          setGroupName(response.data.name);
+          setGroupName(response.data.name); // 응답에서 그룹 이름을 설정
+          //console.log("Fetched group name:", response.data.name); // 그룹 이름 콘솔에 출력
         } catch (error) {
           console.error("Error fetching group name:", error);
         }
       };
       fetchGroupName();
+    } else {
+      console.error("No group_id found");
     }
-  }, [groupId]);
+  }, [groupId]); // `groupId`를 의존성 배열에 추가
 
   return (
     <div className="big-container">
       <Logo />
-      <HeaderH2>{groupName}</HeaderH2>
+      <HeaderH2>{groupName}</HeaderH2> 
       <AvailabilityHeaderDay text={`My Availability`} arrowDirection="left" navigateTo="/groupAvailability" />
       <InsertTypeDay />
 
       <div id="date-dropdown">
-  <span className="date-dropdown">Choose Date</span>
-  <div className="select-list-container">
-    <select value={selectedDay} onChange={handleDayChange} className="select-list">
-      <option value="">Select Day</option>
-      {uniqueDays.map((day, index) => (
-        <option key={index} value={day}>
-          {day}
-        </option>
-      ))}
-    </select>
-  </div>
-  <button className="btnPlus" onClick={addTimeRange}>+</button>
-</div>
-
+        <span className="date-dropdown">Choose Date</span>
+        <div className="select-list-container">
+          <select value={selectedDay} onChange={handleDayChange} className="select-list">
+            <option value="">Select Day</option>
+            {uniqueDays.map((day, index) => (
+              <option key={index} value={day}>
+                {day}
+              </option>
+            ))}
+          </select>
+        </div>
+        <button className="btnPlus" onClick={addTimeRange}>+</button>
+      </div>
 
       {availability && Object.keys(availability).length > 0 && (
-        <TimeSelectorDay
-          availability={availability}
-          handleStartChange={handleStartChange}
-          handleEndChange={handleEndChange}
+        <TimeSelectorDay 
+          availability={availability} 
+          handleStartChange={handleStartChange} 
+          handleEndChange={handleEndChange} 
           deleteTimeRange={(day, index) => {
             const newAvailability = { ...availability };
             newAvailability[day].splice(index, 1);
@@ -212,12 +199,12 @@ function NumberInputDay() {
       )}
 
       {Object.keys(availability).length > 0 && (
-        <SaveAvailability
-          availability={availability}
-          groupId={groupId}
-          userId={userId}
+        <SaveAvailability 
+          availability={availability} 
+          groupId={groupId} 
+          userid={userid} 
           event={event}
-          fetchedData={fetchedData}
+          fetchedData={fetchedData} // fetchedData 전달
         />
       )}
     </div>
@@ -225,12 +212,11 @@ function NumberInputDay() {
 }
 
 export default NumberInputDay;
-
 const HeaderH2 = styled.h2`
   text-align: center;
   font-size: 18px;
   font-weight: bold;
   margin: 0;
   color: #4c3f5e;
-  margin-bottom: 10px;
+  margin-bottom: 10px; /* 4LINETON과 My Availability 사이 간격 추가 */
 `;
