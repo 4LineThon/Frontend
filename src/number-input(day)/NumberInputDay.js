@@ -135,14 +135,26 @@ function NumberInputDay() {
   const addTimeRange = () => {
     if (!selectedDay) return;
     setAvailability((prev) => {
-      // Set default start and end values to "100:00" to make them appear at the bottom when sorted
       const dayAvailability = [...(prev[selectedDay] || []), { start: "100:00", end: "100:00", slots: [] }];
-      return {
+      
+      // 새로운 availability 객체 생성 후 요일 순으로 정렬
+      const newAvailability = {
         ...prev,
         [selectedDay]: sortByStartTime(dayAvailability),
       };
+      
+      // 요일 순서대로 정렬하여 newAvailability 설정
+      const sortedAvailability = Object.keys(newAvailability)
+        .sort((a, b) => weekdayOrder[a] - weekdayOrder[b]) // 요일 순서에 맞게 정렬
+        .reduce((acc, key) => {
+          acc[key] = newAvailability[key];
+          return acc;
+        }, {});
+      
+      return sortedAvailability;
     });
   };
+  
 
   const handleStartChange = (day, index, event) => {
     const newStartTime = event.target.value;
