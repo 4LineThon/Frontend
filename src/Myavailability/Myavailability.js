@@ -15,17 +15,10 @@ const Myavailability = () => {
   const groupId = queryParams.get("groupId");
   const [groupName, setGroupName] = useState("");
 
+  const [availabilityData, setAvailabilityData] = useState([]); // 기존 데이터
+  const [modifiedData, setModifiedData] = useState([]); // 수정된 데이터
   const [id] = useState(location.state?.id || null);
   const [name] = useState(location.state?.name || "User");
-  useEffect(() => {
-    //console.log("Received query parametersMinju:");
-    //console.log("Event:", event);
-    //console.log("GroupId:", groupId);
-
-    //console.log("Received state parametersMinju:");
-    //console.log("ID:", id);
-    //console.log("Name:", name);
-  }, [event, groupId, location.state]);
 
   useEffect(() => {
     if (groupId) {
@@ -34,9 +27,7 @@ const Myavailability = () => {
           const response = await axios.get(
             `${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}`
           );
-          setGroupName(response.data.name); // 응답에서 그룹 이름을 설정
-          console.log(response.data);
-          console.log("Fetched group name:", response.data.name); // 그룹 이름을 콘솔에 출력
+          setGroupName(response.data.name);
         } catch (error) {
           console.error("Error fetching group name:", error);
         }
@@ -45,7 +36,65 @@ const Myavailability = () => {
     } else {
       console.error("No group_id found in localStorage");
     }
-  }, []);
+  }, [groupId]);
+
+  // 초기 데이터 불러오기 및 화면에 표시 후 삭제
+  useEffect(() => {
+    if (id && groupId) {
+      const fetchAvailability = async () => {
+        try {
+          const response = await axios.get(
+            `${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${id}`
+          );
+          setAvailabilityData(response.data); // 기존 데이터를 초기 상태로 설정
+
+          // 초기 데이터를 모두 삭제
+          await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${id}`);
+          console.log("초기 데이터 삭제 완료");
+
+          // 삭제 후 초기 데이터를 다시 POST 요청으로 전송하여 화면에 표시
+          await saveInitialData(response.data);
+        } catch (error) {
+          console.error("Error fetching availability data:", error);
+        }
+      };
+      fetchAvailability();
+    }
+  }, [id, groupId]);
+
+  // 초기 데이터를 POST 요청으로 전송
+  const saveInitialData = async (data) => {
+    try {
+      await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability`, {
+        groupId,
+        userId: id,
+        availability: data,
+      });
+      console.log("초기 데이터 저장 완료");
+    } catch (error) {
+      console.error("Error saving initial availability data:", error);
+    }
+  };
+
+  // 사용자가 수정한 데이터 업데이트 함수
+  const handleAvailabilityChange = (newData) => {
+    setModifiedData(newData);
+  };
+
+  // 수정된 데이터만 다시 저장
+  const handleSave = async () => {
+    try {
+      // 기존 데이터가 이미 삭제된 상태이므로, 수정된 데이터만 POST 요청으로 전송
+      await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability`, {
+        groupId,
+        userId: id,
+        availability: modifiedData,
+      });
+      alert("수정된 Availability 정보가 성공적으로 업데이트되었습니다.");
+    } catch (error) {
+      console.error("Error saving modified availability data:", error);
+    }
+  };
 
   return (
     <div>
@@ -58,9 +107,13 @@ const Myavailability = () => {
       />
       <InsertType />
       <IsAvailable />
-      <Calendar groupId={groupId}/>
-
-      
+      <Calendar 
+        groupId={groupId} 
+        userId={id} 
+        initialData={availabilityData} 
+        onAvailabilityChange={handleAvailabilityChange} 
+      />
+      <SaveButton onClick={handleSave}>Save</SaveButton>
     </div>
   );
 };
@@ -73,5 +126,19 @@ const HeaderH2 = styled.h2`
   font-weight: bold;
   margin: 0;
   color: #4c3f5e;
-  margin-bottom: 10px; /* 4LINETON과 My Availability 사이 간격 추가 */
+  margin-bottom: 10px;
 `;
+
+const SaveButton = styled.button`
+  margin-top: 20px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 10px 20px;
+  font-size: 16px;
+  color: white;
+  background-color: #4c3f5e;
+  border: none;
+  cursor: pointer;
+`;
+
