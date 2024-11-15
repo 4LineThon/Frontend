@@ -11,7 +11,7 @@ import Explanation from "../explanation/explanation";
 import CopyButton from "../copy-event-link/CopyButton";
 import Comment from "../comment/Comment";
 import AvailabilityDetail from "./component/AvailabilityDetail";
-import { HeaderH2 } from "../MyAvailability/component/eventName";
+import { HeaderH2 } from "../Myavailability/component/eventName";
 
 const GroupAvailability = () => {
   const location = useLocation();
@@ -61,7 +61,7 @@ const GroupAvailability = () => {
 
   const fetchAllSlotDetails = async (timetableData, slots) => {
     const counts = {};
-  
+
     for (let dayIndex = 0; dayIndex < timetableData.length; dayIndex++) {
       for (let timeIndex = 0; timeIndex < slots.length - 1; timeIndex++) {
         const selectedDay = timetableData[dayIndex];
@@ -88,15 +88,22 @@ const GroupAvailability = () => {
           group: groupId,
           time: `${selectedTime}:00`,
         };
-  
+
         if (selectedDay.date) {
           const selectedDate = new Date(selectedDay.date);
           if (!isNaN(selectedDate.getTime())) {
             // Only add `day` and `date` if `selectedDate` is valid
-            selectedTimeSlot.day = selectedDate.toLocaleString("en-US", { weekday: "short" });
-            selectedTimeSlot.date = `${selectedDate.getFullYear()}-${(selectedDate.getMonth() + 1)
+            selectedTimeSlot.day = selectedDate.toLocaleString("en-US", {
+              weekday: "short",
+            });
+            selectedTimeSlot.date = `${selectedDate.getFullYear()}-${(
+              selectedDate.getMonth() + 1
+            )
               .toString()
-              .padStart(2, "0")}-${selectedDate.getDate().toString().padStart(2, "0")}`;
+              .padStart(2, "0")}-${selectedDate
+              .getDate()
+              .toString()
+              .padStart(2, "0")}`;
           } else {
             // If date is invalid, just add the `day` from selectedDay
             selectedTimeSlot.day = selectedDay.day || "Unknown";
@@ -105,7 +112,7 @@ const GroupAvailability = () => {
           // If there's no date, only send the `day` property from `selectedDay`
           selectedTimeSlot.day = selectedDay.day || "Unknown";
         }
-  
+
         try {
           console.log("Sending request with payload:", selectedTimeSlot);
           const response = await axios.post(
@@ -119,12 +126,10 @@ const GroupAvailability = () => {
         }
       }
     }
-  
+
     setSlotAvailabilityCounts(counts);
     setLoading(false);
   };
-  
-  
 
   const generateTimeSlots = (start, end) => {
     const slots = [];
@@ -198,11 +203,6 @@ const GroupAvailability = () => {
       console.error("Error fetching availability detail:", error);
     }
   };
-  
-  
-  
-  
-  
 
   if (loading) {
     return (
@@ -277,7 +277,9 @@ const GroupAvailability = () => {
                 fill="#423E59"
               >
                 {day.date && !isNaN(new Date(day.date).getTime())
-                  ? new Date(day.date).toLocaleDateString("en-US", { weekday: "short" }).charAt(0)
+                  ? new Date(day.date)
+                      .toLocaleDateString("en-US", { weekday: "short" })
+                      .charAt(0)
                   : day.day.charAt(0)}
               </text>
 

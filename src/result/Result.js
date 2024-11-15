@@ -5,7 +5,7 @@ import AvailabilityHeader from "./component/AvailabilityHeader";
 import Explanation from "../explanation/explanation";
 import CopyButton from "../copy-event-link/CopyButton";
 import axios from "axios";
-import { HeaderH2 } from "../MyAvailability/component/eventName";
+import { HeaderH2 } from "../Myavailability/component/eventName";
 
 const Result = () => {
   const [time, setTime] = useState("");
