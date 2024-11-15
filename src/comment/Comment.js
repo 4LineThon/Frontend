@@ -24,10 +24,25 @@ const Comment = ({ comments, selectedSlot, requestAvailabilityDetail }) => {
     //requestAvailabilityDetail(selectedSlot);
   };
 
+  const deleteComment = async (commentId) => {
+    // eslint-disable-next-line no-restricted-globals
+    if (confirm("Are you sure you want to delete this comment?")) {
+      const response = await axios.delete(
+        `${process.env.REACT_APP_API_BASE_URL}/api/v1/comment/${commentId}`
+      );
+    }
+  };
+
   return (
     <Wrapper>
       {comments.map((comment, idx) => {
-        return <CommentBox key={idx} commentInfo={comment} />;
+        return (
+          <CommentBox
+            key={idx}
+            commentInfo={comment}
+            deleteComment={deleteComment}
+          />
+        );
       })}
       {isClicked && <CommentInput postComment={postComment} />}
     </Wrapper>
