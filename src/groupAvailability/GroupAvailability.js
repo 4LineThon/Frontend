@@ -11,6 +11,7 @@ import Explanation from "../explanation/explanation";
 import CopyButton from "../copy-event-link/CopyButton";
 import Comment from "../comment/Comment";
 import AvailabilityDetail from "./component/AvailabilityDetail";
+import { HeaderH2 } from "../Myavailability/component/headerH2";
 
 const GroupAvailability = () => {
   const location = useLocation();
@@ -27,6 +28,7 @@ const GroupAvailability = () => {
   const [groupName, setGroupName] = useState("");
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [availabilityDetail, setAvailabilityDetail] = useState(null);
+  const [comments, setComments] = useState([]);
 
   const explanation = [
     "You can confirm the meeting time",
@@ -60,26 +62,49 @@ const GroupAvailability = () => {
 
   const fetchAllSlotDetails = async (timetableData, slots) => {
     const counts = {};
-  
+
     for (let dayIndex = 0; dayIndex < timetableData.length; dayIndex++) {
       for (let timeIndex = 0; timeIndex < slots.length - 1; timeIndex++) {
         const selectedDay = timetableData[dayIndex];
         const selectedTime = slots[timeIndex];
-        
+        const selectedDate = new Date(selectedDay.date);
+
+        const dayOfWeek = selectedDate.toLocaleString("en-US", {
+          weekday: "short",
+        });
+
+        const formattedDate = `${selectedDate.getFullYear()}-${(
+          selectedDate.getMonth() + 1
+        )
+          .toString()
+          .padStart(2, "0")}-${selectedDate
+          .getDate()
+          .toString()
+          .padStart(2, "0")}`;
+
+        const formattedTime = selectedTime + ":00";
+
         // Initialize the payload with group and time
         const selectedTimeSlot = {
           group: groupId,
           time: `${selectedTime}:00`,
         };
-  
+
         if (selectedDay.date) {
           const selectedDate = new Date(selectedDay.date);
           if (!isNaN(selectedDate.getTime())) {
             // Only add `day` and `date` if `selectedDate` is valid
-            selectedTimeSlot.day = selectedDate.toLocaleString("en-US", { weekday: "short" });
-            selectedTimeSlot.date = `${selectedDate.getFullYear()}-${(selectedDate.getMonth() + 1)
+            selectedTimeSlot.day = selectedDate.toLocaleString("en-US", {
+              weekday: "short",
+            });
+            selectedTimeSlot.date = `${selectedDate.getFullYear()}-${(
+              selectedDate.getMonth() + 1
+            )
               .toString()
-              .padStart(2, "0")}-${selectedDate.getDate().toString().padStart(2, "0")}`;
+              .padStart(2, "0")}-${selectedDate
+              .getDate()
+              .toString()
+              .padStart(2, "0")}`;
           } else {
             // If date is invalid, just add the `day` from selectedDay
             selectedTimeSlot.day = selectedDay.day || "Unknown";
@@ -88,25 +113,24 @@ const GroupAvailability = () => {
           // If there's no date, only send the `day` property from `selectedDay`
           selectedTimeSlot.day = selectedDay.day || "Unknown";
         }
-  
+
         try {
           console.log("Sending request with payload:", selectedTimeSlot);
           const response = await axios.post(
             `${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/availabilitydetail`,
             selectedTimeSlot
           );
-          counts[`${dayIndex}-${timeIndex}`] = response.data.available_user.length;
+          counts[`${dayIndex}-${timeIndex}`] =
+            response.data.available_user.length;
         } catch (error) {
           console.error("Error fetching availability detail:", error);
         }
       }
     }
-  
+
     setSlotAvailabilityCounts(counts);
     setLoading(false);
   };
-  
-  
 
   const generateTimeSlots = (start, end) => {
     const slots = [];
@@ -169,29 +193,34 @@ const GroupAvailability = () => {
     };
 
     setSelectedSlot(selectedTimeSlot);
+    requestAvailabilityDetail(selectedTimeSlot);
+  };
 
+  const requestAvailabilityDetail = async (selectedTimeSlot) => {
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/availabilitydetail`,
         selectedTimeSlot
       );
       setAvailabilityDetail(response.data);
+      setComments(response.data.comments_data);
     } catch (error) {
       console.error("Error fetching availability detail:", error);
     }
   };
-  
-  
-  
-  
-  
 
   if (loading) {
-    return <LoadingMessage>그룹 시간표를 조회중입니다. 잠시만 기다려주세요</LoadingMessage>;
+    return (
+      <LoadingMessage>
+        그룹 시간표를 조회중입니다. 잠시만 기다려주세요
+      </LoadingMessage>
+    );
   }
 
   return (
-    <div style={{ position: "relative" }}>
+    <div
+      style={{ position: "relative", display: "flex", flexDirection: "column" }}
+    >
       <CopyButton />
       <Logo />
       <HeaderH2>{groupName}</HeaderH2>
@@ -253,7 +282,9 @@ const GroupAvailability = () => {
                 fill="#423E59"
               >
                 {day.date && !isNaN(new Date(day.date).getTime())
-                  ? new Date(day.date).toLocaleDateString("en-US", { weekday: "short" }).charAt(0)
+                  ? new Date(day.date)
+                      .toLocaleDateString("en-US", { weekday: "short" })
+                      .charAt(0)
                   : day.day.charAt(0)}
               </text>
 
@@ -281,10 +312,10 @@ const GroupAvailability = () => {
         <AvailabilityDetail
           available={availabilityDetail.available_user}
           unavailable={availabilityDetail.unavailable_user}
-          comments={availabilityDetail.comments_data}
-          date={selectedSlot.date} 
-          time={selectedSlot.time} 
+          comments={comments}
           userCount={userCount}
+          selectedSlot={selectedSlot}
+          requestAvailabilityDetail={requestAvailabilityDetail}
         />
       )}
 
@@ -306,7 +337,7 @@ const LoadingMessage = styled.div`
   font-family: "Ibarra Real Nova";
   font-size: 20px;
   margin-top: 50px;
-  color: #423E59;
+  color: #423e59;
 `;
 
 const StyledSVG = styled.svg`
@@ -322,18 +353,9 @@ const CalendarContainer = styled.div`
   padding-top: 20px;
 `;
 
-const HeaderH2 = styled.h2`
-  text-align: center;
-  font-size: 18 px;
-  font-weight: bold;
-  margin: 0;
-  color: #4c3f5e;
-  margin-bottom: 10px;
-`;
-
-const DetailContainer = styled.div`
-  background: #f8f8f8;
-  padding: 10px;
-  margin-top: 10px;
-  border-radius: 5px;
-`;
+// const DetailContainer = styled.div`
+//   background: #f8f8f8;
+//   padding: 10px;
+//   margin-top: 10px;
+//   border-radius: 5px;
+// `;

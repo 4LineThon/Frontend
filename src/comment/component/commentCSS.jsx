@@ -32,4 +32,5 @@ export const Writer = styled.div`
 
 export const Content = styled.div`
   font-size: 10px;
+  text-align: left;
 `;
