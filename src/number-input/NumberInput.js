@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './NumberInput.css';
-import AvailabilityHeader2 from './components/Availability Header2';
+import AvailabilityHeader from '../Myavailability/component/AvailabilityHeader';
 import Logo from "../Myavailability/component/logo";
 import InsertType from '../Myavailability/component/insertType';
 import TimeSelector from './components/TimeSelector';
@@ -16,6 +16,7 @@ function NumberInput() {
   const groupId = queryParams.get("groupId");
   const event = queryParams.get("event");
   const [groupName, setGroupName] = useState("");
+  const [name] = useState(location.state?.name || "User");
 
   const userid = location.state?.id;
   console.log("userid!!!! ",userid);
@@ -54,6 +55,8 @@ function NumberInput() {
             const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'short' });
             return `${item.date}(${dayOfWeek})`;
           })));
+
+          
   
           setUniqueDays(uniqueDaysList);
         } else {
@@ -115,9 +118,9 @@ function NumberInput() {
 
   const addTimeRange = () => {
     if (!selectedDay) return;
-  
     setAvailability((prev) => {
-      const dayAvailability = [...(prev[selectedDay] || []), { start: "-1", end: "-1", slots: [] }];
+      // Set default start and end values to "100:00" to make them appear at the bottom when sorted
+      const dayAvailability = [...(prev[selectedDay] || []), { start: "100:00", end: "100:00", slots: [] }];
       return {
         ...prev,
         [selectedDay]: sortByStartTime(dayAvailability),
@@ -126,10 +129,32 @@ function NumberInput() {
   };
 
   const handleStartChange = (day, index, event) => {
+    const newStartTime = event.target.value;
+  
     setAvailability((prev) => {
       const newAvailability = { ...prev };
-      newAvailability[day][index].start = event.target.value;
-      newAvailability[day] = sortByStartTime(newAvailability[day]);
+      const selectedRange = newAvailability[day][index];
+      const endTime = selectedRange.end;
+  
+      // Check if the new start time overlaps with any other time ranges for the same day
+      const hasOverlap = newAvailability[day].some((range, i) => {
+        if (i === index) return false; // Skip checking the current range
+        return (
+          (newStartTime >= range.start && newStartTime <= range.end) ||  // Overlaps with existing range
+          (endTime !== "100:00" && newStartTime < range.start && endTime > range.start) // Full range overlaps
+        );
+      });
+  
+      if (hasOverlap) {
+        alert("This time is already selected.");
+        // Reset the start time to "Choose" (default)
+        newAvailability[day][index].start = "100:00";
+      } else {
+        // Set the start time if there's no overlap and sort the times
+        newAvailability[day][index].start = newStartTime;
+        newAvailability[day] = sortByStartTime(newAvailability[day]);
+      }
+  
       return newAvailability;
     });
   };
@@ -137,14 +162,17 @@ function NumberInput() {
   const handleEndChange = (day, index, event) => {
     setAvailability((prev) => {
       const newAvailability = { ...prev };
-      newAvailability[day][index].end = event.target.value;
-      newAvailability[day] = sortByStartTime(newAvailability[day]);
+      const startTime = newAvailability[day][index].start;
+      const endTime = event.target.value;
 
-      const { start, end } = newAvailability[day][index];
-      if (start !== "-1" && end !== "-1") {
-        newAvailability[day][index].slots = generateSlots(start, end);
+      if (startTime !== "-1" && endTime <= startTime) {
+        alert("End time cannot be earlier than start time.");
+        newAvailability[day][index].end = "100:00";
+      } else {
+        newAvailability[day][index].end = endTime;
+        newAvailability[day] = sortByStartTime(newAvailability[day]);
+        newAvailability[day][index].slots = generateSlots(startTime, endTime);
       }
-
       return newAvailability;
     });
   };
@@ -178,9 +206,13 @@ function NumberInput() {
 
   return (
     <div className="big-container">
-      <Logo />
-      <HeaderH2>{groupName}</HeaderH2> 
-     ' <AvailabilityHeader2 text={`My Availability`} arrowDirection="left" navigateTo="/groupAvailability" />'
+            <Logo />
+      <HeaderH2>{groupName}</HeaderH2>
+      <AvailabilityHeader 
+        text={`Availability for ${name}`} 
+        arrowDirection="left" 
+        navigateTo="/groupAvailability" 
+      />
       <InsertType />
 
       <div id="date-dropdown">

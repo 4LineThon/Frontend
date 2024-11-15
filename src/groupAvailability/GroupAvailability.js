@@ -324,7 +324,7 @@ const CalendarContainer = styled.div`
 
 const HeaderH2 = styled.h2`
   text-align: center;
-  font-size: 18px;
+  font-size: 18 px;
   font-weight: bold;
   margin: 0;
   color: #4c3f5e;
