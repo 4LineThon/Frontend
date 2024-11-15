@@ -8,7 +8,7 @@ import AvailabilityHeader from "./component/AvailabilityHeader";
 import axios from 'axios';
 import styled from "styled-components";
 
-const Minju = () => {
+const Myavailability = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const event = queryParams.get("event");
@@ -18,13 +18,13 @@ const Minju = () => {
   const [id] = useState(location.state?.id || null);
   const [name] = useState(location.state?.name || "User");
   useEffect(() => {
-    console.log("Received query parametersMinju:");
-    console.log("Event:", event);
-    console.log("GroupId:", groupId);
+    //console.log("Received query parametersMinju:");
+    //console.log("Event:", event);
+    //console.log("GroupId:", groupId);
 
-    console.log("Received state parametersMinju:");
-    console.log("ID:", id);
-    console.log("Name:", name);
+    //console.log("Received state parametersMinju:");
+    //console.log("ID:", id);
+    //console.log("Name:", name);
   }, [event, groupId, location.state]);
 
   useEffect(() => {
@@ -65,7 +65,7 @@ const Minju = () => {
   );
 };
 
-export default Minju;
+export default Myavailability;
 
 const HeaderH2 = styled.h2`
   text-align: center;

@@ -69,8 +69,8 @@ function LogIn() {
       // userId를 localStorage에 저장
       localStorage.setItem("userId", response.data.id);
 
-      // 쿼리 파라미터를 포함하여 /minju 페이지로 이동
-      const url = `/minju?event=${event}&groupId=${groupId}`;
+      // 쿼리 파라미터를 포함하여 /myavailability 페이지로 이동
+      const url = `/myavailability?event=${event}&groupId=${groupId}`;
       navigate(url, {
         state: {
           id: response.data.id,
@@ -120,3 +120,12 @@ function LogIn() {
 }
 
 export default LogIn;
+
+const HeaderH2 = styled.h2`
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0;
+  color: #4c3f5e;
+  margin-bottom: 10px; /* 4LINETON과 My Availability 사이 간격 추가 */
+`;

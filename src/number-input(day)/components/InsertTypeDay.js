@@ -28,8 +28,8 @@ const navigateToPage = (path) => {
 useEffect(() => {
   if (selected === 'Number' && location.pathname !== '/NumberInputDay') {
     navigateToPage('/NumberInputDay');
-  } else if (selected === 'Finger' && location.pathname !== '/minju') {
-    navigateToPage('/minju');
+  } else if (selected === 'Finger' && location.pathname !== '/myavailability') {
+    navigateToPage('/myavailability');
   }
 }, [selected, location.pathname, event, groupId, id, name]);
 
