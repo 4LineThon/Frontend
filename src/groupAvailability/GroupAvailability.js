@@ -209,7 +209,7 @@ const GroupAvailability = () => {
       <StatusIndicator current={0} total={userCount} />
       <CalendarContainer>
         <StyledSVG
-          width={50 + groupTimetableData.length * 36}
+          width={50 + groupTimetableData.length * 36 + 10}
           height={timeSlots.length * 18 + 70}
           viewBox={`0 0 ${50 + groupTimetableData.length * 36} ${
             timeSlots.length * 18 + 70
@@ -220,7 +220,7 @@ const GroupAvailability = () => {
             <text
               key={index}
               x="40"
-              y={45 + index * 18}
+              y={50 + index * 18}
               textAnchor="end"
               fontSize="10"
               fill="#423E59"
