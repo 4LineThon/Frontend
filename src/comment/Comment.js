@@ -4,7 +4,7 @@ import CommentInput from "./component/commentInput";
 import styled from "styled-components";
 import axios from "axios";
 
-const Comment = ({ comments, selectedSlot, requestAvailabilityDetail }) => {
+const Comment = ({ comments, selectedSlot, setComments, name }) => {
   const isClicked = selectedSlot !== null;
   console.log("comments", comments);
   console.log("selectedSlot", selectedSlot);
@@ -21,7 +21,13 @@ const Comment = ({ comments, selectedSlot, requestAvailabilityDetail }) => {
       }
     );
     console.log(response);
-    //requestAvailabilityDetail(selectedSlot);
+    const newComment = {
+      id: response.data.id,
+      user: name,
+      text,
+      created_at: response.data.created_at,
+    };
+    setComments([...comments, newComment]);
   };
 
   const deleteComment = async (commentId) => {

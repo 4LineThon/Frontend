@@ -8,7 +8,8 @@ const AvailabilityDetail = ({
   comments,
   userCount,
   selectedSlot,
-  requestAvailabilityDetail,
+  setComments,
+  name,
 }) => (
   <DetailContainer>
     <AvailabilityHeader>
@@ -41,7 +42,8 @@ const AvailabilityDetail = ({
     <Comment
       selectedSlot={selectedSlot}
       comments={comments}
-      requestAvailabilityDetail={requestAvailabilityDetail}
+      setComments={setComments}
+      name={name}
     />
   </DetailContainer>
 );

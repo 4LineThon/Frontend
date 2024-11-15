@@ -29,6 +29,7 @@ const GroupAvailability = () => {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [availabilityDetail, setAvailabilityDetail] = useState(null);
   const [comments, setComments] = useState([]);
+  const [name] = useState(location.state?.name || "User");
 
   const explanation = [
     "You can confirm the meeting time",
@@ -115,7 +116,7 @@ const GroupAvailability = () => {
         }
 
         try {
-          console.log("Sending request with payload:", selectedTimeSlot);
+          // console.log("Sending request with payload:", selectedTimeSlot);
           const response = await axios.post(
             `${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/availabilitydetail`,
             selectedTimeSlot
@@ -313,9 +314,10 @@ const GroupAvailability = () => {
           available={availabilityDetail.available_user}
           unavailable={availabilityDetail.unavailable_user}
           comments={comments}
+          setComments={setComments}
           userCount={userCount}
           selectedSlot={selectedSlot}
-          requestAvailabilityDetail={requestAvailabilityDetail}
+          name={name}
         />
       )}
 

@@ -54,6 +54,7 @@ const Myavailability = () => {
         text={`Availability for ${name}`}
         arrowDirection="left"
         navigateTo="/groupAvailability"
+        name={name}
       />
       <InsertType />
       <IsAvailable />
