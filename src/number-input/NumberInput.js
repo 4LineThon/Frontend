@@ -55,6 +55,8 @@ function NumberInput() {
             const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'short' });
             return `${item.date}(${dayOfWeek})`;
           })));
+
+          
   
           setUniqueDays(uniqueDaysList);
         } else {
