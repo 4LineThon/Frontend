@@ -4,6 +4,8 @@ import "./login.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import Explanation from "../explanation/explanation";
 import LoginHeader from "./loginHeader";
+import Logo from "../minju/component/logo";
+import { HeaderH2 } from "../minju/component/eventName";
 
 function LogIn() {
   const [name, setName] = useState("");
@@ -83,13 +85,9 @@ function LogIn() {
 
   return (
     <div className="big-container">
-      <div className="header">
-        <h1>Timi</h1>
-        <h2>{groupName}</h2> {/* Axios로 받아온 groupName 표시 */}
-      </div>
-
+      <Logo />
+      <HeaderH2>{groupName}</HeaderH2> {/* Axios로 받아온 groupName 표시 */}
       <LoginHeader />
-
       <div className="login-form">
         <div className="name-container">
           <label className="name">Your Name</label>

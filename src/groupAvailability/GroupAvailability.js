@@ -11,6 +11,7 @@ import Explanation from "../explanation/explanation";
 import CopyButton from "../copy-event-link/CopyButton";
 import Comment from "../comment/Comment";
 import AvailabilityDetail from "./component/AvailabilityDetail";
+import { HeaderH2 } from "../minju/component/eventName";
 
 const GroupAvailability = () => {
   const location = useLocation();
@@ -188,7 +189,9 @@ const GroupAvailability = () => {
   }
 
   return (
-    <div style={{ position: "relative" }}>
+    <div
+      style={{ position: "relative", display: "flex", flexDirection: "column" }}
+    >
       <CopyButton />
       <Logo />
       <HeaderH2>{groupName}</HeaderH2>
@@ -311,18 +314,9 @@ const CalendarContainer = styled.div`
   padding-top: 20px;
 `;
 
-const HeaderH2 = styled.h2`
-  text-align: center;
-  font-size: 18px;
-  font-weight: bold;
-  margin: 0;
-  color: #4c3f5e;
-  margin-bottom: 10px;
-`;
-
-const DetailContainer = styled.div`
-  background: #f8f8f8;
-  padding: 10px;
-  margin-top: 10px;
-  border-radius: 5px;
-`;
+// const DetailContainer = styled.div`
+//   background: #f8f8f8;
+//   padding: 10px;
+//   margin-top: 10px;
+//   border-radius: 5px;
+// `;

@@ -4,14 +4,14 @@ import Logo from "../minju/component/logo";
 import AvailabilityHeader from "./component/AvailabilityHeader";
 import Explanation from "../explanation/explanation";
 import CopyButton from "../copy-event-link/CopyButton";
-import styled from 'styled-components';
-import axios from 'axios';
+import axios from "axios";
+import { HeaderH2 } from "../minju/component/eventName";
 
 const Result = () => {
   const [time, setTime] = useState("");
   const [place, setPlace] = useState("");
   const [isSaved, setIsSaved] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(""); 
+  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
   const userid = location.state?.userid;
@@ -49,11 +49,14 @@ const Result = () => {
 
     try {
       // Send the result
-      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/v1/result`, {
-        group: groupId,
-        place: place,
-        time: time
-      });
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/api/v1/result`,
+        {
+          group: groupId,
+          place: place,
+          time: time,
+        }
+      );
       setIsSaved(true);
       console.log("Response from server:", response.data);
       setErrorMessage(""); // Clear any previous error message
@@ -93,7 +96,7 @@ const Result = () => {
     <div style={styles.wrapper}>
       <CopyButton />
       <Logo />
-      <HeaderH2>{groupName}</HeaderH2> 
+      <HeaderH2>{groupName}</HeaderH2>
       <AvailabilityHeader text="Result" />
 
       <div style={styles.formContainer}>
@@ -158,8 +161,6 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    gap: "10px",
-    marginTop: "20px",
     position: "relative",
   },
   formContainer: {
@@ -233,14 +234,5 @@ const styles = {
     cursor: "pointer",
   },
 };
-
-const HeaderH2 = styled.h2`
-  text-align: center;
-  font-size: 18px;
-  font-weight: bold;
-  margin: 0;
-  color: #4c3f5e;
-  margin-bottom: 10px;
-`;
 
 export default Result;
