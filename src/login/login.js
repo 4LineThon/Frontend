@@ -5,7 +5,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Explanation from "../explanation/explanation";
 import LoginHeader from "./loginHeader";
 import Logo from "../minju/component/logo";
-import { HeaderH2 } from "../minju/component/eventName";
+import { HeaderH2 } from "../MyAvailability/component/eventName";
 
 function LogIn() {
   const [name, setName] = useState("");

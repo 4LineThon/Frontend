@@ -11,7 +11,7 @@ import Explanation from "../explanation/explanation";
 import CopyButton from "../copy-event-link/CopyButton";
 import Comment from "../comment/Comment";
 import AvailabilityDetail from "./component/AvailabilityDetail";
-import { HeaderH2 } from "../minju/component/eventName";
+import { HeaderH2 } from "../MyAvailability/component/eventName";
 
 const GroupAvailability = () => {
   const location = useLocation();
