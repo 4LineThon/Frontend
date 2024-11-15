@@ -120,12 +120,3 @@ function LogIn() {
 }
 
 export default LogIn;
-
-const HeaderH2 = styled.h2`
-  text-align: center;
-  font-size: 18px;
-  font-weight: bold;
-  margin: 0;
-  color: #4c3f5e;
-  margin-bottom: 10px; /* 4LINETON과 My Availability 사이 간격 추가 */
-`;
