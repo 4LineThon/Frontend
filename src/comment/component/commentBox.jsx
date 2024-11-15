@@ -7,8 +7,8 @@ const CommentBox = ({ commentInfo }) => {
     <CommentWrapper>
       <Bullet />
       <Commemt>
-        <Writer>Comment by {commentInfo.name}</Writer>
-        <Content>{commentInfo.content}</Content>
+        <Writer>Comment by {commentInfo.user}</Writer>
+        <Content>{commentInfo.text}</Content>
       </Commemt>
     </CommentWrapper>
   );

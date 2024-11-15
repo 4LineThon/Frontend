@@ -10,7 +10,12 @@ const CommentInput = ({ postComment }) => {
     <InputWrapper>
       <Bullet />
       <TextArea value={text} onChange={(e) => setText(e.target.value)} />
-      <SendButton onClick={() => postComment(text)} />
+      <SendButton
+        onClick={() => {
+          postComment(text);
+          setText("");
+        }}
+      />
     </InputWrapper>
   );
 };

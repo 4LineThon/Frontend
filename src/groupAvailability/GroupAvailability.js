@@ -11,7 +11,7 @@ import Explanation from "../explanation/explanation";
 import CopyButton from "../copy-event-link/CopyButton";
 import Comment from "../comment/Comment";
 import AvailabilityDetail from "./component/AvailabilityDetail";
-import { HeaderH2 } from "../Myavailability/component/eventName";
+import { HeaderH2 } from "../Myavailability/component/headerH2";
 
 const GroupAvailability = () => {
   const location = useLocation();
@@ -28,6 +28,7 @@ const GroupAvailability = () => {
   const [groupName, setGroupName] = useState("");
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [availabilityDetail, setAvailabilityDetail] = useState(null);
+  const [comments, setComments] = useState([]);
 
   const explanation = [
     "You can confirm the meeting time",
@@ -192,13 +193,17 @@ const GroupAvailability = () => {
     };
 
     setSelectedSlot(selectedTimeSlot);
+    requestAvailabilityDetail(selectedTimeSlot);
+  };
 
+  const requestAvailabilityDetail = async (selectedTimeSlot) => {
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/availabilitydetail`,
         selectedTimeSlot
       );
       setAvailabilityDetail(response.data);
+      setComments(response.data.comments_data);
     } catch (error) {
       console.error("Error fetching availability detail:", error);
     }
@@ -307,9 +312,10 @@ const GroupAvailability = () => {
         <AvailabilityDetail
           available={availabilityDetail.available_user}
           unavailable={availabilityDetail.unavailable_user}
-          comments={availabilityDetail.comments_data}
+          comments={comments}
           userCount={userCount}
           selectedSlot={selectedSlot}
+          requestAvailabilityDetail={requestAvailabilityDetail}
         />
       )}
 
