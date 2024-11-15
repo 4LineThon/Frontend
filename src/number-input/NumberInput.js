@@ -51,7 +51,7 @@ function NumberInput() {
               console.warn(`Invalid date format for ${item.date}`);
               return item.date; 
             }
-            const dayOfWeek = date.toLocaleDateString('ko-KR', { weekday: 'short' });
+            const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'short' });
             return `${item.date}(${dayOfWeek})`;
           })));
   
@@ -180,7 +180,7 @@ function NumberInput() {
     <div className="big-container">
       <Logo />
       <HeaderH2>{groupName}</HeaderH2> 
-      <AvailabilityHeader2 text={`My Availability`} arrowDirection="left" navigateTo="/groupAvailability" />
+     ' <AvailabilityHeader2 text={`My Availability`} arrowDirection="left" navigateTo="/groupAvailability" />'
       <InsertType />
 
       <div id="date-dropdown">
