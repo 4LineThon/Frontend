@@ -75,7 +75,10 @@ const GroupAvailability = () => {
           selectedDate.getMonth() + 1
         )
           .toString()
-          .padStart(2, "0")}-${selectedDate.getDate().toString().padStart(2, "0")}`;
+          .padStart(2, "0")}-${selectedDate
+          .getDate()
+          .toString()
+          .padStart(2, "0")}`;
 
         const formattedTime = selectedTime + ":00";
 
@@ -91,7 +94,8 @@ const GroupAvailability = () => {
             `${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/availabilitydetail`,
             selectedTimeSlot
           );
-          counts[`${dayIndex}-${timeIndex}`] = response.data.available_user.length;
+          counts[`${dayIndex}-${timeIndex}`] =
+            response.data.available_user.length;
         } catch (error) {
           console.error("Error fetching availability detail:", error);
         }
@@ -176,7 +180,11 @@ const GroupAvailability = () => {
   };
 
   if (loading) {
-    return <LoadingMessage>그룹 시간표를 조회중입니다. 잠시만 기다려주세요</LoadingMessage>;
+    return (
+      <LoadingMessage>
+        그룹 시간표를 조회중입니다. 잠시만 기다려주세요
+      </LoadingMessage>
+    );
   }
 
   return (
@@ -267,9 +275,8 @@ const GroupAvailability = () => {
           available={availabilityDetail.available_user}
           unavailable={availabilityDetail.unavailable_user}
           comments={availabilityDetail.comments_data}
-          date={selectedSlot.date} 
-          time={selectedSlot.time} 
           userCount={userCount}
+          selectedSlot={selectedSlot}
         />
       )}
 
@@ -289,23 +296,19 @@ const LoadingMessage = styled.div`
   font-family: "Ibarra Real Nova";
   font-size: 20px;
   margin-top: 50px;
-  color: #423E59;
+  color: #423e59;
 `;
-
-
-
-
 
 const StyledSVG = styled.svg`
-display: block;
-margin: 0 auto;
-width: fit-content;
+  display: block;
+  margin: 0 auto;
+  width: fit-content;
 `;
 const CalendarContainer = styled.div`
-display: flex;
-justify-content: center;
-width: 100%;
-padding-top: 20px;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding-top: 20px;
 `;
 
 const HeaderH2 = styled.h2`
@@ -316,7 +319,6 @@ const HeaderH2 = styled.h2`
   color: #4c3f5e;
   margin-bottom: 10px;
 `;
-
 
 const DetailContainer = styled.div`
   background: #f8f8f8;

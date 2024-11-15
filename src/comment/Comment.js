@@ -22,7 +22,7 @@ const Comment = ({ comments, selectedSlot }) => {
       {comments.map((comment, idx) => {
         return <CommentBox key={idx} commentInfo={comment} />;
       })}
-      {isClicked ? <CommentInput postComment={postComment} /> : null}
+      {isClicked && <CommentInput postComment={postComment} />}
     </Wrapper>
   );
 };
@@ -33,4 +33,5 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 11px;
+  margin: 24px 0;
 `;

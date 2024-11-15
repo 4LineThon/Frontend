@@ -2,10 +2,20 @@ import React from "react";
 import Comment from "../../comment/Comment";
 import styled from "styled-components";
 
-const AvailabilityDetail = ({ available, unavailable, comments, date, time,userCount }) => (
+const AvailabilityDetail = ({
+  available,
+  unavailable,
+  comments,
+  userCount,
+  selectedSlot,
+}) => (
   <DetailContainer>
-    <AvailabilityHeader>{available.length}/{userCount} Available</AvailabilityHeader>
-    <DateTitle>{date} {time}</DateTitle>
+    <AvailabilityHeader>
+      {available.length}/{userCount} Available
+    </AvailabilityHeader>
+    <DateTitle>
+      {selectedSlot.date} {selectedSlot.time}
+    </DateTitle>
     <ListContainer>
       <ListSection>
         <Title>Available</Title>
@@ -27,10 +37,7 @@ const AvailabilityDetail = ({ available, unavailable, comments, date, time,userC
         </UserList>
       </ListSection>
     </ListContainer>
-    <Title>Comments</Title>
-    {comments.map((comment, index) => (
-      <Comment key={index} user={comment.user} text={comment.text} createdAt={comment.created_at} />
-    ))}
+    <Comment selectedSlot={selectedSlot} comments={comments} />
   </DetailContainer>
 );
 
@@ -48,13 +55,13 @@ const AvailabilityHeader = styled.div`
   height: 30px;
   flex-shrink: 0;
   margin: 0 auto 8px;
-  color: #423E59;
+  color: #423e59;
   font-family: "Ibarra Real Nova";
   font-size: 20px;
   font-style: normal;
   font-weight: 400;
   line-height: normal;
-  border: 1px solid #423E59;
+  border: 1px solid #423e59;
   border-radius: 5px;
   display: flex;
   align-items: center;
@@ -62,7 +69,7 @@ const AvailabilityHeader = styled.div`
 `;
 
 const DateTitle = styled.h4`
-  color: #423E59;
+  color: #423e59;
   font-family: "Ibarra Real Nova";
   font-size: 16px;
   font-style: normal;
@@ -83,7 +90,7 @@ const ListSection = styled.div`
 `;
 
 const Title = styled.h3`
-  color: #423E59;
+  color: #423e59;
   font-family: "Ibarra Real Nova";
   font-size: 18px;
   font-style: normal;
@@ -95,13 +102,13 @@ const Title = styled.h3`
 const Underline = styled.div`
   width: 100%;
   height: 1px;
-  background-color: #423E59;
+  background-color: #423e59;
   margin-bottom: 8px;
 `;
 
 const Divider = styled.div`
   width: 1px;
-  background-color: #423E59;
+  background-color: #423e59;
   height: 100%;
 `;
 
@@ -109,7 +116,7 @@ const UserList = styled.ul`
   list-style-type: none;
   padding: 0;
   margin: 0;
-  color: #423E59;
+  color: #423e59;
   font-family: "Ibarra Real Nova";
   font-size: 16px;
   font-weight: 400;
