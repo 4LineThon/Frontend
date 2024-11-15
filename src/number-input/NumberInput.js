@@ -69,7 +69,7 @@ function NumberInput() {
 
   useEffect(() => {
     const selectedDateData = days.find(dateObj => 
-      `${dateObj.date}(${new Date(dateObj.date).toLocaleDateString('ko-KR', { weekday: 'short' })})` === selectedDay
+      `${dateObj.date}(${new Date(dateObj.date).toLocaleDateString('en-US', { weekday: 'short' })})` === selectedDay
     );
   
     if (selectedDateData) {
