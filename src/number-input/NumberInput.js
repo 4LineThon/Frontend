@@ -19,7 +19,7 @@ function NumberInput() {
   const [name] = useState(location.state?.name || "User");
 
   const userid = location.state?.id;
-  console.log("userid!!!! ",userid);
+  console.log("userid!!!! ", userid);
 
   const [days, setDays] = useState([]);
   const [uniqueDays, setUniqueDays] = useState([]);
@@ -28,37 +28,53 @@ function NumberInput() {
   const [selectedDay, setSelectedDay] = useState("");
   const [fetchedData, setFetchedData] = useState([]); // fetchedData 상태 추가
 
+  // 날짜 정렬용 함수
+  const sortUniqueDays = (days) => {
+    return days.sort((a, b) => {
+      const dateA = a.split('(')[0];
+      const dateB = b.split('(')[0];
+      return new Date(dateA) - new Date(dateB);
+    });
+  };
+
+  const sortByStartTime = (dayAvailability) => {
+    return dayAvailability.sort((a, b) => {
+      const [hoursA, minutesA] = a.start.split(':').map(Number);
+      const [hoursB, minutesB] = b.start.split(':').map(Number);
+      return hoursA - hoursB || minutesA - minutesB;
+    });
+  };
+
   useEffect(() => {
     const fetchGroupTimetable = async () => {
       if (!groupId) {
         console.error("No groupId found in query parameters.");
         return;
       }
-  
+
       try {
         const response = await axios.get(
           `${process.env.REACT_APP_API_BASE_URL}/api/v1/group-timetable/${groupId}`
         );
-  
+
         if (response.data && response.data.length > 0) {
           setDays(response.data);
           setFetchedData(response.data);
-  
-          
+
           const uniqueDaysList = Array.from(new Set(response.data.map(item => {
-            
             const date = new Date(item.date);
             if (isNaN(date)) {
               console.warn(`Invalid date format for ${item.date}`);
-              return item.date; 
+              return item.date;
             }
             const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'short' });
             return `${item.date}(${dayOfWeek})`;
           })));
 
+          // 날짜 정렬 후 상태 업데이트
+          const sortedUniqueDays = sortUniqueDays(uniqueDaysList);
           
-  
-          setUniqueDays(uniqueDaysList);
+          setUniqueDays(sortedUniqueDays);
         } else {
           console.warn("No data received for group timetable.");
         }
@@ -66,22 +82,22 @@ function NumberInput() {
         console.error("Error fetching group timetable:", error);
       }
     };
-  
+
     fetchGroupTimetable();
   }, [groupId]);
 
   useEffect(() => {
-    const selectedDateData = days.find(dateObj => 
-      `${dateObj.date}(${new Date(dateObj.date).toLocaleDateString('en-US', { weekday: 'short' })})` === selectedDay
-    );
-  
+    const selectedDateData = days.find(dateObj => {
+      const formattedDate = `${dateObj.date}(${new Date(dateObj.date).toLocaleDateString('en-US', { weekday: 'short' })})`;
+      return formattedDate === selectedDay;
+    });
+
     if (selectedDateData) {
       const { start_time, end_time } = selectedDateData;
       setTimeOptions(generateTimeOptions(start_time, end_time));
       console.log("generated timeOptions:", generateTimeOptions(start_time, end_time));
-    } 
+    }
   }, [selectedDay, days]);
-  
 
   const generateTimeOptions = (start, end) => {
     const times = [];
@@ -119,42 +135,51 @@ function NumberInput() {
   const addTimeRange = () => {
     if (!selectedDay) return;
     setAvailability((prev) => {
-      // Set default start and end values to "100:00" to make them appear at the bottom when sorted
       const dayAvailability = [...(prev[selectedDay] || []), { start: "100:00", end: "100:00", slots: [] }];
-      return {
+      
+      // 새로운 availability 객체 생성 후 날짜 순으로 정렬
+      const newAvailability = {
         ...prev,
         [selectedDay]: sortByStartTime(dayAvailability),
       };
+      
+      // 날짜 순서대로 정렬하여 newAvailability 설정
+      const sortedAvailability = Object.keys(newAvailability)
+        .sort((a, b) => new Date(a.split('(')[0]) - new Date(b.split('(')[0]))
+        .reduce((acc, key) => {
+          acc[key] = newAvailability[key];
+          return acc;
+        }, {});
+      
+      return sortedAvailability;
     });
   };
+  
 
   const handleStartChange = (day, index, event) => {
     const newStartTime = event.target.value;
-  
+
     setAvailability((prev) => {
       const newAvailability = { ...prev };
       const selectedRange = newAvailability[day][index];
       const endTime = selectedRange.end;
-  
-      // Check if the new start time overlaps with any other time ranges for the same day
+
       const hasOverlap = newAvailability[day].some((range, i) => {
-        if (i === index) return false; // Skip checking the current range
+        if (i === index) return false;
         return (
-          (newStartTime >= range.start && newStartTime <= range.end) ||  // Overlaps with existing range
-          (endTime !== "100:00" && newStartTime < range.start && endTime > range.start) // Full range overlaps
+          (newStartTime >= range.start && newStartTime <= range.end) ||
+          (endTime !== "100:00" && newStartTime < range.start && endTime > range.start)
         );
       });
-  
+
       if (hasOverlap) {
         alert("This time is already selected.");
-        // Reset the start time to "Choose" (default)
         newAvailability[day][index].start = "100:00";
       } else {
-        // Set the start time if there's no overlap and sort the times
         newAvailability[day][index].start = newStartTime;
         newAvailability[day] = sortByStartTime(newAvailability[day]);
       }
-  
+
       return newAvailability;
     });
   };
@@ -177,14 +202,6 @@ function NumberInput() {
     });
   };
 
-  const sortByStartTime = (dayAvailability) => {
-    return dayAvailability.sort((a, b) => {
-      const [hoursA, minutesA] = a.start.split(':').map(Number);
-      const [hoursB, minutesB] = b.start.split(':').map(Number);
-      return hoursA - hoursB || minutesA - minutesB;
-    });
-  };
-
   useEffect(() => {
     if (groupId) {
       const fetchGroupName = async () => {
@@ -192,8 +209,7 @@ function NumberInput() {
           const response = await axios.get(
             `${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}`
           );
-          setGroupName(response.data.name); // 응답에서 그룹 이름을 설정
-          //console.log("Fetched group name:", response.data.name); // 그룹 이름 콘솔에 출력
+          setGroupName(response.data.name);
         } catch (error) {
           console.error("Error fetching group name:", error);
         }
@@ -202,11 +218,11 @@ function NumberInput() {
     } else {
       console.error("No group_id found");
     }
-  }, [groupId]); // `groupId`를 의존성 배열에 추가
+  }, [groupId]);
 
   return (
     <div className="big-container">
-            <Logo />
+      <Logo />
       <HeaderH2>{groupName}</HeaderH2>
       <AvailabilityHeader 
         text={`Availability for ${name}`} 
@@ -251,7 +267,7 @@ function NumberInput() {
           groupId={groupId} 
           userid={userid} 
           event={event}
-          fetchedData={fetchedData} // fetchedData 전달
+          fetchedData={fetchedData} 
         />
       )}
     </div>
@@ -266,5 +282,5 @@ const HeaderH2 = styled.h2`
   font-weight: bold;
   margin: 0;
   color: #4c3f5e;
-  margin-bottom: 10px; /* 4LINETON과 My Availability 사이 간격 추가 */
+  margin-bottom: 10px;
 `;
