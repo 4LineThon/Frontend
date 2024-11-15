@@ -20,6 +20,17 @@ function NumberInputDay() {
   const userid = location.state?.id;
   console.log("userid!!!! ",userid);
 
+  const weekdayOrder = {
+    "Mon": 0,
+    "Tue": 1,
+    "Wed": 2,
+    "Thu": 3,
+    "Fri": 4,
+    "Sat": 5,
+    "Sun": 6
+  };
+  
+
 
   const [days, setDays] = useState([]);
   const [uniqueDays, setUniqueDays] = useState([]);
@@ -34,18 +45,17 @@ function NumberInputDay() {
         console.error("No groupId found in query parameters.");
         return;
       }
-
+  
       try {
         const response = await axios.get(
           `${process.env.REACT_APP_API_BASE_URL}/api/v1/group-timetable/${groupId}`
         );
-
+  
         if (response.data && response.data.length > 0) {
           setDays(response.data);
-          setFetchedData(response.data); // fetchedData 설정
-          const uniqueDaysList = Array.from(new Set(response.data.map(item => item.day)));
+          const uniqueDaysList = Array.from(new Set(response.data.map(item => item.day)))
+            .sort((a, b) => weekdayOrder[a] - weekdayOrder[b]); // 요일 순서대로 정렬
           setUniqueDays(uniqueDaysList);
-          //console.log("Fetched Data:", response.data); // fetchedData 확인용
         } else {
           console.warn("No data received for group timetable.");
         }
@@ -53,9 +63,33 @@ function NumberInputDay() {
         console.error("Error fetching group timetable:", error);
       }
     };
-
+  
     fetchGroupTimetable();
   }, [groupId]);
+  
+  useEffect(() => {
+    if (days.length > 0) {
+      const uniqueDaysList = Array.from(new Set(days.map(item => item.day)))
+        .sort((a, b) => weekdayOrder[a] - weekdayOrder[b]); // 요일 순서대로 정렬
+        console.log("Unique Days List (Sorted):", uniqueDaysList); // 정렬된 uniqueDaysList 출력
+        
+      setUniqueDays(uniqueDaysList);
+    }
+  }, [days]); // days 배열이 변경될 때마다 이 코드 블록 실행
+  
+  
+  useEffect(() => {
+    // availability 객체를 uniqueDays의 순서에 맞추어 재구성
+    const newAvailability = {};
+    uniqueDays.forEach(day => {
+      if (availability[day]) {
+        newAvailability[day] = availability[day];
+      }
+    });
+    setAvailability(newAvailability);
+  }, [uniqueDays]);
+  
+  
 
   useEffect(() => {
     const selectedDateData = days.find(dateObj => dateObj.day === selectedDay);
@@ -187,7 +221,7 @@ function NumberInputDay() {
   }, [groupId]); // `groupId`를 의존성 배열에 추가
 
   return (
-    <div className="big-container">
+    <div className="big-container" key={uniqueDays.join('-')}>
       <Logo />
       <HeaderH2>{groupName}</HeaderH2> 
       <AvailabilityHeaderDay text={`My Availability`} arrowDirection="left" navigateTo="/groupAvailability" />
