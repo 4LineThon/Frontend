@@ -18,13 +18,13 @@ const Myavailability = () => {
   const [id] = useState(location.state?.id || null);
   const [name] = useState(location.state?.name || "User");
   useEffect(() => {
-    console.log("Received query parametersMinju:");
-    console.log("Event:", event);
-    console.log("GroupId:", groupId);
+    //console.log("Received query parametersMinju:");
+    //console.log("Event:", event);
+    //console.log("GroupId:", groupId);
 
-    console.log("Received state parametersMinju:");
-    console.log("ID:", id);
-    console.log("Name:", name);
+    //console.log("Received state parametersMinju:");
+    //console.log("ID:", id);
+    //console.log("Name:", name);
   }, [event, groupId, location.state]);
 
   useEffect(() => {
