@@ -11,10 +11,8 @@ const Calendar = ({ groupId }) => {
   const userid = location.state?.id;
   const name = location.state?.name;
 
-  // State for storing timetable data
   const [timetableData, setTimetableData] = useState([]);
   
-  // Fetch data and process it
   useEffect(() => {
     if (groupId) {
       axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/v1/group-timetable/${groupId}`)
@@ -22,14 +20,14 @@ const Calendar = ({ groupId }) => {
           const rawData = response.data;
           console.log("Fetched raw group timetable data:", rawData);
 
-          // Process data to the desired format
-          let processedData = rawData.map(item => ({
+          const processedData = rawData.map(item => ({
             date: item.date,
             day: item.day,
             startTime: item.start_time,
             endTime: item.end_time,
           }));
 
+          console.log("Processed timetable data:", processedData); // 데이터 확인
           setTimetableData(processedData);
           
         })
@@ -38,25 +36,13 @@ const Calendar = ({ groupId }) => {
         });
     }
   }, [groupId]);
-  
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-      {console.log("Processed group timetable data:", timetableData)}
-      <CreateCalendar groupTimetableData={timetableData} userid = {userid}></CreateCalendar>
-      {/* CreateCalendar에 timetableData 전달 */}
-      </div>
+      {console.log("Passing timetable data to CreateCalendar:", timetableData)}
+      <CreateCalendar groupTimetableData={timetableData} userid={userid}></CreateCalendar>
+    </div>
   );
-};
-
-const styles = {
-  container: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    marginTop: "20px",
-    marginBottom: "0px",
-  },
 };
 
 const StyledSaveButton = styled.button`
@@ -74,7 +60,6 @@ const StyledSaveButton = styled.button`
   cursor: pointer;
   margin: 20px auto;
   display: block;
-
   &:hover {
     opacity: 0.9;
   }

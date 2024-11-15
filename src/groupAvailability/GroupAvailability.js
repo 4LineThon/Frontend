@@ -10,28 +10,23 @@ import FixButton from "./component/fixButton";
 import Explanation from "../explanation/explanation";
 import CopyButton from "../copy-event-link/CopyButton";
 import Comment from "../comment/Comment";
+import AvailabilityDetail from "./component/AvailabilityDetail";
 
 const GroupAvailability = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [groupTimetableData, setGroupTimetableData] = useState([]);
   const [timeSlots, setTimeSlots] = useState([]);
-  const [maxAvailability, setMaxAvailability] = useState(1); // 최댓값을 저장할 상태
+  const [userCount, setUserCount] = useState(0);
+  const [slotAvailabilityCounts, setSlotAvailabilityCounts] = useState({});
+  const [loading, setLoading] = useState(true);
   const queryParams = new URLSearchParams(location.search);
   const event = queryParams.get("event");
   const groupId = Number(queryParams.get("groupId"));
   const userid = location.state?.userid;
   const [groupName, setGroupName] = useState("");
-  const { availability } = location.state || {};
   const [selectedSlot, setSelectedSlot] = useState(null);
-  const [comments, setComments] = useState([]);
-
-  console.log("Received UserId:", userid); // userId 확인용
-  // console.log("Received Availability (in GroupAvailability):", availability);
-  // 쿼리 파라미터 확인 (디버깅용)
-  console.log("Event:", event);
-  console.log("GroupId:", groupId);
-  console.log("userid:", userid);
+  const [availabilityDetail, setAvailabilityDetail] = useState(null);
 
   const explanation = [
     "You can confirm the meeting time",
@@ -46,27 +41,7 @@ const GroupAvailability = () => {
         )
         .then((response) => {
           const rawData = response.data;
-
-          // 최대 availability_count를 계산
-          let maxCount = 1;
-          const processedData = rawData.map((item) => {
-            item.slots.forEach((slot) => {
-              if (slot.availability_count > maxCount) {
-                maxCount = slot.availability_count;
-              }
-            });
-            return {
-              ...item,
-              slots: item.slots.reduce((acc, slot) => {
-                const timeKey = slot.time.slice(0, 5); // "HH:MM" 형식으로 변환
-                acc[timeKey] = slot.availability_count;
-                return acc;
-              }, {}),
-            };
-          });
-
-          setMaxAvailability(maxCount); // 최대 값 상태에 저장
-          setGroupTimetableData(processedData);
+          setGroupTimetableData(rawData);
 
           if (rawData.length > 0) {
             const slots = generateTimeSlots(
@@ -74,6 +49,7 @@ const GroupAvailability = () => {
               rawData[0].end_time
             );
             setTimeSlots(slots);
+            fetchAllSlotDetails(rawData, slots);
           }
         })
         .catch((error) => {
@@ -82,21 +58,66 @@ const GroupAvailability = () => {
     }
   }, [groupId]);
 
+  const fetchAllSlotDetails = async (timetableData, slots) => {
+    const counts = {};
+
+    for (let dayIndex = 0; dayIndex < timetableData.length; dayIndex++) {
+      for (let timeIndex = 0; timeIndex < slots.length - 1; timeIndex++) {
+        const selectedDay = timetableData[dayIndex];
+        const selectedTime = slots[timeIndex];
+        const selectedDate = new Date(selectedDay.date);
+
+        const dayOfWeek = selectedDate.toLocaleString("en-US", {
+          weekday: "short",
+        });
+
+        const formattedDate = `${selectedDate.getFullYear()}-${(
+          selectedDate.getMonth() + 1
+        )
+          .toString()
+          .padStart(2, "0")}-${selectedDate.getDate().toString().padStart(2, "0")}`;
+
+        const formattedTime = selectedTime + ":00";
+
+        const selectedTimeSlot = {
+          group: groupId,
+          day: dayOfWeek,
+          date: formattedDate,
+          time: formattedTime,
+        };
+
+        try {
+          const response = await axios.post(
+            `${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/availabilitydetail`,
+            selectedTimeSlot
+          );
+          counts[`${dayIndex}-${timeIndex}`] = response.data.available_user.length;
+        } catch (error) {
+          console.error("Error fetching availability detail:", error);
+        }
+      }
+    }
+
+    setSlotAvailabilityCounts(counts);
+    setLoading(false);
+  };
+
   const generateTimeSlots = (start, end) => {
     const slots = [];
     let current = new Date(`1970-01-01T${start}Z`);
     const endTime = new Date(`1970-01-01T${end}Z`);
-
     while (current <= endTime) {
-      slots.push(current.toISOString().substring(11, 16)); // "HH:MM" 형식
+      slots.push(current.toISOString().substring(11, 16));
       current.setMinutes(current.getMinutes() + 30);
     }
     return slots;
   };
 
-  // availability_count에 따라 그라데이션 적용 (maxAvailability에 맞춰 비율 계산)
   const calculateAvailabilityColor = (count) => {
-    const opacity = count / maxAvailability;
+    if (count === userCount) {
+      return "#9EA663"; // 모든 인원이 가능할 때 색상
+    }
+    const opacity = count / userCount;
     return `rgba(66, 62, 89, ${0.2 + opacity * 0.8})`;
   };
 
@@ -107,37 +128,17 @@ const GroupAvailability = () => {
           const response = await axios.get(
             `${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}`
           );
-          setGroupName(response.data.name); // 응답에서 그룹 이름을 설정
-          console.log("Fetched group name:", response.data.name); // 그룹 이름 콘솔에 출력
+          setGroupName(response.data.name);
+          setUserCount(response.data.user_count);
         } catch (error) {
           console.error("Error fetching group name:", error);
         }
       };
       fetchGroupName();
-    } else {
-      console.error("No group_id found");
     }
-  }, [groupId]); // `groupId`를 의존성 배열에 추가
+  }, [groupId]);
 
-  // 날짜 클릭 시 정보 반환하기
-  useEffect(() => {
-    const fetchAvailabilityDetail = async () => {
-      try {
-        const response = await axios.post(
-          `${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/availabilitydetail`,
-          selectedSlot
-        );
-        console.log("날짜 클릭 후 얻은 정보: ", response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    if (!selectedSlot) return;
-    fetchAvailabilityDetail();
-  }, [selectedSlot]);
-
-  const handleRectClick = (dayIndex, timeIndex) => {
+  const handleRectClick = async (dayIndex, timeIndex) => {
     const selectedDay = groupTimetableData[dayIndex];
     const selectedTime = timeSlots[timeIndex];
     const selectedDate = new Date(selectedDay.date);
@@ -161,9 +162,22 @@ const GroupAvailability = () => {
       time: formattedTime,
     };
 
-    console.log("Selected Slot:", selectedTimeSlot);
     setSelectedSlot(selectedTimeSlot);
+
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/availabilitydetail`,
+        selectedTimeSlot
+      );
+      setAvailabilityDetail(response.data);
+    } catch (error) {
+      console.error("Error fetching availability detail:", error);
+    }
   };
+
+  if (loading) {
+    return <LoadingMessage>그룹 시간표를 조회중입니다. 잠시만 기다려주세요</LoadingMessage>;
+  }
 
   return (
     <div style={{ position: "relative" }}>
@@ -173,13 +187,15 @@ const GroupAvailability = () => {
       <AvailabilityHeader
         text="Group's Availability"
         arrowDirection="right"
-        navigateTo={() => navigate(`/login?event=${event}&groupId=${groupId}`, {
-          state: { groupName }
-        })}
+        navigateTo={() =>
+          navigate(`/login?event=${event}&groupId=${groupId}`, {
+            state: { groupName },
+          })
+        }
       />
 
       <EveryoneAvailable />
-      <StatusIndicator current={0} total={maxAvailability} />
+      <StatusIndicator current={0} total={userCount} />
       <CalendarContainer>
         <StyledSVG
           width={50 + groupTimetableData.length * 36}
@@ -189,12 +205,11 @@ const GroupAvailability = () => {
           }`}
           xmlns="http://www.w3.org/2000/svg"
         >
-          {/* 시간 표시 */}
           {timeSlots.map((time, index) => (
             <text
               key={index}
-              x="40" // 시간을 왼쪽에 맞추기 위해 x 좌표 설정
-              y={45 + index * 18} // 시간별 y 좌표 설정
+              x="40"
+              y={45 + index * 18}
               textAnchor="end"
               fontSize="10"
               fill="#423E59"
@@ -203,7 +218,6 @@ const GroupAvailability = () => {
             </text>
           ))}
 
-          {/* 요일 및 날짜 표시 */}
           {groupTimetableData.map((day, dayIndex) => (
             <React.Fragment key={dayIndex}>
               <text
@@ -228,7 +242,6 @@ const GroupAvailability = () => {
                 {day.day.charAt(0)}
               </text>
 
-              {/* 시간대별 가용 인원 표시 (마지막 시간 제외) */}
               {timeSlots.slice(0, -1).map((time, timeIndex) => (
                 <rect
                   key={`${dayIndex}-${timeIndex}`}
@@ -236,7 +249,9 @@ const GroupAvailability = () => {
                   y={45 + timeIndex * 18}
                   width="36"
                   height="18"
-                  fill={calculateAvailabilityColor(day.slots[time] || 0)}
+                  fill={calculateAvailabilityColor(
+                    slotAvailabilityCounts[`${dayIndex}-${timeIndex}`] || 0
+                  )}
                   stroke="#423E59"
                   strokeWidth="1"
                   onClick={() => handleRectClick(dayIndex, timeIndex)}
@@ -247,10 +262,17 @@ const GroupAvailability = () => {
         </StyledSVG>
       </CalendarContainer>
 
-      {/* 코멘트 */}
-      <Comment comments={comments} selectedSlot={selectedSlot} />
+      {availabilityDetail && (
+        <AvailabilityDetail
+          available={availabilityDetail.available_user}
+          unavailable={availabilityDetail.unavailable_user}
+          comments={availabilityDetail.comments_data}
+          date={selectedSlot.date} 
+          time={selectedSlot.time} 
+          userCount={userCount}
+        />
+      )}
 
-      {/* 여기 groupIdid도 나중에 제대로 받아지면 그때 groupId로 수정하면됨 */}
       <FixButton
         event={event}
         groupId={groupId}
@@ -261,20 +283,30 @@ const GroupAvailability = () => {
     </div>
   );
 };
+export default GroupAvailability;
+const LoadingMessage = styled.div`
+  text-align: center;
+  font-family: "Ibarra Real Nova";
+  font-size: 20px;
+  margin-top: 50px;
+  color: #423E59;
+`;
+
+
+
+
 
 const StyledSVG = styled.svg`
-  display: block;
-  margin: 0 auto;
-  width: fit-content;
+display: block;
+margin: 0 auto;
+width: fit-content;
 `;
 const CalendarContainer = styled.div`
-  display: flex;
-  justify-content: center; // Center-aligns the calendar in the main container
-  width: 100%;
-  padding-top: 20px; // Optional, adds space at the top
+display: flex;
+justify-content: center;
+width: 100%;
+padding-top: 20px;
 `;
-
-export default GroupAvailability;
 
 const HeaderH2 = styled.h2`
   text-align: center;
@@ -282,5 +314,13 @@ const HeaderH2 = styled.h2`
   font-weight: bold;
   margin: 0;
   color: #4c3f5e;
-  margin-bottom: 10px; /* 4LINETON과 My Availability 사이 간격 추가 */
+  margin-bottom: 10px;
+`;
+
+
+const DetailContainer = styled.div`
+  background: #f8f8f8;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 5px;
 `;
