@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useLocation } from 'react-router-dom';
 import './NumberInputDay.css';
 import AvailabilityHeaderDay from './components/AvailabilityHeaderDay';
-import Logo from "../minju/component/logo";
+import Logo from "../Myavailability/component/logo";
 import InsertTypeDay from './components/InsertTypeDay';
 import TimeSelectorDay from './components/TimeSelectorDay';
 import SaveAvailability from './components/saveAvailability';

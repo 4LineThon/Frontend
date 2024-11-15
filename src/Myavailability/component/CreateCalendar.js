@@ -170,7 +170,7 @@ const CreateCalendar = ({ groupTimetableData, userid, onChange = () => {} }) => 
   return (
     <CalendarContainer onMouseUp={handleMouseUp}>
       <StyledSVG
-        width={50 + groupTimetableData.length * 36}
+        width={50 + groupTimetableData.length * 36 + 10}
         height={timeSlots.length * 18 + 70}
         viewBox={`0 0 ${50 + groupTimetableData.length * 36} ${timeSlots.length * 18 + 70}`}
         xmlns="http://www.w3.org/2000/svg"
