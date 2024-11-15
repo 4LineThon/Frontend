@@ -6,8 +6,8 @@ import axios from "axios";
 
 const Comment = ({ comments, selectedSlot, setComments, name }) => {
   const isClicked = selectedSlot !== null;
-  console.log("comments", comments);
-  console.log("selectedSlot", selectedSlot);
+  // console.log("comments", comments);
+  // console.log("selectedSlot", selectedSlot);
 
   const postComment = async (text) => {
     const response = await axios.post(
@@ -20,7 +20,7 @@ const Comment = ({ comments, selectedSlot, setComments, name }) => {
         text,
       }
     );
-    console.log(response);
+    // console.log(response);
     const newComment = {
       id: response.data.id,
       user: name,
@@ -31,11 +31,18 @@ const Comment = ({ comments, selectedSlot, setComments, name }) => {
   };
 
   const deleteComment = async (commentId) => {
-    // eslint-disable-next-line no-restricted-globals
-    if (confirm("Are you sure you want to delete this comment?")) {
-      const response = await axios.delete(
-        `${process.env.REACT_APP_API_BASE_URL}/api/v1/comment/${commentId}`
-      );
+    try {
+      // eslint-disable-next-line no-restricted-globals
+      if (confirm("Are you sure you want to delete this comment?")) {
+        const response = await axios.delete(
+          `${process.env.REACT_APP_API_BASE_URL}/api/v1/comment/${commentId}`
+        );
+        setComments((prev) =>
+          prev.filter((comment) => comment.id !== commentId)
+        );
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -47,6 +54,7 @@ const Comment = ({ comments, selectedSlot, setComments, name }) => {
             key={idx}
             commentInfo={comment}
             deleteComment={deleteComment}
+            name={name}
           />
         );
       })}

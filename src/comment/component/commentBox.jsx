@@ -2,7 +2,7 @@ import React from "react";
 import { Bullet, Commemt, Content, Wrapper, Writer } from "./commentCSS";
 import styled from "styled-components";
 
-const CommentBox = ({ commentInfo, deleteComment }) => {
+const CommentBox = ({ commentInfo, deleteComment, name }) => {
   return (
     <CommentWrapper>
       <Bullet />
@@ -10,7 +10,9 @@ const CommentBox = ({ commentInfo, deleteComment }) => {
         <Writer>Comment by {commentInfo.user}</Writer>
         <Content>{commentInfo.text}</Content>
       </Commemt>
-      <DeleteBtn onClick={() => deleteComment(1)} />
+      {/* {name === commentInfo.user ? ( */}
+      <DeleteBtn onClick={() => deleteComment(commentInfo.id)} />
+      {/* ) : null} */}
     </CommentWrapper>
   );
 };
