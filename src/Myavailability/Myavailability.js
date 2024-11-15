@@ -4,9 +4,9 @@ import Calendar from "./component/Calendar";
 import InsertType from "./component/insertType";
 import IsAvailable from "./component/isAvailable";
 import Logo from "./component/logo";
+import { HeaderH2 } from "./component/headerH2";
 import AvailabilityHeader from "./component/AvailabilityHeader";
-import axios from 'axios';
-import styled from "styled-components";
+import axios from "axios";
 
 const Myavailability = () => {
   const location = useLocation();
@@ -21,7 +21,6 @@ const Myavailability = () => {
     //console.log("Received query parametersMinju:");
     //console.log("Event:", event);
     //console.log("GroupId:", groupId);
-
     //console.log("Received state parametersMinju:");
     //console.log("ID:", id);
     //console.log("Name:", name);
@@ -51,27 +50,16 @@ const Myavailability = () => {
     <div>
       <Logo />
       <HeaderH2>{groupName}</HeaderH2>
-      <AvailabilityHeader 
-        text={`Availability for ${name}`} 
-        arrowDirection="left" 
-        navigateTo="/groupAvailability" 
+      <AvailabilityHeader
+        text={`Availability for ${name}`}
+        arrowDirection="left"
+        navigateTo="/groupAvailability"
       />
       <InsertType />
       <IsAvailable />
-      <Calendar groupId={groupId}/>
-
-      
+      <Calendar groupId={groupId} />
     </div>
   );
 };
 
 export default Myavailability;
-
-const HeaderH2 = styled.h2`
-  text-align: center;
-  font-size: 18px;
-  font-weight: bold;
-  margin: 0;
-  color: #4c3f5e;
-  margin-bottom: 10px; /* 4LINETON과 My Availability 사이 간격 추가 */
-`;
