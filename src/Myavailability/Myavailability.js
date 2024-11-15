@@ -8,7 +8,7 @@ import AvailabilityHeader from "./component/AvailabilityHeader";
 import axios from 'axios';
 import styled from "styled-components";
 
-const Minju = () => {
+const Myavailability = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const event = queryParams.get("event");
@@ -65,7 +65,7 @@ const Minju = () => {
   );
 };
 
-export default Minju;
+export default Myavailability;
 
 const HeaderH2 = styled.h2`
   text-align: center;

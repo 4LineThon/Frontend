@@ -4,7 +4,7 @@ import {
   Navigate,
   RouterProvider,
 } from "react-router-dom";
-import Minju from "./minju/Minju";
+import Myavailability from "./Myavailability/Myavailability";
 import NumberInput from "./number-input/NumberInput";
 import NumberInputDay from "./number-input(day)/NumberInputDay";
 import SelectDate from "./select-date/SelectDate";
@@ -19,8 +19,8 @@ const router = createBrowserRouter(
       element: <Navigate to="/SelectDate" />,
     },
     {
-      path: "/minju",
-      element: <Minju />,
+      path: "/myavailability",
+      element: <Myavailability />,
     },
     {
       path: "/GroupAvailability",

@@ -4,7 +4,7 @@ import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import EveryoneAvailable from "./component/Everyoneavailable";
 import StatusIndicator from "./component/StatusIndicator";
-import Logo from "../minju/component/logo";
+import Logo from "../Myavailability/component/logo";
 import AvailabilityHeader from "./component/AvailabilityHeader";
 import FixButton from "./component/fixButton";
 import Explanation from "../explanation/explanation";
@@ -60,33 +60,37 @@ const GroupAvailability = () => {
 
   const fetchAllSlotDetails = async (timetableData, slots) => {
     const counts = {};
-
+  
     for (let dayIndex = 0; dayIndex < timetableData.length; dayIndex++) {
       for (let timeIndex = 0; timeIndex < slots.length - 1; timeIndex++) {
         const selectedDay = timetableData[dayIndex];
         const selectedTime = slots[timeIndex];
-        const selectedDate = new Date(selectedDay.date);
-
-        const dayOfWeek = selectedDate.toLocaleString("en-US", {
-          weekday: "short",
-        });
-
-        const formattedDate = `${selectedDate.getFullYear()}-${(
-          selectedDate.getMonth() + 1
-        )
-          .toString()
-          .padStart(2, "0")}-${selectedDate.getDate().toString().padStart(2, "0")}`;
-
-        const formattedTime = selectedTime + ":00";
-
+        
+        // Initialize the payload with group and time
         const selectedTimeSlot = {
           group: groupId,
-          day: dayOfWeek,
-          date: formattedDate,
-          time: formattedTime,
+          time: `${selectedTime}:00`,
         };
-
+  
+        if (selectedDay.date) {
+          const selectedDate = new Date(selectedDay.date);
+          if (!isNaN(selectedDate.getTime())) {
+            // Only add `day` and `date` if `selectedDate` is valid
+            selectedTimeSlot.day = selectedDate.toLocaleString("en-US", { weekday: "short" });
+            selectedTimeSlot.date = `${selectedDate.getFullYear()}-${(selectedDate.getMonth() + 1)
+              .toString()
+              .padStart(2, "0")}-${selectedDate.getDate().toString().padStart(2, "0")}`;
+          } else {
+            // If date is invalid, just add the `day` from selectedDay
+            selectedTimeSlot.day = selectedDay.day || "Unknown";
+          }
+        } else {
+          // If there's no date, only send the `day` property from `selectedDay`
+          selectedTimeSlot.day = selectedDay.day || "Unknown";
+        }
+  
         try {
+          console.log("Sending request with payload:", selectedTimeSlot);
           const response = await axios.post(
             `${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/availabilitydetail`,
             selectedTimeSlot
@@ -97,10 +101,12 @@ const GroupAvailability = () => {
         }
       }
     }
-
+  
     setSlotAvailabilityCounts(counts);
     setLoading(false);
   };
+  
+  
 
   const generateTimeSlots = (start, end) => {
     const slots = [];
@@ -115,7 +121,7 @@ const GroupAvailability = () => {
 
   const calculateAvailabilityColor = (count) => {
     if (count === userCount) {
-      return "#9EA663"; // 모든 인원이 가능할 때 색상
+      return "#9EA663";
     }
     const opacity = count / userCount;
     return `rgba(66, 62, 89, ${0.2 + opacity * 0.8})`;
@@ -174,6 +180,11 @@ const GroupAvailability = () => {
       console.error("Error fetching availability detail:", error);
     }
   };
+  
+  
+  
+  
+  
 
   if (loading) {
     return <LoadingMessage>그룹 시간표를 조회중입니다. 잠시만 기다려주세요</LoadingMessage>;
@@ -220,18 +231,20 @@ const GroupAvailability = () => {
 
           {groupTimetableData.map((day, dayIndex) => (
             <React.Fragment key={dayIndex}>
-              <text
-                x={68 + dayIndex * 36}
-                y="15"
-                textAnchor="middle"
-                fontSize="10"
-                fill="#423E59"
-              >
-                {new Date(day.date).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                })}
-              </text>
+              {day.date && !isNaN(new Date(day.date).getTime()) ? (
+                <text
+                  x={68 + dayIndex * 36}
+                  y="15"
+                  textAnchor="middle"
+                  fontSize="10"
+                  fill="#423E59"
+                >
+                  {new Date(day.date).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </text>
+              ) : null}
               <text
                 x={68 + dayIndex * 36}
                 y="30"
@@ -239,7 +252,9 @@ const GroupAvailability = () => {
                 fontSize="18"
                 fill="#423E59"
               >
-                {day.day.charAt(0)}
+                {day.date && !isNaN(new Date(day.date).getTime())
+                  ? new Date(day.date).toLocaleDateString("en-US", { weekday: "short" }).charAt(0)
+                  : day.day.charAt(0)}
               </text>
 
               {timeSlots.slice(0, -1).map((time, timeIndex) => (
@@ -283,7 +298,9 @@ const GroupAvailability = () => {
     </div>
   );
 };
+
 export default GroupAvailability;
+
 const LoadingMessage = styled.div`
   text-align: center;
   font-family: "Ibarra Real Nova";
@@ -292,20 +309,17 @@ const LoadingMessage = styled.div`
   color: #423E59;
 `;
 
-
-
-
-
 const StyledSVG = styled.svg`
-display: block;
-margin: 0 auto;
-width: fit-content;
+  display: block;
+  margin: 0 auto;
+  width: fit-content;
 `;
+
 const CalendarContainer = styled.div`
-display: flex;
-justify-content: center;
-width: 100%;
-padding-top: 20px;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding-top: 20px;
 `;
 
 const HeaderH2 = styled.h2`
@@ -316,7 +330,6 @@ const HeaderH2 = styled.h2`
   color: #4c3f5e;
   margin-bottom: 10px;
 `;
-
 
 const DetailContainer = styled.div`
   background: #f8f8f8;

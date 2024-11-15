@@ -53,7 +53,7 @@ const InsertType = () => {
         const containsDate = groupTimetableData.some((item) => item.date !== null);
         targetPath = containsDate ? '/NumberInput' : '/NumberInputDay';
       } else if (selected === 'Finger') {
-        targetPath = '/minju';
+        targetPath = '/myavailability';
       }
 
       if (targetPath && targetPath !== location.pathname) {
