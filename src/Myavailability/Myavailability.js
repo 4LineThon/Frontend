@@ -7,6 +7,7 @@ import Logo from "./component/logo";
 import { HeaderH2 } from "./component/headerH2";
 import AvailabilityHeader from "./component/AvailabilityHeader";
 import axios from "axios";
+import styled from "styled-components";
 
 const Myavailability = () => {
   const location = useLocation();
