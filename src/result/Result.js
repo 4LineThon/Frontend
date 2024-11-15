@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import Logo from "../minju/component/logo";
+import Logo from "../Myavailability/component/logo";
 import AvailabilityHeader from "./component/AvailabilityHeader";
 import Explanation from "../explanation/explanation";
 import CopyButton from "../copy-event-link/CopyButton";

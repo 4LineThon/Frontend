@@ -24,33 +24,34 @@ const CreateCalendar = ({ groupTimetableData, userid, onChange = () => {} }) => 
         if (groupTimetableData && groupTimetableData.length > 0) {
           const { startTime, endTime } = groupTimetableData[0];
           const timeSlots = generateTimeSlots(startTime, endTime);
-          const initialGridState = Array(timeSlots.length).fill().map(() => Array(groupTimetableData.length).fill(false));
+          const initialGridState = Array(timeSlots.length)
+          .fill()
+          .map(() => Array(groupTimetableData.length).fill(false));
 
           // availabilityData에서 gridState에 반영
           availabilityData.forEach((availability) => {
-            const availabilityDate = availability.date; // 변환하지 않고 문자열 그대로 사용
+            const availabilityDate = availability.days_date; // 변환하지 않고 문자열 그대로 사용
             const dayIndex = groupTimetableData.findIndex(day => day.date === availabilityDate);
           
             const timeFromIndex = timeSlots.findIndex(time => `${time}:00` === availability.time_from);
             const timeToIndex = timeSlots.findIndex(time => `${time}:00` === availability.time_to);
           
-            console.log("Matching availability data:", availability);
-            console.log("Calculated dayIndex:", dayIndex);
-            console.log("Calculated timeFromIndex:", timeFromIndex);
-            console.log("Calculated timeToIndex:", timeToIndex);
+            // 디버깅 메시지 추가
+            //console.log("Processing availability:", availability);
+            //console.log("Matched dayIndex:", dayIndex, "timeFromIndex:", timeFromIndex, "timeToIndex:", timeToIndex);
           
             if (dayIndex !== -1 && timeFromIndex !== -1 && timeToIndex !== -1) {
               for (let i = timeFromIndex; i <= timeToIndex; i++) {
-                initialGridState[i][dayIndex] = true;
+                initialGridState[i][dayIndex] = true; // 해당 시간대를 true로 설정
               }
+            } else {
             }
           });
-          
 
-          setGridState(initialGridState);
-          console.log("Initialized gridState with availability:", initialGridState); // 초기 gridState 확인
-        }
-      } catch (error) {
+        setGridState(initialGridState); // 초기 상태로 설정
+        console.log("Initialized gridState with availability:", initialGridState); // 초기 gridState 확인
+      }
+    }  catch (error) {
         if (error.response && error.response.status === 404) {
           // 데이터가 없는 경우 빈 상태로 설정
           console.log("No availability data found for this user. Initializing with empty grid.");
@@ -170,7 +171,7 @@ const CreateCalendar = ({ groupTimetableData, userid, onChange = () => {} }) => 
   return (
     <CalendarContainer onMouseUp={handleMouseUp}>
       <StyledSVG
-        width={50 + groupTimetableData.length * 36}
+        width={50 + groupTimetableData.length * 36 + 10}
         height={timeSlots.length * 18 + 70}
         viewBox={`0 0 ${50 + groupTimetableData.length * 36} ${timeSlots.length * 18 + 70}`}
         xmlns="http://www.w3.org/2000/svg"

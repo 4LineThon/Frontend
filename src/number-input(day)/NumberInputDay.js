@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useLocation } from 'react-router-dom';
 import './NumberInputDay.css';
 import AvailabilityHeaderDay from './components/AvailabilityHeaderDay';
-import Logo from "../minju/component/logo";
+import Logo from "../Myavailability/component/logo";
 import InsertTypeDay from './components/InsertTypeDay';
 import TimeSelectorDay from './components/TimeSelectorDay';
 import SaveAvailability from './components/saveAvailability';
@@ -20,6 +20,17 @@ function NumberInputDay() {
   const userid = location.state?.id;
   console.log("userid!!!! ",userid);
 
+  const weekdayOrder = {
+    "Mon": 0,
+    "Tue": 1,
+    "Wed": 2,
+    "Thu": 3,
+    "Fri": 4,
+    "Sat": 5,
+    "Sun": 6
+  };
+  
+
 
   const [days, setDays] = useState([]);
   const [uniqueDays, setUniqueDays] = useState([]);
@@ -34,18 +45,17 @@ function NumberInputDay() {
         console.error("No groupId found in query parameters.");
         return;
       }
-
+  
       try {
         const response = await axios.get(
           `${process.env.REACT_APP_API_BASE_URL}/api/v1/group-timetable/${groupId}`
         );
-
+  
         if (response.data && response.data.length > 0) {
           setDays(response.data);
-          setFetchedData(response.data); // fetchedData 설정
-          const uniqueDaysList = Array.from(new Set(response.data.map(item => item.day)));
+          const uniqueDaysList = Array.from(new Set(response.data.map(item => item.day)))
+            .sort((a, b) => weekdayOrder[a] - weekdayOrder[b]); // 요일 순서대로 정렬
           setUniqueDays(uniqueDaysList);
-          //console.log("Fetched Data:", response.data); // fetchedData 확인용
         } else {
           console.warn("No data received for group timetable.");
         }
@@ -53,9 +63,33 @@ function NumberInputDay() {
         console.error("Error fetching group timetable:", error);
       }
     };
-
+  
     fetchGroupTimetable();
   }, [groupId]);
+  
+  useEffect(() => {
+    if (days.length > 0) {
+      const uniqueDaysList = Array.from(new Set(days.map(item => item.day)))
+        .sort((a, b) => weekdayOrder[a] - weekdayOrder[b]); // 요일 순서대로 정렬
+        console.log("Unique Days List (Sorted):", uniqueDaysList); // 정렬된 uniqueDaysList 출력
+        
+      setUniqueDays(uniqueDaysList);
+    }
+  }, [days]); // days 배열이 변경될 때마다 이 코드 블록 실행
+  
+  
+  useEffect(() => {
+    // availability 객체를 uniqueDays의 순서에 맞추어 재구성
+    const newAvailability = {};
+    uniqueDays.forEach(day => {
+      if (availability[day]) {
+        newAvailability[day] = availability[day];
+      }
+    });
+    setAvailability(newAvailability);
+  }, [uniqueDays]);
+  
+  
 
   useEffect(() => {
     const selectedDateData = days.find(dateObj => dateObj.day === selectedDay);
@@ -100,9 +134,9 @@ function NumberInputDay() {
 
   const addTimeRange = () => {
     if (!selectedDay) return;
-  
     setAvailability((prev) => {
-      const dayAvailability = [...(prev[selectedDay] || []), { start: "-1", end: "-1", slots: [] }];
+      // Set default start and end values to "100:00" to make them appear at the bottom when sorted
+      const dayAvailability = [...(prev[selectedDay] || []), { start: "100:00", end: "100:00", slots: [] }];
       return {
         ...prev,
         [selectedDay]: sortByStartTime(dayAvailability),
@@ -111,10 +145,32 @@ function NumberInputDay() {
   };
 
   const handleStartChange = (day, index, event) => {
+    const newStartTime = event.target.value;
+  
     setAvailability((prev) => {
       const newAvailability = { ...prev };
-      newAvailability[day][index].start = event.target.value;
-      newAvailability[day] = sortByStartTime(newAvailability[day]);
+      const selectedRange = newAvailability[day][index];
+      const endTime = selectedRange.end;
+  
+      // Check if the new start time overlaps with any other time ranges for the same day
+      const hasOverlap = newAvailability[day].some((range, i) => {
+        if (i === index) return false; // Skip checking the current range
+        return (
+          (newStartTime >= range.start && newStartTime <= range.end) ||  // Overlaps with existing range
+          (endTime !== "100:00" && newStartTime < range.start && endTime > range.start) // Full range overlaps
+        );
+      });
+  
+      if (hasOverlap) {
+        alert("This time is already selected.");
+        // Reset the start time to "Choose" (default)
+        newAvailability[day][index].start = "100:00";
+      } else {
+        // Set the start time if there's no overlap and sort the times
+        newAvailability[day][index].start = newStartTime;
+        newAvailability[day] = sortByStartTime(newAvailability[day]);
+      }
+  
       return newAvailability;
     });
   };
@@ -122,14 +178,17 @@ function NumberInputDay() {
   const handleEndChange = (day, index, event) => {
     setAvailability((prev) => {
       const newAvailability = { ...prev };
-      newAvailability[day][index].end = event.target.value;
-      newAvailability[day] = sortByStartTime(newAvailability[day]);
+      const startTime = newAvailability[day][index].start;
+      const endTime = event.target.value;
 
-      const { start, end } = newAvailability[day][index];
-      if (start !== "-1" && end !== "-1") {
-        newAvailability[day][index].slots = generateSlots(start, end);
+      if (startTime !== "-1" && endTime <= startTime) {
+        alert("End time cannot be earlier than start time.");
+        newAvailability[day][index].end = "100:00";
+      } else {
+        newAvailability[day][index].end = endTime;
+        newAvailability[day] = sortByStartTime(newAvailability[day]);
+        newAvailability[day][index].slots = generateSlots(startTime, endTime);
       }
-
       return newAvailability;
     });
   };
@@ -162,7 +221,7 @@ function NumberInputDay() {
   }, [groupId]); // `groupId`를 의존성 배열에 추가
 
   return (
-    <div className="big-container">
+    <div className="big-container" key={uniqueDays.join('-')}>
       <Logo />
       <HeaderH2>{groupName}</HeaderH2> 
       <AvailabilityHeaderDay text={`My Availability`} arrowDirection="left" navigateTo="/groupAvailability" />
