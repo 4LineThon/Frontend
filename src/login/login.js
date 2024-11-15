@@ -4,6 +4,8 @@ import "./login.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import Explanation from "../explanation/explanation";
 import LoginHeader from "./loginHeader";
+import styled from "styled-components";
+import Logo from "../Myavailability/component/logo";
 
 function LogIn() {
   const [name, setName] = useState("");
@@ -84,11 +86,10 @@ function LogIn() {
   return (
     <div className="big-container">
       <div className="header">
-        <h1>Timi</h1>
-        <h2>{groupName}</h2> {/* Axios로 받아온 groupName 표시 */}
+        <Logo />
+        <HeaderH2>{groupName}</HeaderH2> 
+        <LoginHeader />
       </div>
-
-      <LoginHeader />
 
       <div className="login-form">
         <div className="name-container">
@@ -122,3 +123,12 @@ function LogIn() {
 }
 
 export default LogIn;
+
+const HeaderH2 = styled.h2`
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0;
+  color: #4c3f5e;
+  margin-bottom: 10px; /* 4LINETON과 My Availability 사이 간격 추가 */
+`;
