@@ -127,10 +127,32 @@ function NumberInput() {
   };
 
   const handleStartChange = (day, index, event) => {
+    const newStartTime = event.target.value;
+  
     setAvailability((prev) => {
       const newAvailability = { ...prev };
-      newAvailability[day][index].start = event.target.value;
-      newAvailability[day] = sortByStartTime(newAvailability[day]);
+      const selectedRange = newAvailability[day][index];
+      const endTime = selectedRange.end;
+  
+      // Check if the new start time overlaps with any other time ranges for the same day
+      const hasOverlap = newAvailability[day].some((range, i) => {
+        if (i === index) return false; // Skip checking the current range
+        return (
+          (newStartTime >= range.start && newStartTime <= range.end) ||  // Overlaps with existing range
+          (endTime !== "100:00" && newStartTime < range.start && endTime > range.start) // Full range overlaps
+        );
+      });
+  
+      if (hasOverlap) {
+        alert("This time is already selected.");
+        // Reset the start time to "Choose" (default)
+        newAvailability[day][index].start = "100:00";
+      } else {
+        // Set the start time if there's no overlap and sort the times
+        newAvailability[day][index].start = newStartTime;
+        newAvailability[day] = sortByStartTime(newAvailability[day]);
+      }
+  
       return newAvailability;
     });
   };
