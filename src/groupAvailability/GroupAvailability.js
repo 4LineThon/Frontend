@@ -37,7 +37,6 @@ const GroupAvailability = () => {
     "by clicking “Fix Time” button.",
   ];
 
-
   const checkHasComments = async (groupId, day, date, time) => {
     try {
       const payload = {
@@ -46,32 +45,49 @@ const GroupAvailability = () => {
         date: date,
         time: time,
       };
-  
+
       // `/api/v1/availability/availabilitydetail` 요청
       const response = await axios.post(
         `${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/availabilitydetail`,
         payload
       );
-  
+
       // comments_data가 비어 있지 않은지 확인
       const hasComments = response.data.comments_data.length > 0;
-  
+
       console.log(
         `Checking for comments on ${date} ${time}:`,
         hasComments ? "Comments exist" : "No comments"
       );
-  
+
       return hasComments;
     } catch (error) {
       console.error("Error checking comments:", error);
       return false;
     }
   };
-  
-  
 
   useEffect(() => {
     if (groupId) {
+      // fix 안됐으면 결과창 보내기
+      axios
+        .get(
+          `${process.env.REACT_APP_API_BASE_URL}/api/v1/result/group/${groupId}`
+        )
+        .then((response) => {
+          const data = response.data;
+          const hasDetailObject = data.some((item) =>
+            item.hasOwnProperty("detail")
+          );
+          console.log("hasDetailObject", data);
+          // 확정됨
+          if (!hasDetailObject) {
+            const currentUrl = `${process.env.REACT_APP_API_BASE_URL}/result?event=${event}&groupId=${groupId}`;
+            navigate(currentUrl);
+          }
+        })
+        .catch((error) => console.log(error));
+      // fix 안됐으면 원래 화면 보여주기
       axios
         .get(
           `${process.env.REACT_APP_API_BASE_URL}/api/v1/group-timetable/${groupId}`
@@ -230,7 +246,7 @@ const GroupAvailability = () => {
     };
     console.log("Selected Time Slot:", selectedTimeSlot);
     setSelectedSlot(selectedTimeSlot);
-    await requestAvailabilityDetail(selectedTimeSlot); 
+    await requestAvailabilityDetail(selectedTimeSlot);
   };
 
   const requestAvailabilityDetail = async (selectedTimeSlot) => {
@@ -247,11 +263,7 @@ const GroupAvailability = () => {
   };
 
   if (loading) {
-    return (
-      <LoadingMessage>
-        그룹 시간표를 조회중입니다. 잠시만 기다려주세요
-      </LoadingMessage>
-    );
+    return <LoadingMessage>Loading...</LoadingMessage>;
   }
 
   return (
@@ -295,45 +307,47 @@ const GroupAvailability = () => {
             </text>
           ))}
 
-{groupTimetableData.map((day, dayIndex) => (
-  <React.Fragment key={dayIndex}>
-    {timeSlots.slice(0, -1).map((time, timeIndex) => {
-      const currentDay = day.day;
-      const currentDate = day.date;
-      const currentTime = time + ":00";
+          {groupTimetableData.map((day, dayIndex) => (
+            <React.Fragment key={dayIndex}>
+              {timeSlots.slice(0, -1).map((time, timeIndex) => {
+                const currentDay = day.day;
+                const currentDate = day.date;
+                const currentTime = time + ":00";
 
-      return (
-        <React.Fragment key={`rect-${dayIndex}-${timeIndex}`}>
-          <rect
-            x={50 + dayIndex * 36}
-            y={45 + timeIndex * 18}
-            width="36"
-            height="18"
-            fill={calculateAvailabilityColor(
-              slotAvailabilityCounts[`${dayIndex}-${timeIndex}`] || 0
-            )}
-            stroke="#423E59"
-            strokeWidth="1"
-          />
-          <CommentExist
-            key={`comment-${dayIndex}-${timeIndex}`}
-            x={50 + dayIndex * 36}
-            y={45 + timeIndex * 18}
-            width="36"
-            height="18"
-            onClick={() => handleRectClick(dayIndex, timeIndex)}
-            hasComments={async () =>
-              await checkHasComments(groupId, currentDay, currentDate, currentTime)
-            }
-          />
-        </React.Fragment>
-      );
-    })}
-  </React.Fragment>
-))}
-
-
-
+                return (
+                  <React.Fragment key={`rect-${dayIndex}-${timeIndex}`}>
+                    <rect
+                      x={50 + dayIndex * 36}
+                      y={45 + timeIndex * 18}
+                      width="36"
+                      height="18"
+                      fill={calculateAvailabilityColor(
+                        slotAvailabilityCounts[`${dayIndex}-${timeIndex}`] || 0
+                      )}
+                      stroke="#423E59"
+                      strokeWidth="1"
+                    />
+                    <CommentExist
+                      key={`comment-${dayIndex}-${timeIndex}`}
+                      x={50 + dayIndex * 36}
+                      y={45 + timeIndex * 18}
+                      width="36"
+                      height="18"
+                      onClick={() => handleRectClick(dayIndex, timeIndex)}
+                      hasComments={async () =>
+                        await checkHasComments(
+                          groupId,
+                          currentDay,
+                          currentDate,
+                          currentTime
+                        )
+                      }
+                    />
+                  </React.Fragment>
+                );
+              })}
+            </React.Fragment>
+          ))}
         </StyledSVG>
       </CalendarContainer>
 
@@ -365,7 +379,7 @@ export default GroupAvailability;
 const LoadingMessage = styled.div`
   text-align: center;
   font-family: "Ibarra Real Nova";
-  font-size: 20px;
+  font-size: 25px;
   margin-top: 50px;
   color: #423e59;
 `;

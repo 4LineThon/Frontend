@@ -35,10 +35,11 @@ const TextArea = styled.textarea.attrs({
   outline: 0;
   padding: 0;
   background-color: transparent;
-  font-size: 10px;
+  font-size: 13px;
   color: #423e59;
   font-family: "Ibarra Real Nova", serif;
   resize: none;
+  overflow: hidden;
   &::placeholder {
     color: #423e59;
     font-family: "Ibarra Real Nova", serif;

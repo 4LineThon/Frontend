@@ -5,7 +5,7 @@ import styled from "styled-components";
 const generateTimes = () => {
   const times = [];
 
-  for (let hour = 0; hour < 25; hour++) {
+  for (let hour = 1; hour < 25; hour++) {
     const timeString = `${hour}:00`;
     times.push(timeString);
   }
@@ -20,6 +20,7 @@ const GenerateTimes = ({ text, handleSelectChange }) => {
     <Container>
       {text}
       <SelectTime onChange={(e) => handleSelectChange(e, text)}>
+        <OptionTime hidden>time</OptionTime>
         {times.map((time, idx) => (
           <OptionTime key={idx} value={time}>
             {time}
