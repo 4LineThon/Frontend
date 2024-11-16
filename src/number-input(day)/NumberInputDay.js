@@ -175,28 +175,35 @@ function NumberInputDay() {
         const response = await axios.get(
           `${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${userid}`
         );
-        const availabilityData = response.data;
   
-        console.log("Fetched availability data:", availabilityData);
+        console.log("Fetched availability data:", response.data); // 응답 데이터 구조 확인
+  
+        // API 응답이 배열인지 확인
+        const availabilityData = Array.isArray(response.data) 
+          ? response.data 
+          : response.data.data; // 객체라면 `data` 속성을 사용
+  
+        // 예외 처리: availabilityData가 배열이 아닐 경우
+        if (!Array.isArray(availabilityData)) {
+          throw new Error("Invalid data structure: expected an array.");
+        }
   
         const initialAvailability = {};
   
-        availabilityData
-          .filter((data) => data.time_from !== data.time_to) // 시작 시간과 끝 시간이 같은 데이터 제거
-          .forEach((data) => {
-            const day = data.days_day;
-            if (!initialAvailability[day]) {
-              initialAvailability[day] = [];
-            }
-            initialAvailability[day].push({
-              start: data.time_from.substring(0, 5), // "HH:mm" 형식으로 변환
-              end: data.time_to.substring(0, 5),
-              slots: generateSlots(data.time_from, data.time_to),
-            });
+        availabilityData.forEach((data) => {
+          const day = data.days_day; // 요일만 사용
+          console.log("요일 추출?:", day)
+          if (!initialAvailability[day]) {
+            initialAvailability[day] = [];
+          }
+          initialAvailability[day].push({
+            start: data.time_from.substring(0, 5), // "HH:mm"
+            end: data.time_to.substring(0, 5),
+            slots: generateSlots(data.time_from, data.time_to),
           });
+        });
   
         setAvailability(initialAvailability);
-  
         console.log("Processed availability state:", initialAvailability);
       } catch (error) {
         console.error("Error fetching availability data:", error);
@@ -297,7 +304,6 @@ function NumberInputDay() {
         <span className="date-dropdown">Choose Date</span>
         <div className="select-list-container">
           <select value={selectedDay} onChange={handleDayChange} className="select-list">
-            <option value="">Select Day</option>
             {uniqueDays.map((day, index) => (
               <option key={index} value={day}>
                 {day}

@@ -158,11 +158,8 @@ function NumberInput() {
           `${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${userid}`
         );
         const availabilityData = response.data;
-  
         console.log("Fetched availability data:", availabilityData);
-  
         const initialAvailability = {};
-  
         availabilityData
           .filter((data) => data.time_from !== data.time_to) // 시작 시간과 끝 시간이 같은 데이터 제거
           .forEach((data) => {
@@ -339,7 +336,6 @@ function NumberInput() {
         <span className="date-dropdown">Choose Date</span>
         <div className="select-list-container">
           <select value={selectedDay} onChange={handleDayChange} className="select-list">
-            <option value="">Select Day</option>
             {uniqueDays.map((day, index) => (
               <option key={index} value={day}>
                 {day}

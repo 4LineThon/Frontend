@@ -11,13 +11,7 @@ const LoginHeader = ({ text = "Login", arrowDirection = "left", navigateTo = "/"
 
   return (
     <HeaderContainer>
-      {arrowDirection === "left" && (
-        <Arrow onClick={handleNavigation} direction="left">{"<"}</Arrow>
-      )}
       <HeaderText>{text}</HeaderText>
-      {arrowDirection === "right" && (
-        <Arrow onClick={handleNavigation} direction="right">{">"}</Arrow>
-      )}
     </HeaderContainer>
   );
 };
@@ -46,18 +40,3 @@ const HeaderText = styled.span`
   line-height: normal;
 `;
 
-const Arrow = styled.div`
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  ${({ direction }) => (direction === "left" ? "left: 10px;" : "right: 10px;")}
-  width: 20px;
-  height: 20px;
-  color: #D9D9D9;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  cursor: pointer;
-  flex-shrink: 0;
-`;
