@@ -125,48 +125,69 @@ const CreateCalendar = ({ groupTimetableData, userid, onChange = () => {} }) => 
   const timeSlots = gridState.length > 0 ? generateTimeSlots(groupTimetableData[0].startTime, groupTimetableData[0].endTime) : [];
   
   const handleSave = async () => {
-    for (let dayIndex = 0; dayIndex < groupTimetableData.length; dayIndex++) {
-      const dayData = groupTimetableData[dayIndex];
-      const dayName = dayData.day;
-      const dayDate = dayData.date;
-
-      for (let timeIndex = 0; timeIndex < timeSlots.length - 1; timeIndex++) {
-        if (gridState[timeIndex][dayIndex]) {
-          const timeFrom = `${timeSlots[timeIndex]}:00`;
-          const timeTo = `${timeSlots[timeIndex + 1]}:00`;
-
-          const dataToSend = {
-            user: userid,
-            day: dayName,
-            date: dayDate,
-            time_from: timeFrom,
-            time_to: timeTo,
-          };
-          console.log("datatoSend", dataToSend)
-          try {
-            const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability`, dataToSend, {
-              headers: {
-                "Content-Type": "application/json",
-              },
-            });
-            console.log("Response from server:", response.data);
-          } catch (error) {
-            console.error("Error saving data:", error);
+    try {
+      // 기존 데이터 삭제
+      console.log("Deleting existing data...");
+      await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${userid}`);
+      console.log("Existing data deleted successfully.");
+  
+      // 새로운 데이터 저장
+      console.log("Saving new data...");
+      for (let dayIndex = 0; dayIndex < groupTimetableData.length; dayIndex++) {
+        const dayData = groupTimetableData[dayIndex];
+        const dayName = dayData.day;
+        const dayDate = dayData.date;
+  
+        for (let timeIndex = 0; timeIndex < timeSlots.length - 1; timeIndex++) {
+          if (gridState[timeIndex][dayIndex]) {
+            const timeFrom = `${timeSlots[timeIndex]}:00`;
+            const timeTo = `${timeSlots[timeIndex + 1]}:00`;
+  
+            const dataToSend = {
+              user: userid,
+              day: dayName,
+              date: dayDate,
+              time_from: timeFrom,
+              time_to: timeTo,
+            };
+  
+            try {
+              const response = await axios.post(
+                `${process.env.REACT_APP_API_BASE_URL}/api/v1/availability`,
+                dataToSend,
+                {
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                }
+              );
+              console.log("Response from server:", response.data);
+            } catch (error) {
+              console.error("Error saving data:", error);
+            }
           }
         }
       }
-    }
   
-    const url = `/groupavailability?event=${event}&groupId=${groupId}`;
-    navigate(url, {
-      state: {
-        gridState,
-        timeSlots,
-        groupTimetableData,
-        userid,
-      },
-    });
+      alert("Availability saved successfully.");
+      console.log("New data saved successfully.");
+  
+      
+      const url = `/groupavailability?event=${event}&groupId=${groupId}`;
+      navigate(url, {
+        state: {
+          gridState,
+          timeSlots,
+          groupTimetableData,
+          userid,
+        },
+      });
+    } catch (error) {
+      console.error("Error during save operation:", error);
+      alert("An error occurred while saving availability. Please try again.");
+    }
   };
+  
 
   return (
     <CalendarContainer onMouseUp={handleMouseUp}>

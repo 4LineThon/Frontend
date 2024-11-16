@@ -54,32 +54,41 @@ function SaveAvailability({ availability, groupId, userid, event, fetchedData = 
   };
 
   const handleSave = async () => {
-    const transformedAvailability = transformAvailability(availability);
-    console.log("Transformed Availability (before POST):", transformedAvailability);
+    try {
+      // 1. 기존 데이터를 삭제
+      console.log("Deleting existing availability data...");
+      await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${userid}`);
+      console.log("Existing availability data deleted successfully.");
 
-    // 각 변환된 availability 데이터를 POST 요청으로 서버에 전송
-    for (const data of transformedAvailability) {
-      //console.log("Sending data:", data); // 전송 전 데이터 확인
-      try {
-        const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability`, data, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-        console.log("Response from server:", response.data);
-      } catch (error) {
-        console.error("Error saving data:", error);
+      // 2. 새로운 데이터 저장
+      const transformedAvailability = transformAvailability(availability);
+      console.log("Transformed Availability (before POST):", transformedAvailability);
+
+      for (const data of transformedAvailability) {
+        try {
+          const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability`, data, {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+          console.log("Response from server:", response.data);
+        } catch (error) {
+          console.error("Error saving data:", error);
+        }
       }
-    }
 
-    // 저장 후 다음 페이지로 이동
-    const url = `/groupAvailability?event=${event}&groupId=${groupId}`;
-    navigate(url, {
-      state: {
-        userid,
-        availability: transformedAvailability,
-      },
-    });
+      // 3. 저장 후 다음 페이지로 이동
+      const url = `/groupAvailability?event=${event}&groupId=${groupId}`;
+      navigate(url, {
+        state: {
+          userid,
+          availability: transformedAvailability,
+        },
+      });
+    } catch (error) {
+      console.error("Error during save operation:", error);
+      alert("An error occurred while saving availability. Please try again.");
+    }
   };
 
   return (
