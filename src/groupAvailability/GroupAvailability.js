@@ -211,11 +211,7 @@ const GroupAvailability = () => {
   };
 
   if (loading) {
-    return (
-      <LoadingMessage>
-        그룹 시간표를 조회중입니다. 잠시만 기다려주세요
-      </LoadingMessage>
-    );
+    return <LoadingMessage>Loading...</LoadingMessage>;
   }
 
   return (
@@ -347,7 +343,7 @@ export default GroupAvailability;
 const LoadingMessage = styled.div`
   text-align: center;
   font-family: "Ibarra Real Nova";
-  font-size: 20px;
+  font-size: 25px;
   margin-top: 50px;
   color: #423e59;
 `;
