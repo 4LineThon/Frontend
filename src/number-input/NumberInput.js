@@ -132,7 +132,47 @@ function NumberInput() {
   }, [groupId]);
 
 
- 
+
+  useEffect(() => {
+    if (uniqueDays.length > 0 && !selectedDay) {
+      setSelectedDay(uniqueDays[0]);
+    }
+  }, [uniqueDays, selectedDay]);
+  
+  
+  useEffect(() => {
+    const fetchAvailabilityData = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${userid}`);
+        const availabilityData = response.data;
+
+        const initialAvailability = {};
+
+        availabilityData.forEach((data) => {
+          const day = `${data.days_date}(${data.days_day})`;
+          if (!initialAvailability[day]) {
+            initialAvailability[day] = [];
+          }
+          initialAvailability[day].push({
+            start: data.time_from.substring(0, 5), // "13:00" 형식으로 변환
+            end: data.time_to.substring(0, 5),
+            slots: generateSlots(data.time_from, data.time_to)
+          });
+        });
+
+        setAvailability(initialAvailability); // 초기 상태로 설정
+        console.log("Initialized availability with fetched data:", initialAvailability); // 확인용 로그
+      } catch (error) {
+        console.error("Error fetching availability data:", error);
+      }
+    };
+
+    if (userid) {
+      fetchAvailabilityData();
+    }
+    
+  }, [userid]);
+
 
 
 
@@ -218,6 +258,7 @@ function NumberInput() {
         const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${userid}`);
         const availabilityData = response.data;
 
+
         const initialAvailability = {};
 
         availabilityData.forEach((data) => {
@@ -244,6 +285,7 @@ function NumberInput() {
     }
     
   }, [userid]);
+
 
 
   useEffect(() => {
