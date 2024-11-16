@@ -19,9 +19,10 @@ const monthNames = [
 ];
 
 const SelectDates = ({ updateRequest }) => {
+  const [loading, setLoading] = useState(true);
   const basicColor = "#D9D9D9";
   const specialColor = "#423e59";
-  const initialBtn = Array(28).fill(false);
+  const initialBtn = Array(35).fill(false);
   const [btn, setBtn] = useState(initialBtn);
   const [year, setYear] = useState(0);
   const [month, setMonth] = useState("");
@@ -91,6 +92,7 @@ const SelectDates = ({ updateRequest }) => {
       }
     };
     setCalendar();
+    setLoading(false);
   }, []);
 
   return (
@@ -98,24 +100,28 @@ const SelectDates = ({ updateRequest }) => {
       <MonthBox>
         {year} {month}
       </MonthBox>
-      <CalendarContainer>
-        {days.map((day, idx) => {
-          return <DayBox key={idx}>{day}</DayBox>;
-        })}
-        {dates.map((date, idx) => {
-          return (
-            <DateBox
-              key={idx}
-              id={idx}
-              onClick={handleClick}
-              color={btn[idx] ? basicColor : specialColor}
-              $bgcolor={btn[idx] ? specialColor : basicColor}
-            >
-              {date}
-            </DateBox>
-          );
-        })}
-      </CalendarContainer>
+      {loading ? (
+        <Loading>Loading...</Loading>
+      ) : (
+        <CalendarContainer>
+          {days.map((day, idx) => {
+            return <DayBox key={idx}>{day}</DayBox>;
+          })}
+          {dates.map((date, idx) => {
+            return (
+              <DateBox
+                key={idx}
+                id={idx}
+                onClick={handleClick}
+                color={btn[idx] ? basicColor : specialColor}
+                $bgcolor={btn[idx] ? specialColor : basicColor}
+              >
+                {date}
+              </DateBox>
+            );
+          })}
+        </CalendarContainer>
+      )}
     </Container>
   );
 };
@@ -131,6 +137,16 @@ const CalendarContainer = styled.div`
   grid-template-columns: repeat(7, 1fr);
   gap: 2px;
   row-gap: 2px;
+`;
+
+const Loading = styled.div`
+  width: 315px;
+  height: 238px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: #423e59;
 `;
 
 const MonthBox = styled.div`

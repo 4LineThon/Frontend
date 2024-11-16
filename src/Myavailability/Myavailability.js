@@ -52,6 +52,7 @@ const Myavailability = () => {
         }
       };
       fetchAvailability();
+      localStorage.setItem("username", name);
     }
   }, [id, groupId]);
 
@@ -71,11 +72,11 @@ const Myavailability = () => {
       />
       <InsertType />
       <IsAvailable />
-      <Calendar 
-        groupId={groupId} 
-        userId={id} 
-        initialData={availabilityData} 
-        onAvailabilityChange={handleAvailabilityChange} 
+      <Calendar
+        groupId={groupId}
+        userId={id}
+        initialData={availabilityData}
+        onAvailabilityChange={handleAvailabilityChange}
       />
     </div>
   );

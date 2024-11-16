@@ -4,7 +4,6 @@ import { Bullet, Wrapper } from "./commentCSS";
 
 const CommentInput = ({ postComment }) => {
   const [text, setText] = useState("");
-  console.log(text);
 
   return (
     <InputWrapper>
@@ -52,4 +51,5 @@ const SendButton = styled.img.attrs({
   width: 20px;
   height: 20px;
   margin: auto 0 auto 8px;
+  cursor: pointer;
 `;
