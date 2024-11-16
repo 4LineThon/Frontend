@@ -103,7 +103,7 @@ function NumberInput() {
         const initialAvailability = {};
 
         availabilityData.forEach((data) => {
-          const day = `${data.days_date}(${data.days_day.charAt(0)})`;
+          const day = `${data.days_date}(${data.days_day})`;
           if (!initialAvailability[day]) {
             initialAvailability[day] = [];
           }
