@@ -294,6 +294,41 @@ const GroupAvailability = () => {
           }`}
           xmlns="http://www.w3.org/2000/svg"
         >
+          {/* 날짜와 요일 렌더링 */}
+    {groupTimetableData.map((day, dayIndex) => (
+      <React.Fragment key={`header-${dayIndex}`}>
+        <text
+          x={68 + dayIndex * 36}
+          y="15"
+          textAnchor="middle"
+          fontSize="10"
+          fill="#423E59"
+        >
+          {/* 날짜 표시 */}
+          {new Date(day.date).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          })}
+        </text>
+        <text
+          x={68 + dayIndex * 36}
+          y="30"
+          textAnchor="middle"
+          fontSize="18"
+          fill="#423E59"
+        >
+          {/* 요일 표시 */}
+          {new Date(day.date)
+            .toLocaleDateString("en-US", { weekday: "short" })
+            .charAt(0)}
+        </text>
+      </React.Fragment>
+    ))}
+
+
+
+
+
           {timeSlots.map((time, index) => (
             <text
               key={index}
