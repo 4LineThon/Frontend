@@ -126,13 +126,38 @@ const CreateCalendar = ({ groupTimetableData, userid, onChange = () => {} }) => 
   
   const handleSave = async () => {
     try {
-      // 기존 데이터 삭제
-      console.log("Deleting existing data...");
-      await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${userid}`);
-      console.log("Existing data deleted successfully.");
+      // 기존 데이터가 있는지 확인
+      let hasExistingData = false;
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${userid}`);
+        if (response.data && response.data.length > 0) {
+          hasExistingData = true;
+          //console.log("Existing availability data found:", response.data);
+        } else {
+          //console.log("No existing availability data found.");
+        }
+      } catch (error) {
+        if (error.response && error.response.status === 404) {
+          //console.log("No existing availability data (404). Proceeding to save new data.");
+        } else {
+          //console.error("Error checking existing availability data:", error);
+          //alert("An error occurred while checking existing availability data.");
+          return;
+        }
+      }
+  
+      // 기존 데이터 삭제 (존재하는 경우에만)
+      if (hasExistingData) {
+        try {
+          await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${userid}`);
+          
+        } catch (deleteError) {
+          return;
+        }
+      }
   
       // 새로운 데이터 저장
-      console.log("Saving new data...");
+      //console.log("Saving new data...");
       for (let dayIndex = 0; dayIndex < groupTimetableData.length; dayIndex++) {
         const dayData = groupTimetableData[dayIndex];
         const dayName = dayData.day;
@@ -161,9 +186,10 @@ const CreateCalendar = ({ groupTimetableData, userid, onChange = () => {} }) => 
                   },
                 }
               );
-              console.log("Response from server:", response.data);
-            } catch (error) {
-              console.error("Error saving data:", error);
+              //console.log("Response from server:", response.data);
+            } catch (postError) {
+              //console.error("Error saving data:", postError);
+              //alert("An error occurred while saving availability data.");
             }
           }
         }
@@ -172,7 +198,6 @@ const CreateCalendar = ({ groupTimetableData, userid, onChange = () => {} }) => 
       alert("Availability saved successfully.");
       console.log("New data saved successfully.");
   
-      
       const url = `/groupavailability?event=${event}&groupId=${groupId}`;
       navigate(url, {
         state: {
@@ -187,6 +212,7 @@ const CreateCalendar = ({ groupTimetableData, userid, onChange = () => {} }) => 
       alert("An error occurred while saving availability. Please try again.");
     }
   };
+  
   
 
   return (
