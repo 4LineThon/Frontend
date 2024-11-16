@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 const AvailabilityHeader = ({
   text = "My Availability",
-  arrowDirection = "left",
+  arrowDirection = "right",
   navigateTo = "/",
   name = "",
 }) => {
@@ -59,7 +59,7 @@ const Arrow = styled.div`
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  ${({ direction }) => (direction === "left" ? "left: 10px;" : "right: 10px;")}
+  ${({ direction }) => (direction === "right" ? "right: 10px;" : "left: 10px;")}
   width: 20px;
   height: 20px;
   color: #d9d9d9;
