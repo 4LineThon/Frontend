@@ -12,6 +12,7 @@ import CopyButton from "../copy-event-link/CopyButton";
 import Comment from "../comment/Comment";
 import AvailabilityDetail from "./component/AvailabilityDetail";
 import { HeaderH2 } from "../Myavailability/component/headerH2";
+import CommentExist from "./component/CommentExist";
 
 const GroupAvailability = () => {
   const location = useLocation();
@@ -45,7 +46,6 @@ const GroupAvailability = () => {
         .then((response) => {
           const rawData = response.data;
           setGroupTimetableData(rawData);
-
           if (rawData.length > 0) {
             const slots = generateTimeSlots(
               rawData[0].start_time,
@@ -290,19 +290,29 @@ const GroupAvailability = () => {
               </text>
 
               {timeSlots.slice(0, -1).map((time, timeIndex) => (
-                <rect
-                  key={`${dayIndex}-${timeIndex}`}
-                  x={50 + dayIndex * 36}
-                  y={45 + timeIndex * 18}
-                  width="36"
-                  height="18"
-                  fill={calculateAvailabilityColor(
-                    slotAvailabilityCounts[`${dayIndex}-${timeIndex}`] || 0
-                  )}
-                  stroke="#423E59"
-                  strokeWidth="1"
-                  onClick={() => handleRectClick(dayIndex, timeIndex)}
-                />
+                <React.Fragment key={`rect-${dayIndex}-${timeIndex}`}>
+                  <rect
+                    key={`rect-${dayIndex}-${timeIndex}`}
+                    x={50 + dayIndex * 36}
+                    y={45 + timeIndex * 18}
+                    width="36"
+                    height="18"
+                    fill={calculateAvailabilityColor(
+                      slotAvailabilityCounts[`${dayIndex}-${timeIndex}`] || 0
+                    )}
+                    stroke="#423E59"
+                    strokeWidth="1"
+                  />
+                  {/* foreignObject를 사용하여 내부에 HTML을 추가 */}
+                  <CommentExist
+                    key={`comment-${dayIndex}-${timeIndex}`}
+                    x={50 + dayIndex * 36}
+                    y={45 + timeIndex * 18}
+                    width="36"
+                    height="18"
+                    onClick={() => handleRectClick(dayIndex, timeIndex)}
+                  />
+                </React.Fragment>
               ))}
             </React.Fragment>
           ))}
