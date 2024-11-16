@@ -10,6 +10,10 @@ const Comment = ({ comments, selectedSlot, setComments, name }) => {
   // console.log("selectedSlot", selectedSlot);
 
   const postComment = async (text) => {
+    if (!text) {
+      alert("Please enter a comment.");
+      return;
+    }
     const response = await axios.post(
       `${process.env.REACT_APP_API_BASE_URL}/api/v1/comment`,
       {
