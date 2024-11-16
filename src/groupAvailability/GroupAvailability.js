@@ -82,7 +82,7 @@ const GroupAvailability = () => {
           console.log("hasDetailObject", data);
           // 확정됨
           if (!hasDetailObject) {
-            const currentUrl = `https://timi4line.vercel.app/result?event=${event}&groupId=${groupId}`;
+            const currentUrl = `/result?event=${event}&groupId=${groupId}`;
             navigate(currentUrl);
           }
         })
