@@ -236,7 +236,7 @@ function NumberInputDay() {
     <div className="big-container" key={uniqueDays.join('-')}>
       <Logo />
       <HeaderH2>{groupName}</HeaderH2> 
-      <AvailabilityHeaderDay text={`My Availability`} arrowDirection="left" navigateTo="/groupAvailability" />
+      <AvailabilityHeaderDay text={`My Availability`} arrowDirection="right" navigateTo="/groupAvailability" />
       <InsertTypeDay />
 
       <div id="date-dropdown">

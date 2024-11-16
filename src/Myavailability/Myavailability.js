@@ -66,7 +66,7 @@ const Myavailability = () => {
       <HeaderH2>{groupName}</HeaderH2>
       <AvailabilityHeader 
         text={`Availability for ${name}`} 
-        arrowDirection="left" 
+        arrowDirection="right" 
         navigateTo="/groupAvailability" 
       />
       <InsertType />

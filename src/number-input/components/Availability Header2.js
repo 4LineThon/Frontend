@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { useNavigate, useLocation } from "react-router-dom";
 
-const AvailabilityHeader2 = ({ arrowDirection = "left", navigateTo = "/" }) => {
+const AvailabilityHeader2 = ({ arrowDirection = "right", navigateTo = "/" }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const userName = location.state?.name || "Guest";
@@ -12,8 +12,8 @@ const AvailabilityHeader2 = ({ arrowDirection = "left", navigateTo = "/" }) => {
 
   return (
     <HeaderContainer>
-      {arrowDirection === "left" && (
-        <Arrow onClick={handleNavigation} direction="left">{"<"}</Arrow>
+      {arrowDirection === "right" && (
+        <Arrow onClick={handleNavigation} direction="right">{"<"}</Arrow>
       )}
       <HeaderText>{`Availability for ${userName}`}</HeaderText>
       {arrowDirection === "right" && (
