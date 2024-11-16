@@ -2,7 +2,9 @@ import React from "react";
 import { Bullet, Commemt, Content, Wrapper, Writer } from "./commentCSS";
 import styled from "styled-components";
 
-const CommentBox = ({ commentInfo, deleteComment, name }) => {
+const CommentBox = ({ commentInfo, deleteComment }) => {
+  const name = localStorage.getItem("username");
+
   return (
     <CommentWrapper>
       <Bullet />
@@ -10,9 +12,9 @@ const CommentBox = ({ commentInfo, deleteComment, name }) => {
         <Writer>Comment by {commentInfo.user}</Writer>
         <Content>{commentInfo.text}</Content>
       </Commemt>
-      {/* {name === commentInfo.user ? ( */}
-      <DeleteBtn onClick={() => deleteComment(commentInfo.id)} />
-      {/* ) : null} */}
+      {name === commentInfo.user ? (
+        <DeleteBtn onClick={() => deleteComment(commentInfo.id)} />
+      ) : null}
     </CommentWrapper>
   );
 };

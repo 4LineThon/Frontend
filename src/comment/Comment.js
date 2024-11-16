@@ -4,8 +4,10 @@ import CommentInput from "./component/commentInput";
 import styled from "styled-components";
 import axios from "axios";
 
-const Comment = ({ comments, selectedSlot, setComments, name }) => {
+const Comment = ({ comments, selectedSlot, setComments }) => {
   const isClicked = selectedSlot !== null;
+  const name = localStorage.getItem("username");
+
   // console.log("comments", comments);
   // console.log("selectedSlot", selectedSlot);
 
@@ -58,7 +60,6 @@ const Comment = ({ comments, selectedSlot, setComments, name }) => {
             key={idx}
             commentInfo={comment}
             deleteComment={deleteComment}
-            name={name}
           />
         );
       })}

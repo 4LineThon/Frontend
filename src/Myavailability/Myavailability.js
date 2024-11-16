@@ -50,7 +50,9 @@ const Myavailability = () => {
           setAvailabilityData(response.data); // 기존 데이터를 초기 상태로 설정
 
           // 초기 데이터를 모두 삭제
-          await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${id}`);
+          await axios.delete(
+            `${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${id}`
+          );
           console.log("초기 데이터 삭제 완료");
 
           // 삭제 후 초기 데이터를 다시 POST 요청으로 전송하여 화면에 표시
@@ -60,17 +62,21 @@ const Myavailability = () => {
         }
       };
       fetchAvailability();
+      localStorage.setItem("username", name);
     }
   }, [id, groupId]);
 
   // 초기 데이터를 POST 요청으로 전송
   const saveInitialData = async (data) => {
     try {
-      await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability`, {
-        groupId,
-        userId: id,
-        availability: data,
-      });
+      await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/api/v1/availability`,
+        {
+          groupId,
+          userId: id,
+          availability: data,
+        }
+      );
       console.log("초기 데이터 저장 완료");
     } catch (error) {
       console.error("Error saving initial availability data:", error);
@@ -86,11 +92,14 @@ const Myavailability = () => {
   const handleSave = async () => {
     try {
       // 기존 데이터가 이미 삭제된 상태이므로, 수정된 데이터만 POST 요청으로 전송
-      await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability`, {
-        groupId,
-        userId: id,
-        availability: modifiedData,
-      });
+      await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/api/v1/availability`,
+        {
+          groupId,
+          userId: id,
+          availability: modifiedData,
+        }
+      );
       alert("수정된 Availability 정보가 성공적으로 업데이트되었습니다.");
     } catch (error) {
       console.error("Error saving modified availability data:", error);
@@ -109,11 +118,11 @@ const Myavailability = () => {
       />
       <InsertType />
       <IsAvailable />
-      <Calendar 
-        groupId={groupId} 
-        userId={id} 
-        initialData={availabilityData} 
-        onAvailabilityChange={handleAvailabilityChange} 
+      <Calendar
+        groupId={groupId}
+        userId={id}
+        initialData={availabilityData}
+        onAvailabilityChange={handleAvailabilityChange}
       />
       <SaveButton onClick={handleSave}>Save</SaveButton>
     </div>
