@@ -21,7 +21,7 @@ const monthNames = [
 const SelectDates = ({ updateRequest }) => {
   const basicColor = "#D9D9D9";
   const specialColor = "#423e59";
-  const initialBtn = Array(28).fill(false);
+  const initialBtn = Array(35).fill(false);
   const [btn, setBtn] = useState(initialBtn);
   const [year, setYear] = useState(0);
   const [month, setMonth] = useState("");
