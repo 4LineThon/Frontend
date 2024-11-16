@@ -268,7 +268,3 @@
       background-color: #6c5a79; /* 호버 시 색상 변경 */
       cursor: pointer; /* 마우스 오버 시 포인터 커서 */
     }
-    .btn-save:hover {
-      background-color: #6c5a79; /* 호버 시 색상 변경 */
-      cursor: pointer; /* 마우스 오버 시 포인터 커서 */
-    }
