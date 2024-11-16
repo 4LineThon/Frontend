@@ -1,29 +1,43 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
-const CommentExist = ({ x, y, width, height, onClick }) => {
+const CommentExist = ({ x, y, width, height, onClick, hasComments }) => {
+  const [showDot, setShowDot] = useState(false);
+
+  useEffect(() => {
+    const fetchComments = async () => {
+      const result = await hasComments();
+      setShowDot(result);
+    };
+
+    fetchComments();
+  }, [hasComments]);
+
   return (
     <foreignObject x={x} y={y} width={width} height={height} onClick={onClick}>
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          padding: "2px",
-        }}
-      >
-        <svg
-          width="8" // 원의 크기 설정
-          height="8"
-          viewBox="0 0 10 10" // viewBox로 SVG 내부 크기 관리
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
+      {showDot && (
+        <div
+          style={{
+            position: "absolute",
+            top: -3,
+            left: 1,
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "left",
+          }}
         >
-          <circle cx="4" cy="4" r="4" fill="#474073" />
-        </svg>
-      </div>
+          <svg
+            width="8"
+            height="8"
+            viewBox="0 0 10 10"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle cx="5" cy="5" r="4" fill="#474073" />
+          </svg>
+        </div>
+      )}
     </foreignObject>
   );
 };
