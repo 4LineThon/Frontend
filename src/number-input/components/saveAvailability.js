@@ -6,33 +6,28 @@ import '../NumberInput.css';
 function SaveAvailability({ availability, groupId, userid, event, fetchedData = [] }) {
   const navigate = useNavigate();
 
-  // 서버가 요구하는 형식으로 availability 변환, fetchedData의 start_time과 end_time 사용
+  // 서버가 요구하는 형식으로 availability 변환
   const transformAvailability = (availability) => {
     const transformed = [];
-
     Object.keys(availability).forEach((selectedDay) => {
       const [datePart] = selectedDay.split("("); // "YYYY-MM-DD" 형식만 가져옴
       const fetchedDayData = fetchedData.find(item => item.date === datePart.trim());
-      
       if (fetchedDayData) {
-        const formattedDay = new Date(fetchedDayData.date).toLocaleDateString('en-US', { weekday: 'short' }); // 예: "Sun"
-        
+        const formattedDay = new Date(fetchedDayData.date).toLocaleDateString('en-US', { weekday: 'short' }); // "Sun"
         availability[selectedDay].forEach((range) => {
           const slots = generateSlots(range.start, range.end);
-
           slots.forEach((slot, index) => {
             transformed.push({
               user: userid,
               day: formattedDay,
               date: fetchedDayData.date,
               time_from: slot.time,
-              time_to: slots[index + 1]?.time || slot.time, // 다음 slot의 time을 사용하고, 마지막 slot이면 동일하게 설정
+              time_to: slots[index + 1]?.time || slot.time,
             });
           });
         });
       }
     });
-
     return transformed;
   };
 
@@ -41,7 +36,6 @@ function SaveAvailability({ availability, groupId, userid, event, fetchedData = 
     const slots = [];
     let currentTime = new Date(`1970-01-01T${start}Z`);
     const endTime = new Date(`1970-01-01T${end}Z`);
-
     while (currentTime <= endTime) {
       slots.push({
         availability_count: 1,
@@ -49,18 +43,33 @@ function SaveAvailability({ availability, groupId, userid, event, fetchedData = 
       });
       currentTime.setMinutes(currentTime.getMinutes() + 30);
     }
-
     return slots;
   };
 
   const handleSave = async () => {
     try {
-      // 1. 기존 데이터를 삭제
-      console.log("Deleting existing availability data...");
-      await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${userid}`);
-      console.log("Existing availability data deleted successfully.");
+      // 1. 기존 데이터 존재 여부 확인
+      let existingData = [];
+      try {
+        console.log("Checking existing availability data...");
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${userid}`);
+        existingData = response.data;
+      } catch (error) {
+        if (error.response && error.response.status === 404) {
+          console.log("No existing availability data found.");
+        } else {
+          throw error;
+        }
+      }
 
-      // 2. 새로운 데이터 저장
+      // 2. 기존 데이터 삭제 (데이터가 존재할 경우에만)
+      if (existingData.length > 0) {
+        console.log("Deleting existing availability data...");
+        await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${userid}`);
+        console.log("Existing availability data deleted successfully.");
+      }
+
+      // 3. 새로운 데이터 저장
       const transformedAvailability = transformAvailability(availability);
       console.log("Transformed Availability (before POST):", transformedAvailability);
 
@@ -77,7 +86,7 @@ function SaveAvailability({ availability, groupId, userid, event, fetchedData = 
         }
       }
 
-      // 3. 저장 후 다음 페이지로 이동
+      // 4. 저장 후 다음 페이지로 이동
       const url = `/groupAvailability?event=${event}&groupId=${groupId}`;
       navigate(url, {
         state: {
