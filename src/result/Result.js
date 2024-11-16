@@ -12,6 +12,8 @@ const Result = () => {
   const [place, setPlace] = useState("");
   const [isSaved, setIsSaved] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [groupName, setGroupName] = useState("");
+
   const navigate = useNavigate();
   const location = useLocation();
   const userid = location.state?.userid;
@@ -20,7 +22,6 @@ const Result = () => {
   const queryParams = new URLSearchParams(location.search);
   const event = queryParams.get("event");
   const groupId = queryParams.get("groupId");
-  const groupName = location.state?.groupName;
 
   // Debugging logs
   useEffect(() => {
@@ -39,6 +40,25 @@ const Result = () => {
     "-",
     "But the previously selected group availability will remain unchanged.",
   ];
+
+
+  useEffect(() => {
+    if (groupId) {
+      const fetchGroupName = async () => {
+        try {
+          const response = await axios.get(
+            `${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}`
+          );
+          setGroupName(response.data.name); // 응답에서 groupName 설정
+        } catch (error) {
+          console.error("group name이 없음:", error);
+        }
+      };
+      fetchGroupName();
+    } else {
+      console.error("groupid 없음");
+    }
+  }, [groupId]); // groupId 변경 시에만 API 호출
 
   const handleSave = async () => {
     // Validation to check if time and place are filled

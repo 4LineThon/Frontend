@@ -227,7 +227,7 @@ const GroupAvailability = () => {
       <HeaderH2>{groupName}</HeaderH2>
       <AvailabilityHeader
         text="Group's Availability"
-        arrowDirection="right"
+        arrowDirection="left"
         navigateTo={() =>
           navigate(`/login?event=${event}&groupId=${groupId}`, {
             state: { groupName },

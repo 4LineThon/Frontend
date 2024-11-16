@@ -16,57 +16,59 @@ const CreateCalendar = ({ groupTimetableData, userid, onChange = () => {} }) => 
 
   useEffect(() => {
     const fetchAvailabilityData = async () => {
+      let initialGridState = [];
       try {
+        // 사용자의 availability 데이터 가져오기
         const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${userid}`);
         const availabilityData = response.data;
-        console.log("Fetched availability data:", availabilityData); // 불러온 데이터 확인
-
+        console.log("Fetched availability data:", availabilityData);
+  
         if (groupTimetableData && groupTimetableData.length > 0) {
           const { startTime, endTime } = groupTimetableData[0];
           const timeSlots = generateTimeSlots(startTime, endTime);
-          const initialGridState = Array(timeSlots.length)
-          .fill()
-          .map(() => Array(groupTimetableData.length).fill(false));
-
-          // availabilityData에서 gridState에 반영
+  
+          // 초기 gridState를 생성
+          initialGridState = Array(timeSlots.length)
+            .fill()
+            .map(() => Array(groupTimetableData.length).fill(false));
+  
+          // 사용자의 availability 데이터를 gridState에 반영
           availabilityData.forEach((availability) => {
-            const availabilityDate = availability.days_date; // 변환하지 않고 문자열 그대로 사용
+            const availabilityDate = availability.days_date;
             const dayIndex = groupTimetableData.findIndex(day => day.date === availabilityDate);
-          
+  
             const timeFromIndex = timeSlots.findIndex(time => `${time}:00` === availability.time_from);
             const timeToIndex = timeSlots.findIndex(time => `${time}:00` === availability.time_to);
-          
-            // 디버깅 메시지 추가
-            //console.log("Processing availability:", availability);
-            //console.log("Matched dayIndex:", dayIndex, "timeFromIndex:", timeFromIndex, "timeToIndex:", timeToIndex);
-          
+  
             if (dayIndex !== -1 && timeFromIndex !== -1 && timeToIndex !== -1) {
               for (let i = timeFromIndex; i <= timeToIndex; i++) {
                 initialGridState[i][dayIndex] = true; // 해당 시간대를 true로 설정
               }
-            } else {
             }
           });
-
-        setGridState(initialGridState); // 초기 상태로 설정
-        console.log("Initialized gridState with availability:", initialGridState); // 초기 gridState 확인
-      }
-    }  catch (error) {
+        }
+      } catch (error) {
         if (error.response && error.response.status === 404) {
-          // 데이터가 없는 경우 빈 상태로 설정
           console.log("No availability data found for this user. Initializing with empty grid.");
-          if (groupTimetableData && groupTimetableData.length > 0) {
-            const { startTime, endTime } = groupTimetableData[0];
-            const timeSlots = generateTimeSlots(startTime, endTime);
-            setGridState(Array(timeSlots.length).fill().map(() => Array(groupTimetableData.length).fill(false)));
-          }
         } else {
           console.error("Error fetching availability data:", error);
         }
       }
+  
+      // groupTimetableData를 기반으로 빈 gridState를 생성
+      if (groupTimetableData && groupTimetableData.length > 0 && initialGridState.length === 0) {
+        const { startTime, endTime } = groupTimetableData[0];
+        const timeSlots = generateTimeSlots(startTime, endTime);
+        initialGridState = Array(timeSlots.length)
+          .fill()
+          .map(() => Array(groupTimetableData.length).fill(false));
+      }
+  
+      setGridState(initialGridState);
+      console.log("Initialized gridState:", initialGridState);
     };
-
-    if (groupTimetableData.length > 0) {
+  
+    if (groupTimetableData && groupTimetableData.length > 0) {
       fetchAvailabilityData();
     }
   }, [userid, groupTimetableData]);
@@ -125,48 +127,95 @@ const CreateCalendar = ({ groupTimetableData, userid, onChange = () => {} }) => 
   const timeSlots = gridState.length > 0 ? generateTimeSlots(groupTimetableData[0].startTime, groupTimetableData[0].endTime) : [];
   
   const handleSave = async () => {
-    for (let dayIndex = 0; dayIndex < groupTimetableData.length; dayIndex++) {
-      const dayData = groupTimetableData[dayIndex];
-      const dayName = dayData.day;
-      const dayDate = dayData.date;
-
-      for (let timeIndex = 0; timeIndex < timeSlots.length - 1; timeIndex++) {
-        if (gridState[timeIndex][dayIndex]) {
-          const timeFrom = `${timeSlots[timeIndex]}:00`;
-          const timeTo = `${timeSlots[timeIndex + 1]}:00`;
-
-          const dataToSend = {
-            user: userid,
-            day: dayName,
-            date: dayDate,
-            time_from: timeFrom,
-            time_to: timeTo,
-          };
-          console.log("datatoSend", dataToSend)
-          try {
-            const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability`, dataToSend, {
-              headers: {
-                "Content-Type": "application/json",
-              },
-            });
-            console.log("Response from server:", response.data);
-          } catch (error) {
-            console.error("Error saving data:", error);
+    try {
+      // 기존 데이터가 있는지 확인
+      let hasExistingData = false;
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${userid}`);
+        if (response.data && response.data.length > 0) {
+          hasExistingData = true;
+          //console.log("Existing availability data found:", response.data);
+        } else {
+          //console.log("No existing availability data found.");
+        }
+      } catch (error) {
+        if (error.response && error.response.status === 404) {
+          //console.log("No existing availability data (404). Proceeding to save new data.");
+        } else {
+          //console.error("Error checking existing availability data:", error);
+          //alert("An error occurred while checking existing availability data.");
+          return;
+        }
+      }
+  
+      // 기존 데이터 삭제 (존재하는 경우에만)
+      if (hasExistingData) {
+        try {
+          await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${userid}`);
+          
+        } catch (deleteError) {
+          return;
+        }
+      }
+  
+      // 새로운 데이터 저장
+      //console.log("Saving new data...");
+      for (let dayIndex = 0; dayIndex < groupTimetableData.length; dayIndex++) {
+        const dayData = groupTimetableData[dayIndex];
+        const dayName = dayData.day;
+        const dayDate = dayData.date;
+  
+        for (let timeIndex = 0; timeIndex < timeSlots.length - 1; timeIndex++) {
+          if (gridState[timeIndex][dayIndex]) {
+            const timeFrom = `${timeSlots[timeIndex]}:00`;
+            const timeTo = `${timeSlots[timeIndex + 1]}:00`;
+  
+            const dataToSend = {
+              user: userid,
+              day: dayName,
+              date: dayDate,
+              time_from: timeFrom,
+              time_to: timeTo,
+            };
+  
+            try {
+              const response = await axios.post(
+                `${process.env.REACT_APP_API_BASE_URL}/api/v1/availability`,
+                dataToSend,
+                {
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                }
+              );
+              //console.log("Response from server:", response.data);
+            } catch (postError) {
+              //console.error("Error saving data:", postError);
+              //alert("An error occurred while saving availability data.");
+            }
           }
         }
       }
-    }
   
-    const url = `/groupavailability?event=${event}&groupId=${groupId}`;
-    navigate(url, {
-      state: {
-        gridState,
-        timeSlots,
-        groupTimetableData,
-        userid,
-      },
-    });
+      alert("Availability saved successfully.");
+      console.log("New data saved successfully.");
+  
+      const url = `/groupavailability?event=${event}&groupId=${groupId}`;
+      navigate(url, {
+        state: {
+          gridState,
+          timeSlots,
+          groupTimetableData,
+          userid,
+        },
+      });
+    } catch (error) {
+      console.error("Error during save operation:", error);
+      alert("An error occurred while saving availability. Please try again.");
+    }
   };
+  
+  
 
   return (
     <CalendarContainer onMouseUp={handleMouseUp}>
