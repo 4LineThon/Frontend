@@ -304,7 +304,6 @@ function NumberInputDay() {
         <span className="date-dropdown">Choose Date</span>
         <div className="select-list-container">
           <select value={selectedDay} onChange={handleDayChange} className="select-list">
-            <option value="">Select Day</option>
             {uniqueDays.map((day, index) => (
               <option key={index} value={day}>
                 {day}
