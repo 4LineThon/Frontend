@@ -84,6 +84,7 @@ const GroupAvailability = () => {
           if (!hasDetailObject) {
             const currentUrl = `/result?event=${event}&groupId=${groupId}`;
             navigate(currentUrl);
+            return;
           }
         })
         .catch((error) => console.log(error));

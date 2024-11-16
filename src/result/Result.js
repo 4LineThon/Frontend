@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Logo from "../Myavailability/component/logo";
@@ -64,6 +63,25 @@ const Result = () => {
         setLoading(false);
       }
     };
+
+    axios
+      .get(
+        `${process.env.REACT_APP_API_BASE_URL}/api/v1/result/group/${groupId}`
+      )
+      .then((response) => {
+        const data = response.data;
+        const hasDetailObject = data.some((item) =>
+          item.hasOwnProperty("detail")
+        );
+        console.log("hasDetailObject", data);
+        // 확정 안됨
+        if (hasDetailObject) {
+          const currentUrl = `/groupAvailability?event=${event}&groupId=${groupId}`;
+          navigate(currentUrl);
+          return;
+        }
+      })
+      .catch((error) => console.log(error));
 
     fetchInitialData();
   }, [groupId]);
