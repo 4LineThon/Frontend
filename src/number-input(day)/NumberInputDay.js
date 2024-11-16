@@ -134,26 +134,87 @@ function NumberInputDay() {
 
   const addTimeRange = () => {
     if (!selectedDay) return;
+  
     setAvailability((prev) => {
-      const dayAvailability = [...(prev[selectedDay] || []), { start: "100:00", end: "100:00", slots: [] }];
+      const dayAvailability = prev[selectedDay] || [];
       
-      // 새로운 availability 객체 생성 후 요일 순으로 정렬
-      const newAvailability = {
+      // "100:00 to 100:00"이 이미 추가되어 있는지 확인
+      const hasDefaultRange = dayAvailability.some(
+        (range) => range.start === "100:00" && range.end === "100:00"
+      );
+  
+      if (hasDefaultRange) {
+        // 중복 방지: 기본 값이 이미 존재하는 경우 추가하지 않음
+        return prev;
+      }
+  
+      // 기본 값을 추가하고 정렬
+      const updatedAvailability = {
         ...prev,
-        [selectedDay]: sortByStartTime(dayAvailability),
+        [selectedDay]: sortByStartTime([
+          ...dayAvailability,
+          { start: "100:00", end: "100:00", slots: [] },
+        ]),
       };
-      
-      // 요일 순서대로 정렬하여 newAvailability 설정
-      const sortedAvailability = Object.keys(newAvailability)
-        .sort((a, b) => weekdayOrder[a] - weekdayOrder[b]) // 요일 순서에 맞게 정렬
-        .reduce((acc, key) => {
-          acc[key] = newAvailability[key];
-          return acc;
-        }, {});
-      
-      return sortedAvailability;
+  
+      return updatedAvailability;
     });
   };
+  
+  
+  useEffect(() => {
+    if (uniqueDays.length > 0 && !selectedDay) {
+      setSelectedDay(uniqueDays[0]);
+    }
+  }, [uniqueDays, selectedDay]);
+  
+  
+  useEffect(() => {
+    const fetchAvailabilityData = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${userid}`
+        );
+  
+        console.log("Fetched availability data:", response.data); // 응답 데이터 구조 확인
+  
+        // API 응답이 배열인지 확인
+        const availabilityData = Array.isArray(response.data) 
+          ? response.data 
+          : response.data.data; // 객체라면 `data` 속성을 사용
+  
+        // 예외 처리: availabilityData가 배열이 아닐 경우
+        if (!Array.isArray(availabilityData)) {
+          throw new Error("Invalid data structure: expected an array.");
+        }
+  
+        const initialAvailability = {};
+  
+        availabilityData.forEach((data) => {
+          const day = data.days_day; // 요일만 사용
+          console.log("요일 추출?:", day)
+          if (!initialAvailability[day]) {
+            initialAvailability[day] = [];
+          }
+          initialAvailability[day].push({
+            start: data.time_from.substring(0, 5), // "HH:mm"
+            end: data.time_to.substring(0, 5),
+            slots: generateSlots(data.time_from, data.time_to),
+          });
+        });
+  
+        setAvailability(initialAvailability);
+        console.log("Processed availability state:", initialAvailability);
+      } catch (error) {
+        console.error("Error fetching availability data:", error);
+      }
+    };
+  
+    if (userid) {
+      fetchAvailabilityData();
+    }
+  }, [userid]);
+  
   
 
   const handleStartChange = (day, index, event) => {
@@ -236,14 +297,13 @@ function NumberInputDay() {
     <div className="big-container" key={uniqueDays.join('-')}>
       <Logo />
       <HeaderH2>{groupName}</HeaderH2> 
-      <AvailabilityHeaderDay text={`My Availability`} arrowDirection="right" navigateTo="/groupAvailability" />
+      <AvailabilityHeaderDay text={`My Availability`} arrowDirection="leftzz" navigateTo="/groupAvailability" />
       <InsertTypeDay />
 
       <div id="date-dropdown">
         <span className="date-dropdown">Choose Date</span>
         <div className="select-list-container">
           <select value={selectedDay} onChange={handleDayChange} className="select-list">
-            <option value="">Select Day</option>
             {uniqueDays.map((day, index) => (
               <option key={index} value={day}>
                 {day}

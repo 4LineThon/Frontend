@@ -37,6 +37,39 @@ const GroupAvailability = () => {
     "by clicking “Fix Time” button.",
   ];
 
+
+  const checkHasComments = async (groupId, day, date, time) => {
+    try {
+      const payload = {
+        group: groupId,
+        day: day,
+        date: date,
+        time: time,
+      };
+  
+      // `/api/v1/availability/availabilitydetail` 요청
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/availabilitydetail`,
+        payload
+      );
+  
+      // comments_data가 비어 있지 않은지 확인
+      const hasComments = response.data.comments_data.length > 0;
+  
+      console.log(
+        `Checking for comments on ${date} ${time}:`,
+        hasComments ? "Comments exist" : "No comments"
+      );
+  
+      return hasComments;
+    } catch (error) {
+      console.error("Error checking comments:", error);
+      return false;
+    }
+  };
+  
+  
+
   useEffect(() => {
     if (groupId) {
       axios
@@ -170,6 +203,9 @@ const GroupAvailability = () => {
   }, [groupId]);
 
   const handleRectClick = async (dayIndex, timeIndex) => {
+    console.log(`Clicked on Day Index: ${dayIndex}, Time Index: ${timeIndex}`);
+    const hasComment = checkHasComments(dayIndex, timeIndex);
+    console.log(`Has Comment: ${hasComment}`); // 댓글 여부 출력
     const selectedDay = groupTimetableData[dayIndex];
     const selectedTime = timeSlots[timeIndex];
     const selectedDate = new Date(selectedDay.date);
@@ -192,9 +228,9 @@ const GroupAvailability = () => {
       date: formattedDate,
       time: formattedTime,
     };
-
+    console.log("Selected Time Slot:", selectedTimeSlot);
     setSelectedSlot(selectedTimeSlot);
-    requestAvailabilityDetail(selectedTimeSlot);
+    await requestAvailabilityDetail(selectedTimeSlot); 
   };
 
   const requestAvailabilityDetail = async (selectedTimeSlot) => {
@@ -204,7 +240,7 @@ const GroupAvailability = () => {
         selectedTimeSlot
       );
       setAvailabilityDetail(response.data);
-      setComments(response.data.comments_data);
+      setComments(response.data.comments_data || []);
     } catch (error) {
       console.error("Error fetching availability detail:", error);
     }
@@ -255,63 +291,45 @@ const GroupAvailability = () => {
             </text>
           ))}
 
-          {groupTimetableData.map((day, dayIndex) => (
-            <React.Fragment key={dayIndex}>
-              {day.date && !isNaN(new Date(day.date).getTime()) ? (
-                <text
-                  x={68 + dayIndex * 36}
-                  y="15"
-                  textAnchor="middle"
-                  fontSize="10"
-                  fill="#423E59"
-                >
-                  {new Date(day.date).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </text>
-              ) : null}
-              <text
-                x={68 + dayIndex * 36}
-                y="30"
-                textAnchor="middle"
-                fontSize="18"
-                fill="#423E59"
-              >
-                {day.date && !isNaN(new Date(day.date).getTime())
-                  ? new Date(day.date)
-                      .toLocaleDateString("en-US", { weekday: "short" })
-                      .charAt(0)
-                  : day.day.charAt(0)}
-              </text>
+{groupTimetableData.map((day, dayIndex) => (
+  <React.Fragment key={dayIndex}>
+    {timeSlots.slice(0, -1).map((time, timeIndex) => {
+      const currentDay = day.day;
+      const currentDate = day.date;
+      const currentTime = time + ":00";
 
-              {timeSlots.slice(0, -1).map((time, timeIndex) => (
-                <React.Fragment key={`rect-${dayIndex}-${timeIndex}`}>
-                  <rect
-                    key={`rect-${dayIndex}-${timeIndex}`}
-                    x={50 + dayIndex * 36}
-                    y={45 + timeIndex * 18}
-                    width="36"
-                    height="18"
-                    fill={calculateAvailabilityColor(
-                      slotAvailabilityCounts[`${dayIndex}-${timeIndex}`] || 0
-                    )}
-                    stroke="#423E59"
-                    strokeWidth="1"
-                  />
-                  {/* foreignObject를 사용하여 내부에 HTML을 추가 */}
-                  <CommentExist
-                    key={`comment-${dayIndex}-${timeIndex}`}
-                    x={50 + dayIndex * 36}
-                    y={45 + timeIndex * 18}
-                    width="36"
-                    height="18"
-                    onClick={() => handleRectClick(dayIndex, timeIndex)}
-                  />
-                </React.Fragment>
-              ))}
-            </React.Fragment>
-          ))}
+      return (
+        <React.Fragment key={`rect-${dayIndex}-${timeIndex}`}>
+          <rect
+            x={50 + dayIndex * 36}
+            y={45 + timeIndex * 18}
+            width="36"
+            height="18"
+            fill={calculateAvailabilityColor(
+              slotAvailabilityCounts[`${dayIndex}-${timeIndex}`] || 0
+            )}
+            stroke="#423E59"
+            strokeWidth="1"
+          />
+          <CommentExist
+            key={`comment-${dayIndex}-${timeIndex}`}
+            x={50 + dayIndex * 36}
+            y={45 + timeIndex * 18}
+            width="36"
+            height="18"
+            onClick={() => handleRectClick(dayIndex, timeIndex)}
+            hasComments={async () =>
+              await checkHasComments(groupId, currentDay, currentDate, currentTime)
+            }
+          />
+        </React.Fragment>
+      );
+    })}
+  </React.Fragment>
+))}
+
+
+
         </StyledSVG>
       </CalendarContainer>
 

@@ -27,52 +27,15 @@ function NumberInput() {
   const [availability, setAvailability] = useState({});
   const [selectedDay, setSelectedDay] = useState("");
   const [fetchedData, setFetchedData] = useState([]); // fetchedData 상태 추가
-  const handleStartChange = (day, index, event) => {
-    const newStartTime = event.target.value;
-
-    setAvailability((prev) => {
-      const newAvailability = { ...prev };
-      const selectedRange = newAvailability[day][index];
-      const endTime = selectedRange.end;
-
-      const hasOverlap = newAvailability[day].some((range, i) => {
-        if (i === index) return false;
-        return (
-          (newStartTime >= range.start && newStartTime <= range.end) ||
-          (endTime !== "100:00" && newStartTime < range.start && endTime > range.start)
-        );
-      });
-
-      if (hasOverlap) {
-        alert("This time is already selected.");
-        newAvailability[day][index].start = "100:00";
-      } else {
-        newAvailability[day][index].start = newStartTime;
-        newAvailability[day] = sortByStartTime(newAvailability[day]);
-      }
-
-      return newAvailability;
-    });
-  };
-
-  const handleEndChange = (day, index, event) => {
-    setAvailability((prev) => {
-      const newAvailability = { ...prev };
-      const startTime = newAvailability[day][index].start;
-      const endTime = event.target.value;
-
-      if (startTime !== "-1" && endTime <= startTime) {
-        alert("End time cannot be earlier than start time.");
-        newAvailability[day][index].end = "100:00";
-      } else {
-        newAvailability[day][index].end = endTime;
-        newAvailability[day] = sortByStartTime(newAvailability[day]);
-        newAvailability[day][index].slots = generateSlots(startTime, endTime);
-      }
-      return newAvailability;
-    });
-  };
-
+  const filteredAvailability = Object.keys(availability).reduce((acc, day) => {
+    acc[day] = availability[day].filter((range, index, self) =>
+      index === self.findIndex(
+        (r) => r.start === range.start && r.end === range.end
+      )
+    );
+    return acc;
+  }, {});
+  
   // 날짜 정렬용 함수
   const sortUniqueDays = (days) => {
     return days.sort((a, b) => {
@@ -131,8 +94,56 @@ function NumberInput() {
     fetchGroupTimetable();
   }, [groupId]);
 
+  const generateSlots = (start, end) => {
+    const slots = [];
+    let currentTime = new Date(`1970-01-01T${start}Z`);
+    const endTime = new Date(`1970-01-01T${end}Z`);
 
+    while (currentTime <= endTime) {
+      slots.push({
+        availability_count: 1,
+        time: currentTime.toISOString().substring(11, 19)
+      });
+      currentTime.setMinutes(currentTime.getMinutes() + 30);
+    }
 
+    return slots;
+  };
+
+  const handleDayChange = (event) => {
+    setSelectedDay(event.target.value);
+  };
+
+  const addTimeRange = () => {
+    if (!selectedDay) return;
+  
+    setAvailability((prev) => {
+      const dayAvailability = prev[selectedDay] || [];
+      
+      // "100:00 to 100:00"이 이미 추가되어 있는지 확인
+      const hasDefaultRange = dayAvailability.some(
+        (range) => range.start === "100:00" && range.end === "100:00"
+      );
+  
+      if (hasDefaultRange) {
+        // 중복 방지: 기본 값이 이미 존재하는 경우 추가하지 않음
+        return prev;
+      }
+  
+      // 기본 값을 추가하고 정렬
+      const updatedAvailability = {
+        ...prev,
+        [selectedDay]: sortByStartTime([
+          ...dayAvailability,
+          { start: "100:00", end: "100:00", slots: [] },
+        ]),
+      };
+  
+      return updatedAvailability;
+    });
+  };
+  
+  
   useEffect(() => {
     if (uniqueDays.length > 0 && !selectedDay) {
       setSelectedDay(uniqueDays[0]);
@@ -143,38 +154,40 @@ function NumberInput() {
   useEffect(() => {
     const fetchAvailabilityData = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${userid}`);
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${userid}`
+        );
         const availabilityData = response.data;
-
+        console.log("Fetched availability data:", availabilityData);
         const initialAvailability = {};
-
-        availabilityData.forEach((data) => {
-          const day = `${data.days_date}(${data.days_day})`;
-          if (!initialAvailability[day]) {
-            initialAvailability[day] = [];
-          }
-          initialAvailability[day].push({
-            start: data.time_from.substring(0, 5), // "13:00" 형식으로 변환
-            end: data.time_to.substring(0, 5),
-            slots: generateSlots(data.time_from, data.time_to)
+        availabilityData
+          .filter((data) => data.time_from !== data.time_to) // 시작 시간과 끝 시간이 같은 데이터 제거
+          .forEach((data) => {
+            const day = `${data.days_date}(${data.days_day})`;
+            if (!initialAvailability[day]) {
+              initialAvailability[day] = [];
+            }
+            initialAvailability[day].push({
+              start: data.time_from.substring(0, 5), // "HH:mm" 형식으로 변환
+              end: data.time_to.substring(0, 5),
+              slots: generateSlots(data.time_from, data.time_to),
+            });
           });
-        });
-
-        setAvailability(initialAvailability); // 초기 상태로 설정
-        console.log("Initialized availability with fetched data:", initialAvailability); // 확인용 로그
+  
+        setAvailability(initialAvailability);
+  
+        console.log("Processed availability state:", initialAvailability);
       } catch (error) {
         console.error("Error fetching availability data:", error);
       }
     };
-
+  
     if (userid) {
       fetchAvailabilityData();
     }
-    
   }, [userid]);
-
-
-
+  
+  
 
   useEffect(() => {
     const selectedDateData = days.find(dateObj => {
@@ -202,46 +215,49 @@ function NumberInput() {
     return times;
   };
 
-  const generateSlots = (start, end) => {
-    const slots = [];
-    let currentTime = new Date(`1970-01-01T${start}Z`);
-    const endTime = new Date(`1970-01-01T${end}Z`);
+  const handleStartChange = (day, index, event) => {
+    const newStartTime = event.target.value;
 
-    while (currentTime <= endTime) {
-      slots.push({
-        availability_count: 1,
-        time: currentTime.toISOString().substring(11, 19)
-      });
-      currentTime.setMinutes(currentTime.getMinutes() + 30);
-    }
-
-    return slots;
-  };
-
-  const handleDayChange = (event) => {
-    setSelectedDay(event.target.value);
-  };
-
-  const addTimeRange = () => {
-    if (!selectedDay) return;
     setAvailability((prev) => {
-      const dayAvailability = [...(prev[selectedDay] || []), { start: "100:00", end: "100:00", slots: [] }];
-      
-      // 새로운 availability 객체 생성 후 날짜 순으로 정렬
-      const newAvailability = {
-        ...prev,
-        [selectedDay]: sortByStartTime(dayAvailability),
-      };
-      
-      // 날짜 순서대로 정렬하여 newAvailability 설정
-      const sortedAvailability = Object.keys(newAvailability)
-        .sort((a, b) => new Date(a.split('(')[0]) - new Date(b.split('(')[0]))
-        .reduce((acc, key) => {
-          acc[key] = newAvailability[key];
-          return acc;
-        }, {});
-      
-      return sortedAvailability;
+      const newAvailability = { ...prev };
+      const selectedRange = newAvailability[day][index];
+      const endTime = selectedRange.end;
+
+      const hasOverlap = newAvailability[day].some((range, i) => {
+        if (i === index) return false;
+        return (
+          (newStartTime >= range.start && newStartTime <= range.end) ||
+          (endTime !== "100:00" && newStartTime < range.start && endTime > range.start)
+        );
+      });
+
+      if (hasOverlap) {
+        alert("This time is already selected.");
+        newAvailability[day][index].start = "100:00";
+      } else {
+        newAvailability[day][index].start = newStartTime;
+        newAvailability[day] = sortByStartTime(newAvailability[day]);
+      }
+
+      return newAvailability;
+    });
+  };
+
+  const handleEndChange = (day, index, event) => {
+    setAvailability((prev) => {
+      const newAvailability = { ...prev };
+      const startTime = newAvailability[day][index].start;
+      const endTime = event.target.value;
+
+      if (startTime !== "-1" && endTime <= startTime) {
+        alert("End time cannot be earlier than start time.");
+        newAvailability[day][index].end = "100:00";
+      } else {
+        newAvailability[day][index].end = endTime;
+        newAvailability[day] = sortByStartTime(newAvailability[day]);
+        newAvailability[day][index].slots = generateSlots(startTime, endTime);
+      }
+      return newAvailability;
     });
   };
   
@@ -257,7 +273,6 @@ function NumberInput() {
       try {
         const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${userid}`);
         const availabilityData = response.data;
-
 
         const initialAvailability = {};
 
@@ -321,7 +336,6 @@ function NumberInput() {
         <span className="date-dropdown">Choose Date</span>
         <div className="select-list-container">
           <select value={selectedDay} onChange={handleDayChange} className="select-list">
-            <option value="">Select Day</option>
             {uniqueDays.map((day, index) => (
               <option key={index} value={day}>
                 {day}
@@ -334,9 +348,9 @@ function NumberInput() {
 
       {availability && Object.keys(availability).length > 0 && (
         <TimeSelector
-          availability={availability} 
-          handleStartChange={handleStartChange} 
-          handleEndChange={handleEndChange} 
+          availability={filteredAvailability}
+          handleStartChange={handleStartChange}
+          handleEndChange={handleEndChange}
           deleteTimeRange={(day, index) => {
             const newAvailability = { ...availability };
             newAvailability[day].splice(index, 1);
