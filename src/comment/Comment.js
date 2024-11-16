@@ -4,12 +4,18 @@ import CommentInput from "./component/commentInput";
 import styled from "styled-components";
 import axios from "axios";
 
-const Comment = ({ comments, selectedSlot, setComments, name }) => {
+const Comment = ({ comments, selectedSlot, setComments }) => {
   const isClicked = selectedSlot !== null;
+  const name = localStorage.getItem("username");
+
   // console.log("comments", comments);
   // console.log("selectedSlot", selectedSlot);
 
   const postComment = async (text) => {
+    if (!text) {
+      alert("Please enter a comment.");
+      return;
+    }
     const response = await axios.post(
       `${process.env.REACT_APP_API_BASE_URL}/api/v1/comment`,
       {
@@ -54,7 +60,6 @@ const Comment = ({ comments, selectedSlot, setComments, name }) => {
             key={idx}
             commentInfo={comment}
             deleteComment={deleteComment}
-            name={name}
           />
         );
       })}

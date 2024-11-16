@@ -94,6 +94,78 @@ function NumberInput() {
     fetchGroupTimetable();
   }, [groupId]);
 
+
+
+  useEffect(() => {
+    if (uniqueDays.length > 0 && !selectedDay) {
+      setSelectedDay(uniqueDays[0]);
+    }
+  }, [uniqueDays, selectedDay]);
+  
+  
+  useEffect(() => {
+    const fetchAvailabilityData = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${userid}`);
+        const availabilityData = response.data;
+
+        const initialAvailability = {};
+
+        availabilityData.forEach((data) => {
+          const day = `${data.days_date}(${data.days_day})`;
+          if (!initialAvailability[day]) {
+            initialAvailability[day] = [];
+          }
+          initialAvailability[day].push({
+            start: data.time_from.substring(0, 5), // "13:00" 형식으로 변환
+            end: data.time_to.substring(0, 5),
+            slots: generateSlots(data.time_from, data.time_to)
+          });
+        });
+
+        setAvailability(initialAvailability); // 초기 상태로 설정
+        console.log("Initialized availability with fetched data:", initialAvailability); // 확인용 로그
+      } catch (error) {
+        console.error("Error fetching availability data:", error);
+      }
+    };
+
+    if (userid) {
+      fetchAvailabilityData();
+    }
+    
+  }, [userid]);
+
+
+
+
+  useEffect(() => {
+    const selectedDateData = days.find(dateObj => {
+      const formattedDate = `${dateObj.date}(${new Date(dateObj.date).toLocaleDateString('en-US', { weekday: 'short' })})`;
+      return formattedDate === selectedDay;
+    });
+
+    if (selectedDateData) {
+      const { start_time, end_time } = selectedDateData;
+      setTimeOptions(generateTimeOptions(start_time, end_time));
+      console.log("generated timeOptions:", generateTimeOptions(start_time, end_time));
+    }
+  }, [selectedDay, days]);
+
+  const generateTimeOptions = (start, end) => {
+    const times = [];
+    let currentTime = new Date(`1970-01-01T${start}Z`);
+    const endTime = new Date(`1970-01-01T${end}Z`);
+
+    while (currentTime <= endTime) {
+      times.push(currentTime.toISOString().substring(11, 16));
+      currentTime.setMinutes(currentTime.getMinutes() + 30);
+    }
+
+    return times;
+  };
+
+
   const generateSlots = (start, end) => {
     const slots = [];
     let currentTime = new Date(`1970-01-01T${start}Z`);
@@ -158,9 +230,11 @@ function NumberInput() {
           `${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${userid}`
         );
         const availabilityData = response.data;
+
   
         console.log("Fetched availability data:", availabilityData);
   
+
         const initialAvailability = {};
   
         availabilityData
@@ -263,6 +337,7 @@ function NumberInput() {
       return newAvailability;
     });
   };
+
 
 
   useEffect(() => {

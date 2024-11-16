@@ -29,4 +29,5 @@ const ButtonImg = styled.img.attrs({
   position: absolute;
   top: 152px;
   left: 333px;
+  cursor: pointer;
 `;
