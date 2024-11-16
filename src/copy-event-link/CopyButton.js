@@ -9,7 +9,7 @@ const CopyButton = () => {
     const queryParams = new URLSearchParams(location.search);
     const event = queryParams.get("event");
     const groupId = Number(queryParams.get("groupId"));
-    const currentUrl = `https://timi4line.vercel.app/groupavailability?event=${event}&groupId=${groupId}`;
+    const currentUrl = `/groupavailability?event=${event}&groupId=${groupId}`;
 
     // 클립보드에 URL 복사
     navigator.clipboard
