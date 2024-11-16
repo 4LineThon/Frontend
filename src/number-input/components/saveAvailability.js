@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import '../NumberInput.css';
 
 function SaveAvailability({ availability, groupId, userid, event, fetchedData = [] }) {
   const navigate = useNavigate();
