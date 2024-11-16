@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Logo from "../Myavailability/component/logo";
@@ -10,25 +11,62 @@ import { HeaderH2 } from "../Myavailability/component/headerH2";
 const Result = () => {
   const [time, setTime] = useState("");
   const [place, setPlace] = useState("");
+  const [resultId, setResultId] = useState(null); // result_id 추가
   const [isSaved, setIsSaved] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [groupName, setGroupName] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
   const location = useLocation();
   const userid = location.state?.userid;
 
-  // Get query parameters
   const queryParams = new URLSearchParams(location.search);
   const event = queryParams.get("event");
   const groupId = queryParams.get("groupId");
 
-  // Debugging logs
   useEffect(() => {
-    console.log("Result page ::::: Event:", event);
-    console.log("GroupId:", groupId);
-    console.log("userid", userid);
-  }, [event, groupId, userid]);
+    const fetchInitialData = async () => {
+      try {
+        // Group 이름 가져오기
+        const groupResponse = await axios.get(
+          `${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}`
+        );
+        setGroupName(groupResponse.data.name);
+
+        // Fix된 결과가 있는지 확인
+        const resultResponse = await axios.get(
+          `${process.env.REACT_APP_API_BASE_URL}/api/v1/result/group/${groupId}`
+        );
+
+        console.log("Result API Response:", resultResponse.data);
+
+        if (
+          resultResponse.data.length > 0 &&
+          resultResponse.data[0].time &&
+          resultResponse.data[0].place
+        ) {
+          setTime(resultResponse.data[0].time);
+          setPlace(resultResponse.data[0].place);
+          setResultId(resultResponse.data[0].id); // result_id 저장
+          setIsSaved(true);
+        } else {
+          setIsSaved(false);
+        }
+      } catch (error) {
+        if (error.response && error.response.status === 404) {
+          console.log("Fix된 결과가 없음. 새로운 입력 필요");
+          setIsSaved(false);
+        } else {
+          console.error("데이터를 가져오는 도중 오류 발생:", error);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInitialData();
+  }, [groupId]);
 
   const preConfirmExplanation = [
     'When the "Save" button is clicked,',
@@ -41,34 +79,13 @@ const Result = () => {
     "But the previously selected group availability will remain unchanged.",
   ];
 
-
-  useEffect(() => {
-    if (groupId) {
-      const fetchGroupName = async () => {
-        try {
-          const response = await axios.get(
-            `${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}`
-          );
-          setGroupName(response.data.name); // 응답에서 groupName 설정
-        } catch (error) {
-          console.error("group name이 없음:", error);
-        }
-      };
-      fetchGroupName();
-    } else {
-      console.error("groupid 없음");
-    }
-  }, [groupId]); // groupId 변경 시에만 API 호출
-
   const handleSave = async () => {
-    // Validation to check if time and place are filled
     if (!time || !place) {
       setErrorMessage("Time과 Place 모두 입력해주세요");
       return;
     }
 
     try {
-      // Send the result
       const response = await axios.post(
         `${process.env.REACT_APP_API_BASE_URL}/api/v1/result`,
         {
@@ -77,40 +94,39 @@ const Result = () => {
           time: time,
         }
       );
+      setResultId(response.data.id); // 저장된 result_id 설정
       setIsSaved(true);
-      console.log("Response from server:", response.data);
-      setErrorMessage(""); // Clear any previous error message
+      setErrorMessage("");
     } catch (error) {
       console.error("Error saving data:", error);
     }
   };
 
-  const handleReschedule = () => {
-    setIsSaved(false);
-    setPlace("");
-    setTime("");
-    navigate(`/groupAvailability?event=${event}&groupId=${groupId}`, {
-      state: { userid },
-    });
+  const handleReschedule = async () => {
+    try {
+      // DELETE 요청으로 기존 데이터 삭제
+      await axios.delete(
+        `${process.env.REACT_APP_API_BASE_URL}/api/v1/result/${resultId}`
+      );
+
+      // 데이터 초기화
+      setIsSaved(false);
+      setPlace("");
+      setTime("");
+      setResultId(null); // result_id 초기화
+
+      // groupAvailability 화면으로 이동
+      navigate(`/groupAvailability?event=${event}&groupId=${groupId}`, {
+        state: { userid },
+      });
+    } catch (error) {
+      console.error("Error deleting data:", error);
+    }
   };
 
-  useEffect(() => {
-    if (groupId) {
-      const fetchGroupName = async () => {
-        try {
-          const response = await axios.get(
-            `${process.env.REACT_APP_API_BASE_URL}/api/v1/group/${groupId}`
-          );
-          console.log("Fetched group name:", response.data.name);
-        } catch (error) {
-          console.error("Error fetching group name:", error);
-        }
-      };
-      fetchGroupName();
-    } else {
-      console.error("No group_id found in localStorage");
-    }
-  }, []);
+  if (loading) {
+    return <div style={styles.loading}>Loading...</div>;
+  }
 
   return (
     <div style={styles.wrapper}>
@@ -153,7 +169,6 @@ const Result = () => {
           </div>
         </div>
 
-        {/* Error message display */}
         {errorMessage && <span style={styles.errorText}>{errorMessage}</span>}
 
         {isSaved ? (
@@ -175,7 +190,6 @@ const Result = () => {
     </div>
   );
 };
-
 const styles = {
   wrapper: {
     display: "flex",
@@ -252,6 +266,12 @@ const styles = {
     fontFamily: '"Ibarra Real Nova", serif',
     border: "none",
     cursor: "pointer",
+  },
+  loading: {
+    textAlign: "center",
+    fontSize: "20px",
+    fontFamily: '"Ibarra Real Nova", serif',
+    color: "#423E59",
   },
 };
 
