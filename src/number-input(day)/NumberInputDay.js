@@ -134,26 +134,80 @@ function NumberInputDay() {
 
   const addTimeRange = () => {
     if (!selectedDay) return;
+  
     setAvailability((prev) => {
-      const dayAvailability = [...(prev[selectedDay] || []), { start: "100:00", end: "100:00", slots: [] }];
+      const dayAvailability = prev[selectedDay] || [];
       
-      // 새로운 availability 객체 생성 후 요일 순으로 정렬
-      const newAvailability = {
+      // "100:00 to 100:00"이 이미 추가되어 있는지 확인
+      const hasDefaultRange = dayAvailability.some(
+        (range) => range.start === "100:00" && range.end === "100:00"
+      );
+  
+      if (hasDefaultRange) {
+        // 중복 방지: 기본 값이 이미 존재하는 경우 추가하지 않음
+        return prev;
+      }
+  
+      // 기본 값을 추가하고 정렬
+      const updatedAvailability = {
         ...prev,
-        [selectedDay]: sortByStartTime(dayAvailability),
+        [selectedDay]: sortByStartTime([
+          ...dayAvailability,
+          { start: "100:00", end: "100:00", slots: [] },
+        ]),
       };
-      
-      // 요일 순서대로 정렬하여 newAvailability 설정
-      const sortedAvailability = Object.keys(newAvailability)
-        .sort((a, b) => weekdayOrder[a] - weekdayOrder[b]) // 요일 순서에 맞게 정렬
-        .reduce((acc, key) => {
-          acc[key] = newAvailability[key];
-          return acc;
-        }, {});
-      
-      return sortedAvailability;
+  
+      return updatedAvailability;
     });
   };
+  
+  
+  useEffect(() => {
+    if (uniqueDays.length > 0 && !selectedDay) {
+      setSelectedDay(uniqueDays[0]);
+    }
+  }, [uniqueDays, selectedDay]);
+  
+  
+  useEffect(() => {
+    const fetchAvailabilityData = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${userid}`
+        );
+        const availabilityData = response.data;
+  
+        console.log("Fetched availability data:", availabilityData);
+  
+        const initialAvailability = {};
+  
+        availabilityData
+          .filter((data) => data.time_from !== data.time_to) // 시작 시간과 끝 시간이 같은 데이터 제거
+          .forEach((data) => {
+            const day = data.days_day;
+            if (!initialAvailability[day]) {
+              initialAvailability[day] = [];
+            }
+            initialAvailability[day].push({
+              start: data.time_from.substring(0, 5), // "HH:mm" 형식으로 변환
+              end: data.time_to.substring(0, 5),
+              slots: generateSlots(data.time_from, data.time_to),
+            });
+          });
+  
+        setAvailability(initialAvailability);
+  
+        console.log("Processed availability state:", initialAvailability);
+      } catch (error) {
+        console.error("Error fetching availability data:", error);
+      }
+    };
+  
+    if (userid) {
+      fetchAvailabilityData();
+    }
+  }, [userid]);
+  
   
 
   const handleStartChange = (day, index, event) => {
@@ -236,7 +290,7 @@ function NumberInputDay() {
     <div className="big-container" key={uniqueDays.join('-')}>
       <Logo />
       <HeaderH2>{groupName}</HeaderH2> 
-      <AvailabilityHeaderDay text={`My Availability`} arrowDirection="right" navigateTo="/groupAvailability" />
+      <AvailabilityHeaderDay text={`My Availability`} arrowDirection="leftzz" navigateTo="/groupAvailability" />
       <InsertTypeDay />
 
       <div id="date-dropdown">

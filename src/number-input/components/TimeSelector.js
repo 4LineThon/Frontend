@@ -1,4 +1,5 @@
 import React from 'react';
+import '../NumberInput.css'
 
 const TimeSelector = ({ availability, handleStartChange, handleEndChange, deleteTimeRange, timeOptions }) => {
   return (
@@ -37,10 +38,10 @@ const TimeSelector = ({ availability, handleStartChange, handleEndChange, delete
               </div>
               
               <button 
-                className="btn-delete" 
+                className="btnDelete" 
                 onClick={() => deleteTimeRange(day, index)}
               >
-                Delete
+                -
               </button>
             </div>
           ))}
