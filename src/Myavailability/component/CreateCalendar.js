@@ -16,57 +16,59 @@ const CreateCalendar = ({ groupTimetableData, userid, onChange = () => {} }) => 
 
   useEffect(() => {
     const fetchAvailabilityData = async () => {
+      let initialGridState = [];
       try {
+        // 사용자의 availability 데이터 가져오기
         const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${userid}`);
         const availabilityData = response.data;
-        console.log("Fetched availability data:", availabilityData); // 불러온 데이터 확인
-
+        console.log("Fetched availability data:", availabilityData);
+  
         if (groupTimetableData && groupTimetableData.length > 0) {
           const { startTime, endTime } = groupTimetableData[0];
           const timeSlots = generateTimeSlots(startTime, endTime);
-          const initialGridState = Array(timeSlots.length)
-          .fill()
-          .map(() => Array(groupTimetableData.length).fill(false));
-
-          // availabilityData에서 gridState에 반영
+  
+          // 초기 gridState를 생성
+          initialGridState = Array(timeSlots.length)
+            .fill()
+            .map(() => Array(groupTimetableData.length).fill(false));
+  
+          // 사용자의 availability 데이터를 gridState에 반영
           availabilityData.forEach((availability) => {
-            const availabilityDate = availability.days_date; // 변환하지 않고 문자열 그대로 사용
+            const availabilityDate = availability.days_date;
             const dayIndex = groupTimetableData.findIndex(day => day.date === availabilityDate);
-          
+  
             const timeFromIndex = timeSlots.findIndex(time => `${time}:00` === availability.time_from);
             const timeToIndex = timeSlots.findIndex(time => `${time}:00` === availability.time_to);
-          
-            // 디버깅 메시지 추가
-            //console.log("Processing availability:", availability);
-            //console.log("Matched dayIndex:", dayIndex, "timeFromIndex:", timeFromIndex, "timeToIndex:", timeToIndex);
-          
+  
             if (dayIndex !== -1 && timeFromIndex !== -1 && timeToIndex !== -1) {
               for (let i = timeFromIndex; i <= timeToIndex; i++) {
                 initialGridState[i][dayIndex] = true; // 해당 시간대를 true로 설정
               }
-            } else {
             }
           });
-
-        setGridState(initialGridState); // 초기 상태로 설정
-        console.log("Initialized gridState with availability:", initialGridState); // 초기 gridState 확인
-      }
-    }  catch (error) {
+        }
+      } catch (error) {
         if (error.response && error.response.status === 404) {
-          // 데이터가 없는 경우 빈 상태로 설정
           console.log("No availability data found for this user. Initializing with empty grid.");
-          if (groupTimetableData && groupTimetableData.length > 0) {
-            const { startTime, endTime } = groupTimetableData[0];
-            const timeSlots = generateTimeSlots(startTime, endTime);
-            setGridState(Array(timeSlots.length).fill().map(() => Array(groupTimetableData.length).fill(false)));
-          }
         } else {
           console.error("Error fetching availability data:", error);
         }
       }
+  
+      // groupTimetableData를 기반으로 빈 gridState를 생성
+      if (groupTimetableData && groupTimetableData.length > 0 && initialGridState.length === 0) {
+        const { startTime, endTime } = groupTimetableData[0];
+        const timeSlots = generateTimeSlots(startTime, endTime);
+        initialGridState = Array(timeSlots.length)
+          .fill()
+          .map(() => Array(groupTimetableData.length).fill(false));
+      }
+  
+      setGridState(initialGridState);
+      console.log("Initialized gridState:", initialGridState);
     };
-
-    if (groupTimetableData.length > 0) {
+  
+    if (groupTimetableData && groupTimetableData.length > 0) {
       fetchAvailabilityData();
     }
   }, [userid, groupTimetableData]);
