@@ -1,9 +1,15 @@
 import React from "react";
+import { useLocation } from "react-router-dom";
 import styled from "styled-components";
 
 const CopyButton = () => {
+  const location = useLocation();
+
   const copyEventLink = () => {
-    const currentUrl = window.location.href;
+    const queryParams = new URLSearchParams(location.search);
+    const event = queryParams.get("event");
+    const groupId = Number(queryParams.get("groupId"));
+    const currentUrl = `https://timi4line.vercel.app/groupavailability?event=${event}&groupId=${groupId}`;
 
     // 클립보드에 URL 복사
     navigator.clipboard
