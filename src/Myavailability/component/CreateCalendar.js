@@ -41,7 +41,7 @@ const CreateCalendar = ({ groupTimetableData, userid, onChange = () => {} }) => 
             const timeToIndex = timeSlots.findIndex(time => `${time}:00` === availability.time_to);
   
             if (dayIndex !== -1 && timeFromIndex !== -1 && timeToIndex !== -1) {
-              for (let i = timeFromIndex; i <= timeToIndex; i++) {
+              for (let i = timeFromIndex; i < timeToIndex; i++) {
                 initialGridState[i][dayIndex] = true; // 해당 시간대를 true로 설정
               }
             }
