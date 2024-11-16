@@ -27,6 +27,51 @@ function NumberInput() {
   const [availability, setAvailability] = useState({});
   const [selectedDay, setSelectedDay] = useState("");
   const [fetchedData, setFetchedData] = useState([]); // fetchedData 상태 추가
+  const handleStartChange = (day, index, event) => {
+    const newStartTime = event.target.value;
+
+    setAvailability((prev) => {
+      const newAvailability = { ...prev };
+      const selectedRange = newAvailability[day][index];
+      const endTime = selectedRange.end;
+
+      const hasOverlap = newAvailability[day].some((range, i) => {
+        if (i === index) return false;
+        return (
+          (newStartTime >= range.start && newStartTime <= range.end) ||
+          (endTime !== "100:00" && newStartTime < range.start && endTime > range.start)
+        );
+      });
+
+      if (hasOverlap) {
+        alert("This time is already selected.");
+        newAvailability[day][index].start = "100:00";
+      } else {
+        newAvailability[day][index].start = newStartTime;
+        newAvailability[day] = sortByStartTime(newAvailability[day]);
+      }
+
+      return newAvailability;
+    });
+  };
+
+  const handleEndChange = (day, index, event) => {
+    setAvailability((prev) => {
+      const newAvailability = { ...prev };
+      const startTime = newAvailability[day][index].start;
+      const endTime = event.target.value;
+
+      if (startTime !== "-1" && endTime <= startTime) {
+        alert("End time cannot be earlier than start time.");
+        newAvailability[day][index].end = "100:00";
+      } else {
+        newAvailability[day][index].end = endTime;
+        newAvailability[day] = sortByStartTime(newAvailability[day]);
+        newAvailability[day][index].slots = generateSlots(startTime, endTime);
+      }
+      return newAvailability;
+    });
+  };
 
   // 날짜 정렬용 함수
   const sortUniqueDays = (days) => {
@@ -103,7 +148,7 @@ function NumberInput() {
         const initialAvailability = {};
 
         availabilityData.forEach((data) => {
-          const day = `${data.days_date}(${data.days_day.charAt(0)})`;
+          const day = `${data.days_date}(${data.days_day})`;
           if (!initialAvailability[day]) {
             initialAvailability[day] = [];
           }
@@ -124,6 +169,7 @@ function NumberInput() {
     if (userid) {
       fetchAvailabilityData();
     }
+    
   }, [userid]);
 
 
@@ -198,51 +244,7 @@ function NumberInput() {
   };
   
 
-  const handleStartChange = (day, index, event) => {
-    const newStartTime = event.target.value;
 
-    setAvailability((prev) => {
-      const newAvailability = { ...prev };
-      const selectedRange = newAvailability[day][index];
-      const endTime = selectedRange.end;
-
-      const hasOverlap = newAvailability[day].some((range, i) => {
-        if (i === index) return false;
-        return (
-          (newStartTime >= range.start && newStartTime <= range.end) ||
-          (endTime !== "100:00" && newStartTime < range.start && endTime > range.start)
-        );
-      });
-
-      if (hasOverlap) {
-        alert("This time is already selected.");
-        newAvailability[day][index].start = "100:00";
-      } else {
-        newAvailability[day][index].start = newStartTime;
-        newAvailability[day] = sortByStartTime(newAvailability[day]);
-      }
-
-      return newAvailability;
-    });
-  };
-
-  const handleEndChange = (day, index, event) => {
-    setAvailability((prev) => {
-      const newAvailability = { ...prev };
-      const startTime = newAvailability[day][index].start;
-      const endTime = event.target.value;
-
-      if (startTime !== "-1" && endTime <= startTime) {
-        alert("End time cannot be earlier than start time.");
-        newAvailability[day][index].end = "100:00";
-      } else {
-        newAvailability[day][index].end = endTime;
-        newAvailability[day] = sortByStartTime(newAvailability[day]);
-        newAvailability[day][index].slots = generateSlots(startTime, endTime);
-      }
-      return newAvailability;
-    });
-  };
 
   useEffect(() => {
     if (groupId) {
