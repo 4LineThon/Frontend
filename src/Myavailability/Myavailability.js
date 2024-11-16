@@ -4,8 +4,9 @@ import Calendar from "./component/Calendar";
 import InsertType from "./component/insertType";
 import IsAvailable from "./component/isAvailable";
 import Logo from "./component/logo";
+import { HeaderH2 } from "./component/headerH2";
 import AvailabilityHeader from "./component/AvailabilityHeader";
-import axios from 'axios';
+import axios from "axios";
 import styled from "styled-components";
 
 const Myavailability = () => {
@@ -100,10 +101,11 @@ const Myavailability = () => {
     <div>
       <Logo />
       <HeaderH2>{groupName}</HeaderH2>
-      <AvailabilityHeader 
-        text={`Availability for ${name}`} 
-        arrowDirection="left" 
-        navigateTo="/groupAvailability" 
+      <AvailabilityHeader
+        text={`Availability for ${name}`}
+        arrowDirection="left"
+        navigateTo="/groupAvailability"
+        name={name}
       />
       <InsertType />
       <IsAvailable />
@@ -120,15 +122,6 @@ const Myavailability = () => {
 
 export default Myavailability;
 
-const HeaderH2 = styled.h2`
-  text-align: center;
-  font-size: 18px;
-  font-weight: bold;
-  margin: 0;
-  color: #4c3f5e;
-  margin-bottom: 10px;
-`;
-
 const SaveButton = styled.button`
   margin-top: 20px;
   display: block;
@@ -141,4 +134,3 @@ const SaveButton = styled.button`
   border: none;
   cursor: pointer;
 `;
-

@@ -4,10 +4,10 @@ import CommentInput from "./component/commentInput";
 import styled from "styled-components";
 import axios from "axios";
 
-const Comment = ({ comments, selectedSlot, requestAvailabilityDetail }) => {
+const Comment = ({ comments, selectedSlot, setComments, name }) => {
   const isClicked = selectedSlot !== null;
-  console.log("comments", comments);
-  console.log("selectedSlot", selectedSlot);
+  // console.log("comments", comments);
+  // console.log("selectedSlot", selectedSlot);
 
   const postComment = async (text) => {
     const response = await axios.post(
@@ -20,14 +20,43 @@ const Comment = ({ comments, selectedSlot, requestAvailabilityDetail }) => {
         text,
       }
     );
-    console.log(response);
-    //requestAvailabilityDetail(selectedSlot);
+    // console.log(response);
+    const newComment = {
+      id: response.data.id,
+      user: name,
+      text,
+      created_at: response.data.created_at,
+    };
+    setComments([...comments, newComment]);
+  };
+
+  const deleteComment = async (commentId) => {
+    try {
+      // eslint-disable-next-line no-restricted-globals
+      if (confirm("Are you sure you want to delete this comment?")) {
+        const response = await axios.delete(
+          `${process.env.REACT_APP_API_BASE_URL}/api/v1/comment/${commentId}`
+        );
+        setComments((prev) =>
+          prev.filter((comment) => comment.id !== commentId)
+        );
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
     <Wrapper>
       {comments.map((comment, idx) => {
-        return <CommentBox key={idx} commentInfo={comment} />;
+        return (
+          <CommentBox
+            key={idx}
+            commentInfo={comment}
+            deleteComment={deleteComment}
+            name={name}
+          />
+        );
       })}
       {isClicked && <CommentInput postComment={postComment} />}
     </Wrapper>

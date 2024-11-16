@@ -2,21 +2,30 @@ import React from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 
-const AvailabilityHeader = ({ text = "My Availability", arrowDirection = "left", navigateTo = "/" }) => {
+const AvailabilityHeader = ({
+  text = "My Availability",
+  arrowDirection = "left",
+  navigateTo = "/",
+  name = "",
+}) => {
   const navigate = useNavigate();
 
   const handleNavigation = () => {
-    navigate(navigateTo);
+    navigate(navigateTo, { state: { name } });
   };
 
   return (
     <HeaderContainer>
       {arrowDirection === "left" && (
-        <Arrow onClick={handleNavigation} direction="left">{"<"}</Arrow>
+        <Arrow onClick={handleNavigation} direction="left">
+          {"<"}
+        </Arrow>
       )}
       <HeaderText>{text}</HeaderText>
       {arrowDirection === "right" && (
-        <Arrow onClick={handleNavigation} direction="right">{">"}</Arrow>
+        <Arrow onClick={handleNavigation} direction="right">
+          {">"}
+        </Arrow>
       )}
     </HeaderContainer>
   );
@@ -28,8 +37,8 @@ const HeaderContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #423E59;
-  color: #D9D9D9;
+  background-color: #423e59;
+  color: #d9d9d9;
   width: 375px;
   height: 32px;
   position: relative;
@@ -38,7 +47,7 @@ const HeaderContainer = styled.div`
 `;
 
 const HeaderText = styled.span`
-  color: #D9D9D9;
+  color: #d9d9d9;
   font-family: "Ibarra Real Nova", serif;
   font-size: 22px;
   font-style: normal;
@@ -53,7 +62,7 @@ const Arrow = styled.div`
   ${({ direction }) => (direction === "left" ? "left: 10px;" : "right: 10px;")}
   width: 20px;
   height: 20px;
-  color: #D9D9D9;
+  color: #d9d9d9;
   display: flex;
   align-items: center;
   justify-content: center;
