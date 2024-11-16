@@ -94,25 +94,22 @@ function NumberInput() {
     fetchGroupTimetable();
   }, [groupId]);
 
-  const generateSlots = (start, end) => {
-    const slots = [];
-    let currentTime = new Date(`1970-01-01T${start}Z`);
-    const endTime = new Date(`1970-01-01T${end}Z`);
+const generateSlots = (start, end) => {
+  const slots = [];
+  let currentTime = new Date(`1970-01-01T${start}Z`);
+  const endTime = new Date(`1970-01-01T${end}Z`);
 
-    while (currentTime <= endTime) {
-      slots.push({
-        availability_count: 1,
-        time: currentTime.toISOString().substring(11, 19)
-      });
-      currentTime.setMinutes(currentTime.getMinutes() + 30);
-    }
+  while (currentTime < endTime) { // 끝 시간을 제외
+    slots.push({
+      availability_count: 1,
+      time: currentTime.toISOString().substring(11, 19),
+    });
+    currentTime.setMinutes(currentTime.getMinutes() + 30);
+  }
 
-    return slots;
-  };
+  return slots;
+};
 
-  const handleDayChange = (event) => {
-    setSelectedDay(event.target.value);
-  };
 
   const addTimeRange = () => {
     if (!selectedDay) return;
@@ -159,7 +156,9 @@ function NumberInput() {
         );
         const availabilityData = response.data;
         console.log("Fetched availability data:", availabilityData);
+  
         const initialAvailability = {};
+  
         availabilityData
           .filter((data) => data.time_from !== data.time_to) // 시작 시간과 끝 시간이 같은 데이터 제거
           .forEach((data) => {
@@ -167,11 +166,22 @@ function NumberInput() {
             if (!initialAvailability[day]) {
               initialAvailability[day] = [];
             }
-            initialAvailability[day].push({
-              start: data.time_from.substring(0, 5), // "HH:mm" 형식으로 변환
+            const newEntry = {
+              start: data.time_from.substring(0, 5),
               end: data.time_to.substring(0, 5),
               slots: generateSlots(data.time_from, data.time_to),
-            });
+            };
+  
+            // 마지막 항목 조건 검사 후 제외
+            if (
+              newEntry.start === newEntry.end && 
+              newEntry.slots.length === 0
+            ) {
+              console.log("Excluded entry:", newEntry);
+              return; // 제외
+            }
+  
+            initialAvailability[day].push(newEntry);
           });
   
         setAvailability(initialAvailability);
@@ -186,6 +196,7 @@ function NumberInput() {
       fetchAvailabilityData();
     }
   }, [userid]);
+  
   
   
 
@@ -214,6 +225,11 @@ function NumberInput() {
 
     return times;
   };
+  const handleDayChange = (event) => {
+    setSelectedDay(event.target.value); // 선택한 날짜 업데이트
+    console.log("Selected day:", event.target.value);
+  };
+  
 
   const handleStartChange = (day, index, event) => {
     const newStartTime = event.target.value;
@@ -271,35 +287,46 @@ function NumberInput() {
   useEffect(() => {
     const fetchAvailabilityData = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${userid}`);
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_BASE_URL}/api/v1/availability/${userid}`
+        );
         const availabilityData = response.data;
-
+        console.log("Fetched availability data:", availabilityData);
+  
         const initialAvailability = {};
-
+  
         availabilityData.forEach((data) => {
           const day = `${data.days_date}(${data.days_day})`;
           if (!initialAvailability[day]) {
             initialAvailability[day] = [];
           }
           initialAvailability[day].push({
-            start: data.time_from.substring(0, 5), // "13:00" 형식으로 변환
+            start: data.time_from.substring(0, 5), // "HH:mm" 형식으로 변환
             end: data.time_to.substring(0, 5),
-            slots: generateSlots(data.time_from, data.time_to)
+            slots: generateSlots(data.time_from, data.time_to),
           });
         });
-
-        setAvailability(initialAvailability); // 초기 상태로 설정
-        console.log("Initialized availability with fetched data:", initialAvailability); // 확인용 로그
+  
+        // 마지막 항목 제거
+        Object.keys(initialAvailability).forEach((day) => {
+          if (initialAvailability[day].length > 0) {
+            initialAvailability[day].pop(); // 마지막 항목 제거
+          }
+        });
+  
+        setAvailability(initialAvailability);
+  
+        console.log("Processed availability state:", initialAvailability);
       } catch (error) {
         console.error("Error fetching availability data:", error);
       }
     };
-
+  
     if (userid) {
       fetchAvailabilityData();
     }
-    
   }, [userid]);
+  
 
 
 
@@ -335,13 +362,15 @@ function NumberInput() {
       <div id="date-dropdown">
         <span className="date-dropdown">Choose Date</span>
         <div className="select-list-container">
-          <select value={selectedDay} onChange={handleDayChange} className="select-list">
-            {uniqueDays.map((day, index) => (
-              <option key={index} value={day}>
-                {day}
-              </option>
-            ))}
-          </select>
+        <select value={selectedDay} onChange={handleDayChange} className="select-list">
+  <option value="">Select Day</option>
+  {uniqueDays.map((day, index) => (
+    <option key={index} value={day}>
+      {day}
+    </option>
+  ))}
+</select>
+
         </div>
         <button className="btnPlus" onClick={addTimeRange}>+</button>
       </div>
